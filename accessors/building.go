@@ -40,7 +40,6 @@ func (accessorGroup *AccessorGroup) GetAllBuildings() ([]Building, error) {
 func (accessorGroup *AccessorGroup) GetBuildingByID(id int) (Building, error) {
 	building := &Building{}
 	err := accessorGroup.Database.QueryRow("SELECT * FROM buildings WHERE id=?", id).Scan(&building.ID, &building.Name, &building.Shortname)
-
 	if err != nil {
 		return Building{}, err
 	}
@@ -52,7 +51,6 @@ func (accessorGroup *AccessorGroup) GetBuildingByID(id int) (Building, error) {
 func (accessorGroup *AccessorGroup) GetBuildingByName(name string) (Building, error) {
 	building := &Building{}
 	err := accessorGroup.Database.QueryRow("SELECT * FROM buildings WHERE name=?", name).Scan(&building.ID, &building.Name, &building.Shortname)
-
 	if err != nil {
 		return Building{}, err
 	}
@@ -64,7 +62,6 @@ func (accessorGroup *AccessorGroup) GetBuildingByName(name string) (Building, er
 func (accessorGroup *AccessorGroup) GetBuildingByShortname(shortname string) (Building, error) {
 	building := &Building{}
 	err := accessorGroup.Database.QueryRow("SELECT * FROM buildings WHERE shortname=?", shortname).Scan(&building.ID, &building.Name, &building.Shortname)
-
 	if err != nil {
 		return Building{}, err
 	}
