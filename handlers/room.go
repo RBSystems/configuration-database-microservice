@@ -54,6 +54,15 @@ func (handlerGroup *HandlerGroup) GetRoomsByBuilding(context echo.Context) error
 	return context.JSON(http.StatusOK, response)
 }
 
+func (handlerGroup *HandlerGroup) GetRoomByBuildingAndName(context echo.Context) error {
+	response, err := handlerGroup.Accessors.GetRoomByBuildingAndName(context.Param("building"), context.Param("room"))
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
 func (handlerGroup *HandlerGroup) MakeRoom(context echo.Context) error {
 	room := accessors.Room{}
 	err := context.Bind(&room)
@@ -61,7 +70,12 @@ func (handlerGroup *HandlerGroup) MakeRoom(context echo.Context) error {
 		return err
 	}
 
-	response, err := handlerGroup.Accessors.MakeRoom(room.Name, room.Building, room.VLAN)
+	building, err := handlerGroup.Accessors.GetBuildingByShortname(room.Building)
+	if err != nil {
+		return err
+	}
+
+	response, err := handlerGroup.Accessors.MakeRoom(room.Name, building.ID, room.VLAN)
 	if err != nil {
 		return context.String(http.StatusBadRequest, err.Error())
 	}

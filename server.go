@@ -15,7 +15,7 @@ import (
 func main() {
 	database := os.Getenv("CONFIGURATION_DATABASE_USERNAME") + ":" + os.Getenv("CONFIGURATION_DATABASE_PASSWORD") + "@tcp(" + os.Getenv("CONFIGURATION_DATABASE_HOST") + ":" + os.Getenv("CONFIGURATION_DATABASE_PORT") + ")/" + os.Getenv("CONFIGURATION_DATABASE_NAME")
 
-	// Construct a new accessor group and connects it to the database
+	// Constructs a new accessor group and connects it to the database
 	accessorGroup := new(accessors.AccessorGroup)
 	accessorGroup.Open(database)
 
@@ -33,6 +33,7 @@ func main() {
 	router.Get("/buildings/id/:id", handlerGroup.GetBuildingByID)
 	router.Get("/buildings/name/:name", handlerGroup.GetBuildingByName)
 	router.Get("/buildings/shortname/:shortname", handlerGroup.GetBuildingByShortname)
+	router.Get("/building/:building/room/:room", handlerGroup.GetRoomByBuildingAndName)
 
 	router.Post("/buildings", handlerGroup.MakeBuilding)
 
