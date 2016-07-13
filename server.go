@@ -14,7 +14,6 @@ import (
 
 func main() {
 	database := os.Getenv("CONFIGURATION_DATABASE_USERNAME") + ":" + os.Getenv("CONFIGURATION_DATABASE_PASSWORD") + "@tcp(" + os.Getenv("CONFIGURATION_DATABASE_HOST") + ":" + os.Getenv("CONFIGURATION_DATABASE_PORT") + ")/" + os.Getenv("CONFIGURATION_DATABASE_NAME")
-	log.Println(database)
 
 	// Construct a new accessor group and connects it to the database
 	accessorGroup := new(accessors.AccessorGroup)
@@ -36,6 +35,13 @@ func main() {
 	router.Get("/buildings/shortname/:shortname", handlerGroup.GetBuildingByShortname)
 
 	router.Post("/buildings", handlerGroup.MakeBuilding)
+
+	router.Get("/rooms", handlerGroup.GetAllRooms)
+	router.Get("/rooms/id/:id", handlerGroup.GetRoomByID)
+	router.Get("/rooms/name/:name", handlerGroup.GetRoomByName)
+	router.Get("/rooms/building/:building", handlerGroup.GetRoomsByBuilding)
+
+	router.Post("/rooms", handlerGroup.MakeRoom)
 
 	log.Println("The Configuration Database microservice is listening on " + port)
 	router.Run(fasthttp.New(port))
