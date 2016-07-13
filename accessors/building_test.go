@@ -22,7 +22,7 @@ func TestGetAllBuildings(test *testing.T) {
 
 	mock.ExpectQuery("SELECT (.+) FROM (.+)").WillReturnRows(rows)
 
-	buildings, err := accessorGroup.GetAllBuildings()
+	_, err = accessorGroup.GetAllBuildings()
 	if err != nil {
 		test.Error(err)
 	}
