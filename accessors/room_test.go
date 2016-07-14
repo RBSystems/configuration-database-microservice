@@ -8,10 +8,6 @@ import (
 )
 
 func TestGetAllRooms(test *testing.T) {
-	rows := sqlmock.NewRows([]string{"id", "shortname", "name", "vlan"}).
-		AddRow(1, "ITB", "1100A", 600).
-		AddRow(2, "CTB", "1000", 650)
-
 	database, mock, err := sqlmock.New()
 	if err != nil {
 		test.Fatal(err)
@@ -21,7 +17,8 @@ func TestGetAllRooms(test *testing.T) {
 	accessorGroup := new(AccessorGroup)
 	accessorGroup.Database = database
 
-	mock.ExpectQuery("SELECT rooms.id, buildings.shortname, rooms.name, rooms.vlan FROM rooms JOIN buildings ON rooms.building=buildings.ID").WillReturnRows(rows)
+	mock.ExpectQuery(`SELECT \* FROM buildings`).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "shortname"}).AddRow(1, "Information Technology Building", "ITB").AddRow(2, "Crabtree Building", "CTB"))
+	mock.ExpectQuery(`SELECT \* FROM rooms`).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "vlan", "building"}).AddRow(1, "1100A", 600, 1).AddRow(2, "1000", 650, 2))
 
 	_, err = accessorGroup.GetAllRooms()
 	if err != nil {
@@ -44,7 +41,8 @@ func TestGetAllRoomsFail(test *testing.T) {
 	accessorGroup := new(AccessorGroup)
 	accessorGroup.Database = database
 
-	mock.ExpectQuery("SELECT rooms.id, buildings.shortname, rooms.name, rooms.vlan FROM rooms JOIN buildings ON rooms.building=buildings.ID").WillReturnError(fmt.Errorf("ERROR"))
+	mock.ExpectQuery(`SELECT \* FROM buildings`).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "shortname"}).AddRow(1, "Information Technology Building", "ITB").AddRow(2, "Crabtree Building", "CTB"))
+	mock.ExpectQuery(`SELECT \* FROM rooms`).WillReturnError(fmt.Errorf("ERROR"))
 
 	_, err = accessorGroup.GetAllRooms()
 	if err == nil {
@@ -217,7 +215,7 @@ func TestMakeRoom(test *testing.T) {
 	mock.ExpectQuery(`SELECT \* FROM buildings WHERE shortname=\?`).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "shortname"}).AddRow(1, "Information Technology Building", "ITB"))
 	mock.ExpectExec(`INSERT INTO rooms \(name, building, vlan\) VALUES \(\?, \?, \?\)`).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectQuery(`SELECT \* FROM buildings WHERE shortname=\?`).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "shortname"}).AddRow(1, "Information Technology Building", "ITB"))
-	mock.ExpectQuery(`SELECT \* FROM rooms WHERE building=\? AND name=\?`).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "building", "vlan"}).AddRow(1, "1100A", "ITB", 600))
+	mock.ExpectQuery(`SELECT \* FROM rooms WHERE building=\? AND name=\?`).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "building", "vlan"}).AddRow(1, "1100A", 1, 600))
 
 	_, err = accessorGroup.MakeRoom("1100A", "ITB", 600)
 	if err != nil {
@@ -230,7 +228,7 @@ func TestMakeRoom(test *testing.T) {
 	}
 }
 
-func TestMakeRoomFail(test *testing.T) {
+func TestMakeRoomFail(test *testing.T) { // FIX IN A MINUTE
 	database, mock, err := sqlmock.New()
 	if err != nil {
 		test.Fatal(err)
