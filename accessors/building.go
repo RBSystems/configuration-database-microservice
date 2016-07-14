@@ -47,17 +47,6 @@ func (accessorGroup *AccessorGroup) GetBuildingByID(id int) (Building, error) {
 	return *building, nil
 }
 
-// GetBuildingByName returns a building from the database by name
-func (accessorGroup *AccessorGroup) GetBuildingByName(name string) (Building, error) {
-	building := &Building{}
-	err := accessorGroup.Database.QueryRow("SELECT * FROM buildings WHERE name=?", name).Scan(&building.ID, &building.Name, &building.Shortname)
-	if err != nil {
-		return Building{}, err
-	}
-
-	return *building, nil
-}
-
 // GetBuildingByShortname returns a building from the database by shortname
 func (accessorGroup *AccessorGroup) GetBuildingByShortname(shortname string) (Building, error) {
 	building := &Building{}
@@ -76,7 +65,7 @@ func (accessorGroup *AccessorGroup) MakeBuilding(name string, shortname string) 
 		return Building{}, err
 	}
 
-	building, err := accessorGroup.GetBuildingByName(name)
+	building, err := accessorGroup.GetBuildingByShortname(shortname)
 	if err != nil {
 		return Building{}, err
 	}

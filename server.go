@@ -31,7 +31,6 @@ func main() {
 
 	router.Get("/buildings", handlerGroup.GetAllBuildings)
 	router.Get("/buildings/id/:id", handlerGroup.GetBuildingByID)
-	router.Get("/buildings/name/:name", handlerGroup.GetBuildingByName)
 	router.Get("/buildings/shortname/:shortname", handlerGroup.GetBuildingByShortname)
 	router.Get("/building/:building/room/:room", handlerGroup.GetRoomByBuildingAndName)
 
@@ -39,7 +38,6 @@ func main() {
 
 	router.Get("/rooms", handlerGroup.GetAllRooms)
 	router.Get("/rooms/id/:id", handlerGroup.GetRoomByID)
-	router.Get("/rooms/name/:name", handlerGroup.GetRoomByName)
 	router.Get("/rooms/building/:building", handlerGroup.GetRoomsByBuilding)
 
 	router.Post("/rooms", handlerGroup.MakeRoom)

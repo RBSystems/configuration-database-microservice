@@ -31,15 +31,6 @@ func (handlerGroup *HandlerGroup) GetBuildingByID(context echo.Context) error {
 	return context.JSON(http.StatusOK, response)
 }
 
-func (handlerGroup *HandlerGroup) GetBuildingByName(context echo.Context) error {
-	response, err := handlerGroup.Accessors.GetBuildingByName(context.Param("name"))
-	if err != nil {
-		return context.String(http.StatusBadRequest, err.Error())
-	}
-
-	return context.JSON(http.StatusOK, response)
-}
-
 func (handlerGroup *HandlerGroup) GetBuildingByShortname(context echo.Context) error {
 	response, err := handlerGroup.Accessors.GetBuildingByShortname(context.Param("shortname"))
 	if err != nil {

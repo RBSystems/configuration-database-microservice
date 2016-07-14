@@ -1,5 +1,7 @@
 package accessors
 
+import "errors"
+
 type Room struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
@@ -38,21 +40,9 @@ func (accessorGroup *AccessorGroup) GetAllRooms() ([]Room, error) {
 }
 
 // GetRoomByID returns a room from the database by ID
-func (accessorGroup *AccessorGroup) GetRoomByID(ID int) (Room, error) {
+func (accessorGroup *AccessorGroup) GetRoomByID(id int) (Room, error) {
 	room := &Room{}
-	err := accessorGroup.Database.QueryRow("SELECT * FROM rooms WHERE ID=?", ID).Scan(&room.ID, &room.Name, &room.Building, &room.VLAN)
-
-	if err != nil {
-		return Room{}, err
-	}
-
-	return *room, nil
-}
-
-// GetRoomByName returns a room from the database by name
-func (accessorGroup *AccessorGroup) GetRoomByName(name string) (Room, error) {
-	room := &Room{}
-	err := accessorGroup.Database.QueryRow("SELECT * FROM rooms WHERE name=?", name).Scan(&room.ID, &room.Name, &room.Building, &room.VLAN)
+	err := accessorGroup.Database.QueryRow("SELECT * FROM rooms WHERE id=?", id).Scan(&room.ID, &room.Name, &room.Building, &room.VLAN)
 
 	if err != nil {
 		return Room{}, err
@@ -108,13 +98,18 @@ func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname s
 }
 
 // MakeRoom adds a room to the database
-func (accessorGroup *AccessorGroup) MakeRoom(name string, building int, vlan int) (Room, error) {
-	_, err := accessorGroup.Database.Query("INSERT INTO rooms (name, building, vlan) VALUES (?, ?, ?)", name, building, vlan)
+func (accessorGroup *AccessorGroup) MakeRoom(name string, buildingShortname string, vlan int) (Room, error) {
+	building, err := accessorGroup.GetBuildingByShortname(buildingShortname)
+	if err != nil {
+		return Room{}, errors.New("Could not find a building with the \"" + buildingShortname + "\" shortname")
+	}
+
+	_, err = accessorGroup.Database.Query("INSERT INTO rooms (name, building, vlan) VALUES (?, ?, ?)", name, building.ID, vlan)
 	if err != nil {
 		return Room{}, err
 	}
 
-	room, err := accessorGroup.GetRoomByName(name)
+	room, err := accessorGroup.GetRoomByBuildingAndName(building.Shortname, name)
 	if err != nil {
 		return Room{}, err
 	}
