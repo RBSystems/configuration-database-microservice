@@ -104,7 +104,7 @@ func (accessorGroup *AccessorGroup) MakeRoom(name string, buildingShortname stri
 		return Room{}, errors.New("Could not find a building with the \"" + buildingShortname + "\" shortname")
 	}
 
-	_, err = accessorGroup.Database.Query("INSERT INTO rooms (name, building, vlan) VALUES (?, ?, ?)", name, building.ID, vlan)
+	_, err = accessorGroup.Database.Exec("INSERT INTO rooms (name, building, vlan) VALUES (?, ?, ?)", name, building.ID, vlan)
 	if err != nil {
 		return Room{}, err
 	}

@@ -154,3 +154,50 @@ func TestGetBuildingByShortnameFail(test *testing.T) {
 		test.Error(err)
 	}
 }
+
+func TestMakeBuilding(test *testing.T) {
+	database, mock, err := sqlmock.New()
+	if err != nil {
+		test.Fatal(err)
+	}
+
+	// Constructs a new accessor group and connects it to the mock database
+	accessorGroup := new(AccessorGroup)
+	accessorGroup.Database = database
+
+	mock.ExpectExec(`INSERT INTO buildings \(name, shortname\) VALUES \(\?, \?\)`).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectQuery(`SELECT \* FROM buildings WHERE shortname=\?`).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "shortname"}).AddRow(1, "Information Technology Building", "ITB"))
+
+	_, err = accessorGroup.MakeBuilding("Information Technology Building", "ITB")
+	if err != nil {
+		test.Error(err)
+	}
+
+	err = mock.ExpectationsWereMet()
+	if err != nil {
+		test.Error(err)
+	}
+}
+
+func TestMakeBuildingFail(test *testing.T) {
+	database, mock, err := sqlmock.New()
+	if err != nil {
+		test.Fatal(err)
+	}
+
+	// Constructs a new accessor group and connects it to the mock database
+	accessorGroup := new(AccessorGroup)
+	accessorGroup.Database = database
+
+	mock.ExpectExec(`INSERT INTO buildings \(name, shortname\) VALUES \(\?, \?\)`).WillReturnError(fmt.Errorf("ERROR"))
+
+	_, err = accessorGroup.MakeBuilding("Information Technology Building", "ITB")
+	if err == nil {
+		test.Error(err)
+	}
+
+	err = mock.ExpectationsWereMet()
+	if err != nil {
+		test.Error(err)
+	}
+}
