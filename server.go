@@ -42,6 +42,8 @@ func main() {
 
 	router.Post("/rooms", handlerGroup.MakeRoom)
 
+	router.Get("/devices", handlerGroup.GetAllDevices)
+
 	log.Println("The Configuration Database microservice is listening on " + port)
 	router.Run(fasthttp.New(port))
 }

@@ -10,9 +10,10 @@ type Room struct {
 }
 
 type RoomRequest struct {
+	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	VLAN     int    `json:"vlan"`
-	Building string `json:"building"`
+	Building string `json:"building,omitempty"`
 }
 
 // GetAllRooms returns a list of rooms from the database

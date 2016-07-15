@@ -3,18 +3,62 @@ package accessors
 import "errors"
 
 type Device struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Address  string `json:"address"`
-	Room     int    `json:"room"`
-	Protocol string `json:"protocol"`
+	ID       int         `json:"id"`
+	Name     string      `json:"name"`
+	Address  string      `json:"address"`
+	Protocol string      `json:"protocol"`
+	Room     RoomRequest `json:"room"`
+	Building Building    `json:"building"`
 }
 
 // GetAllDevices returns a list of devices from the database
 func (accessorGroup *AccessorGroup) GetAllDevices() ([]Device, error) {
+	allBuildings := []Building{}
+
+	rows, err := accessorGroup.Database.Query("SELECT * FROM buildings")
+	if err != nil {
+		return []Device{}, err
+	}
+
+	for rows.Next() {
+		building := Building{}
+
+		err := rows.Scan(&building.ID, &building.Name, &building.Shortname)
+		if err != nil {
+			return []Device{}, err
+		}
+
+		allBuildings = append(allBuildings, building)
+	}
+
+	allRooms := []RoomRequest{}
+
+	rows, err = accessorGroup.Database.Query("SELECT rooms.id, rooms.name, rooms.vlan FROM rooms")
+	if err != nil {
+		return []Device{}, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		room := RoomRequest{}
+
+		err := rows.Scan(&room.ID, &room.Name, &room.VLAN)
+		if err != nil {
+			return []Device{}, err
+		}
+
+		allRooms = append(allRooms, room)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return []Device{}, err
+	}
+
 	allDevices := []Device{}
 
-	rows, err := accessorGroup.Database.Query("SELECT devices.id, devices.name, devices.address, rooms.name, devices.protocol FROM devices JOIN rooms ON devices.room=room.ID")
+	rows, err = accessorGroup.Database.Query("SELECT * FROM devices")
 	if err != nil {
 		return []Device{}, err
 	}
@@ -24,9 +68,23 @@ func (accessorGroup *AccessorGroup) GetAllDevices() ([]Device, error) {
 	for rows.Next() {
 		device := Device{}
 
-		err := rows.Scan(&device.ID, &device.Name, &device.Address, &device.Room, &device.Protocol)
+		err := rows.Scan(&device.ID, &device.Name, &device.Address, &device.Protocol, &device.Room.ID, &device.Building.ID)
 		if err != nil {
 			return []Device{}, err
+		}
+
+		for i := 0; i < len(allBuildings); i++ {
+			if allBuildings[i].ID == device.Building.ID {
+				device.Building = allBuildings[i]
+				break
+			}
+		}
+
+		for i := 0; i < len(allRooms); i++ {
+			if allRooms[i].ID == device.Room.ID {
+				device.Room = allRooms[i]
+				break
+			}
 		}
 
 		allDevices = append(allDevices, device)

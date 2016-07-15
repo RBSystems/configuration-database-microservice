@@ -1,9 +1,9 @@
 package accessors
 
 type Building struct {
-	ID        int    `json:"id"`
-	Name      string `json:"name"`
-	Shortname string `json:"shortname"`
+	ID        int    `json:"id,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Shortname string `json:"shortname,omitempty"`
 }
 
 // GetAllBuildings returns a list of buildings from the database
