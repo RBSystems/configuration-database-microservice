@@ -11,6 +11,14 @@ type Device struct {
 	Building Building    `json:"building"`
 }
 
+type DeviceRequest struct {
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	Protocol string `json:"protocol"`
+	Building string `json:"building"`
+	Room     string `json:"room"`
+}
+
 // GetAllDevices returns a list of devices from the database
 func (accessorGroup *AccessorGroup) GetAllDevices() ([]Device, error) {
 	allBuildings := []Building{}
