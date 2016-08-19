@@ -24,7 +24,7 @@ type RoomRequest struct {
 func (accessorGroup *AccessorGroup) GetAllRooms() ([]Room, error) {
 	allBuildings := []Building{}
 
-	rows, err := accessorGroup.Database.Query("SELECT * FROM buildings")
+	rows, err := accessorGroup.Database.Query("SELECT * FROM Buildings")
 	if err != nil {
 		return []Room{}, err
 	}
@@ -42,7 +42,7 @@ func (accessorGroup *AccessorGroup) GetAllRooms() ([]Room, error) {
 
 	allRooms := []Room{}
 
-	rows, err = accessorGroup.Database.Query("SELECT * FROM rooms")
+	rows, err = accessorGroup.Database.Query("SELECT * FROM Rooms")
 	if err != nil {
 		return []Room{}, err
 	}

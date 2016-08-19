@@ -16,6 +16,15 @@ func (handlerGroup *HandlerGroup) GetAllDevices(context echo.Context) error {
 	return context.JSON(http.StatusOK, response)
 }
 
+func (handlerGroup *HandlerGroup) GetDevicesByBuildingAndRoom(context echo.Context) error {
+	response, err := handlerGroup.Accessors.GetDevicesByBuildingAndRoom(context.Param("building"), context.Param("room"))
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
 func (handlerGroup *HandlerGroup) GetDeviceByBuildingAndRoomAndName(context echo.Context) error {
 	response, err := handlerGroup.Accessors.GetDeviceByBuildingAndRoomAndName(context.Param("building"), context.Param("room"), context.Param("device"))
 	if err != nil {

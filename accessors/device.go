@@ -110,6 +110,33 @@ func (accessorGroup *AccessorGroup) GetAllDevices() ([]Device, error) {
 	return allDevices, nil
 }
 
+func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoom(buildingShortname string, roomName string) ([]Device, error) {
+	room, err := accessorGroup.GetRoomByBuildingAndName(buildingShortname, roomName)
+	if err != nil {
+		return []Device{}, errors.New("Could not find a room named \"" + roomName + "\" in a building named \"" + buildingShortname + "\"")
+	}
+
+	allDevices := []Device{}
+
+	rows, err := accessorGroup.Database.Query("SELECT * FROM Devices WHERE buildingID=? AND roomID=?", room.Building.ID, room.ID)
+	if err != nil {
+		return []Device{}, err
+	}
+
+	for rows.Next() {
+		device := Device{}
+
+		err := rows.Scan(&device.ID, &device.Name, &device.Address, &device.Input, &device.Output, &device.Building.ID, &device.Room.ID, &device.Type, &device.Power, &device.Responding)
+		if err != nil {
+			return []Device{}, err
+		}
+
+		allDevices = append(allDevices, device)
+	}
+
+	return allDevices, nil
+}
+
 func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) (Device, error) {
 	room, err := accessorGroup.GetRoomByBuildingAndName(buildingShortname, roomName)
 	if err != nil {
@@ -117,7 +144,7 @@ func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingSh
 	}
 
 	device := &Device{}
-	err = accessorGroup.Database.QueryRow("SELECT * FROM Devices WHERE buildingID=? AND roomID=?", room.Building.ID, room.ID).Scan(&device.ID, &device.Name, &device.Address, &device.Input, &device.Output, &device.Building.ID, &device.Room.ID, &device.Type, &device.Power, &device.Responding)
+	err = accessorGroup.Database.QueryRow("SELECT * FROM Devices WHERE buildingID=? AND roomID=? AND name=?", room.Building.ID, room.ID, deviceName).Scan(&device.ID, &device.Name, &device.Address, &device.Input, &device.Output, &device.Building.ID, &device.Room.ID, &device.Type, &device.Power, &device.Responding)
 	if err != nil {
 		return Device{}, err
 	}
