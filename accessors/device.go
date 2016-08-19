@@ -1,30 +1,40 @@
 package accessors
 
-import "errors"
+import (
+	"errors"
+	"log"
+)
 
 type Device struct {
 	ID         int       `json:"id"`
 	Name       string    `json:"name"`
 	Address    string    `json:"address"`
-	Commands   []Command `json:"commands"`
-	Input      bool
-	Output     bool
-	Building   Building
-	Room       Room
-	Type       int
-	Power      int
-	Responding bool
+	Input      bool      `json:"input"`
+	Output     bool      `json:"output"`
+	Building   Building  `json:"building"`
+	Room       Room      `json:"room"`
+	Type       int       `json:"type"`
+	Power      int       `json:"power"`
+	Responding bool      `json:"responding"`
+	Ports      []Port    `json:"ports,omitempty"`
+	Commands   []Command `json:"commands,omitempty"`
+}
+
+type Port struct {
+	Source      string `json:"source"`
+	Name        string `json:"name"`
+	Destination string `json:"destination"`
 }
 
 type Command struct {
-	Name         string
-	Endpoint     Endpoint
-	Microservice string
+	Name         string   `json:"name"`
+	Endpoint     Endpoint `json:"endpoint"`
+	Microservice string   `json:"microservice"`
 }
 
 type Endpoint struct {
-	Name string
-	Path string
+	Name string `json:"name"`
+	Path string `json:"path"`
 }
 
 type DeviceRequest struct {
@@ -153,10 +163,11 @@ func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(bu
 	allCommands := []Command{}
 
 	rows, err := accessorGroup.Database.Query(`SELECT Commands.name as commandName, Endpoints.name as endpointName, Endpoints.path as endpointPath, Microservices.address as microserviceAddress
-  FROM Devices JOIN DeviceCommands on Devices.deviceID = DeviceCommands.deviceID JOIN Commands on DeviceCommands.commandID = Commands.commandID JOIN Endpoints on DeviceCommands.endpointID = Endpoints.endpointID JOIN Microservices ON DeviceCommands.microserviceID = Microservices.microserviceID
-  JOIN Rooms ON Rooms.roomID=Devices.roomID
-  JOIN Buildings ON Rooms.buildingID=Buildings.buildingID
-  WHERE Rooms.name=? AND Buildings.shortName=? AND Devices.name=?`, roomName, buildingShortname, deviceName)
+    FROM Devices
+    JOIN DeviceCommands on Devices.deviceID = DeviceCommands.deviceID JOIN Commands on DeviceCommands.commandID = Commands.commandID JOIN Endpoints on DeviceCommands.endpointID = Endpoints.endpointID JOIN Microservices ON DeviceCommands.microserviceID = Microservices.microserviceID
+    JOIN Rooms ON Rooms.roomID=Devices.roomID
+    JOIN Buildings ON Rooms.buildingID=Buildings.buildingID
+    WHERE Rooms.name=? AND Buildings.shortName=? AND Devices.name=?`, roomName, buildingShortname, deviceName)
 	if err != nil {
 		return []Command{}, err
 	}
@@ -173,6 +184,36 @@ func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(bu
 	}
 
 	return allCommands, nil
+}
+
+func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]Port, error) {
+	allPorts := []Port{}
+
+	rows, err := accessorGroup.Database.Query(`SELECT srcDevice.Name as sourceName, Ports.Port as portName, destDevice.Name as DestinationDevice FROM Ports
+    JOIN PortConfiguration ON Ports.PortID = PortConfiguration.PortID
+    JOIN Devices as srcDevice on srcDevice.DeviceID = PortConfiguration.sourceDeviceID
+    JOIN Devices as destDevice on destDevice.DeviceID = PortConfiguration.destinationDeviceID
+    JOIN Rooms ON Rooms.roomID=destDevice.roomID
+    JOIN Buildings ON Rooms.buildingID=Buildings.buildingID
+    WHERE Rooms.name=? AND Buildings.shortName=? AND destDevice.name=?`, roomName, buildingShortname, deviceName)
+	if err != nil {
+		log.Print(err)
+		return []Port{}, err
+	}
+
+	for rows.Next() {
+		port := Port{}
+
+		err := rows.Scan(&port.Source, &port.Name, &port.Destination)
+		if err != nil {
+			log.Print(err)
+			return []Port{}, err
+		}
+
+		allPorts = append(allPorts, port)
+	}
+
+	return allPorts, nil
 }
 
 func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) (Device, error) {
@@ -193,6 +234,13 @@ func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingSh
 	}
 
 	device.Commands = commands
+
+	ports, err := accessorGroup.GetDevicePortsByBuildingAndRoomAndName(buildingShortname, roomName, deviceName)
+	if err != nil {
+		return Device{}, errors.New("Poots Could not find a device named \"" + deviceName + "\" in a room named \"" + roomName + "\" in a building named \"" + buildingShortname + "\"")
+	}
+
+	device.Ports = ports
 
 	return *device, nil
 }
