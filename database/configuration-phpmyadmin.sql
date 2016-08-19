@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Aug 18, 2016 at 11:03 PM
+-- Generation Time: Aug 19, 2016 at 05:20 PM
 -- Server version: 10.1.14-MariaDB-1~jessie
 -- PHP Version: 5.6.21
 
@@ -108,6 +108,8 @@ CREATE TABLE `Devices` (
   `deviceID` int(11) NOT NULL,
   `name` varchar(256) DEFAULT NULL,
   `address` varchar(256) DEFAULT NULL,
+  `input` tinyint(1) DEFAULT NULL,
+  `output` tinyint(1) DEFAULT NULL,
   `buildingID` int(11) DEFAULT NULL,
   `roomID` int(11) DEFAULT NULL,
   `typeID` int(11) DEFAULT NULL,
@@ -163,6 +165,31 @@ CREATE TABLE `Microservices` (
   `microserviceID` int(11) NOT NULL,
   `name` varchar(256) DEFAULT NULL,
   `address` text,
+  `description` text
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `PortConfiguration`
+--
+
+CREATE TABLE `PortConfiguration` (
+  `portConfigurationID` int(11) NOT NULL,
+  `destinationDeviceID` int(11) DEFAULT NULL,
+  `portID` int(11) DEFAULT NULL,
+  `sourceDeviceID` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `Ports`
+--
+
+CREATE TABLE `Ports` (
+  `portID` int(11) NOT NULL,
+  `port` varchar(256) DEFAULT NULL,
   `description` text
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -280,6 +307,21 @@ ALTER TABLE `Microservices`
   ADD PRIMARY KEY (`microserviceID`);
 
 --
+-- Indexes for table `PortConfiguration`
+--
+ALTER TABLE `PortConfiguration`
+  ADD PRIMARY KEY (`portConfigurationID`),
+  ADD KEY `destinationDeviceID` (`destinationDeviceID`),
+  ADD KEY `portID` (`portID`),
+  ADD KEY `sourceDeviceID` (`sourceDeviceID`);
+
+--
+-- Indexes for table `Ports`
+--
+ALTER TABLE `Ports`
+  ADD PRIMARY KEY (`portID`);
+
+--
 -- Indexes for table `PowerState`
 --
 ALTER TABLE `PowerState`
@@ -356,6 +398,16 @@ ALTER TABLE `Endpoints`
 ALTER TABLE `Microservices`
   MODIFY `microserviceID` int(11) NOT NULL AUTO_INCREMENT;
 --
+-- AUTO_INCREMENT for table `PortConfiguration`
+--
+ALTER TABLE `PortConfiguration`
+  MODIFY `portConfigurationID` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `Ports`
+--
+ALTER TABLE `Ports`
+  MODIFY `portID` int(11) NOT NULL AUTO_INCREMENT;
+--
 -- AUTO_INCREMENT for table `PowerState`
 --
 ALTER TABLE `PowerState`
@@ -407,6 +459,14 @@ ALTER TABLE `Devices`
 ALTER TABLE `Displays`
   ADD CONSTRAINT `Displays_ibfk_1` FOREIGN KEY (`deviceID`) REFERENCES `Devices` (`deviceID`),
   ADD CONSTRAINT `Displays_ibfk_2` FOREIGN KEY (`deviceRoleDefinitionID`) REFERENCES `DeviceRoleDefinition` (`deviceRoleDefinitionID`);
+
+--
+-- Constraints for table `PortConfiguration`
+--
+ALTER TABLE `PortConfiguration`
+  ADD CONSTRAINT `PortConfiguration_ibfk_1` FOREIGN KEY (`destinationDeviceID`) REFERENCES `Devices` (`deviceID`),
+  ADD CONSTRAINT `PortConfiguration_ibfk_2` FOREIGN KEY (`portID`) REFERENCES `Ports` (`portID`),
+  ADD CONSTRAINT `PortConfiguration_ibfk_3` FOREIGN KEY (`sourceDeviceID`) REFERENCES `Devices` (`deviceID`);
 
 --
 -- Constraints for table `Rooms`
