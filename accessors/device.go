@@ -3,9 +3,10 @@ package accessors
 import "errors"
 
 type Device struct {
-	ID         int    `json:"id"`
-	Name       string `json:"name"`
-	Address    string `json:"address"`
+	ID         int       `json:"id"`
+	Name       string    `json:"name"`
+	Address    string    `json:"address"`
+	Commands   []Command `json:"commands"`
 	Input      bool
 	Output     bool
 	Building   Building
@@ -13,6 +14,17 @@ type Device struct {
 	Type       int
 	Power      int
 	Responding bool
+}
+
+type Command struct {
+	Name         string
+	Endpoint     Endpoint
+	Microservice string
+}
+
+type Endpoint struct {
+	Name string
+	Path string
 }
 
 type DeviceRequest struct {
@@ -137,6 +149,32 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoom(buildingShortnam
 	return allDevices, nil
 }
 
+func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]Command, error) {
+	allCommands := []Command{}
+
+	rows, err := accessorGroup.Database.Query(`SELECT Commands.name as commandName, Endpoints.name as endpointName, Endpoints.path as endpointPath, Microservices.address as microserviceAddress
+  FROM Devices JOIN DeviceCommands on Devices.deviceID = DeviceCommands.deviceID JOIN Commands on DeviceCommands.commandID = Commands.commandID JOIN Endpoints on DeviceCommands.endpointID = Endpoints.endpointID JOIN Microservices ON DeviceCommands.microserviceID = Microservices.microserviceID
+  JOIN Rooms ON Rooms.roomID=Devices.roomID
+  JOIN Buildings ON Rooms.buildingID=Buildings.buildingID
+  WHERE Rooms.name=? AND Buildings.shortName=? AND Devices.name=?`, roomName, buildingShortname, deviceName)
+	if err != nil {
+		return []Command{}, err
+	}
+
+	for rows.Next() {
+		command := Command{}
+
+		err := rows.Scan(&command.Name, &command.Endpoint.Name, &command.Endpoint.Path, &command.Microservice)
+		if err != nil {
+			return []Command{}, err
+		}
+
+		allCommands = append(allCommands, command)
+	}
+
+	return allCommands, nil
+}
+
 func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) (Device, error) {
 	room, err := accessorGroup.GetRoomByBuildingAndName(buildingShortname, roomName)
 	if err != nil {
@@ -148,6 +186,13 @@ func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingSh
 	if err != nil {
 		return Device{}, err
 	}
+
+	commands, err := accessorGroup.GetDeviceCommandsByBuildingAndRoomAndName(buildingShortname, roomName, deviceName)
+	if err != nil {
+		return Device{}, errors.New("Could not find a device named \"" + deviceName + "\" in a room named \"" + roomName + "\" in a building named \"" + buildingShortname + "\"")
+	}
+
+	device.Commands = commands
 
 	return *device, nil
 }
