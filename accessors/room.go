@@ -2,14 +2,14 @@ package accessors
 
 import "errors"
 
-type Room struct {
+type room struct {
 	ID       int      `json:"id"`
 	Name     string   `json:"name"`
 	VLAN     int      `json:"vlan"`
 	Building Building `json:"building"`
 }
 
-type RoomRequest struct {
+type roomRequest struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	VLAN     int    `json:"vlan"`

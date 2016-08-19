@@ -113,7 +113,8 @@ func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingSh
 	}
 
 	device := &Device{}
-	err = accessorGroup.Database.QueryRow("SELECT * FROM devices WHERE building=? AND room=?", room.Building, room.ID).Scan(&device.ID, &device.Name, &device.Address, &device.Room, &device.Protocol)
+	err = accessorGroup.Database.QueryRow("SELECT * FROM devices WHERE building=? AND room=?", room.Building, room.ID).
+		Scan(&device.ID, &device.Name, &device.Address, &device.Room, &device.Protocol)
 	if err != nil {
 		return Device{}, err
 	}
