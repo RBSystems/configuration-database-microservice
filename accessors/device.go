@@ -3,12 +3,16 @@ package accessors
 import "errors"
 
 type Device struct {
-	ID       int         `json:"id"`
-	Name     string      `json:"name"`
-	Address  string      `json:"address"`
-	Protocol string      `json:"protocol"`
-	Room     RoomRequest `json:"room"`
-	Building Building    `json:"building"`
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	Address    string `json:"address"`
+	Input      bool
+	Output     bool
+	Building   Building
+	Room       Room
+	Type       int
+	Power      int
+	Responding bool
 }
 
 type DeviceRequest struct {
@@ -23,7 +27,7 @@ type DeviceRequest struct {
 func (accessorGroup *AccessorGroup) GetAllDevices() ([]Device, error) {
 	allBuildings := []Building{}
 
-	rows, err := accessorGroup.Database.Query("SELECT * FROM buildings")
+	rows, err := accessorGroup.Database.Query("SELECT * FROM Devices")
 	if err != nil {
 		return []Device{}, err
 	}
@@ -76,7 +80,7 @@ func (accessorGroup *AccessorGroup) GetAllDevices() ([]Device, error) {
 	for rows.Next() {
 		device := Device{}
 
-		err := rows.Scan(&device.ID, &device.Name, &device.Address, &device.Protocol, &device.Room.ID, &device.Building.ID)
+		err := rows.Scan(&device.ID, &device.Name, &device.Address, &device.Room.ID, &device.Building.ID)
 		if err != nil {
 			return []Device{}, err
 		}
@@ -90,7 +94,7 @@ func (accessorGroup *AccessorGroup) GetAllDevices() ([]Device, error) {
 
 		for i := 0; i < len(allRooms); i++ {
 			if allRooms[i].ID == device.Room.ID {
-				device.Room = allRooms[i]
+				// device.Room = allRooms[i]
 				break
 			}
 		}
@@ -113,8 +117,7 @@ func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingSh
 	}
 
 	device := &Device{}
-	err = accessorGroup.Database.QueryRow("SELECT * FROM devices WHERE building=? AND room=?", room.Building, room.ID).
-		Scan(&device.ID, &device.Name, &device.Address, &device.Room, &device.Protocol)
+	err = accessorGroup.Database.QueryRow("SELECT * FROM Devices WHERE buildingID=? AND roomID=?", room.Building.ID, room.ID).Scan(&device.ID, &device.Name, &device.Address, &device.Input, &device.Output, &device.Building.ID, &device.Room.ID, &device.Type, &device.Power, &device.Responding)
 	if err != nil {
 		return Device{}, err
 	}

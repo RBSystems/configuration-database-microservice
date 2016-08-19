@@ -32,14 +32,14 @@ func main() {
 	router.Get("/buildings", handlerGroup.GetAllBuildings)
 	router.Get("/buildings/id/:id", handlerGroup.GetBuildingByID)
 	router.Get("/buildings/shortname/:shortname", handlerGroup.GetBuildingByShortname)
-	router.Get("/building/:building/room/:room", handlerGroup.GetRoomByBuildingAndName)
-	router.Get("/building/:building/room/:room/device/:device", handlerGroup.GetDeviceByBuildingAndRoomAndName)
+	router.Get("/buildings/:building/rooms/:room", handlerGroup.GetRoomByBuildingAndName)
+	router.Get("/buildings/:building/rooms/:room/devices/:device", handlerGroup.GetDeviceByBuildingAndRoomAndName)
 
 	router.Post("/buildings", handlerGroup.MakeBuilding)
 
 	router.Get("/rooms", handlerGroup.GetAllRooms)
 	router.Get("/rooms/id/:id", handlerGroup.GetRoomByID)
-	router.Get("/rooms/building/:building", handlerGroup.GetRoomsByBuilding)
+	router.Get("/rooms/buildings/:building", handlerGroup.GetRoomsByBuilding)
 
 	router.Post("/rooms", handlerGroup.MakeRoom)
 

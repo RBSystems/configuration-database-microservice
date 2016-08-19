@@ -3,10 +3,14 @@ package accessors
 import "errors"
 
 type Room struct {
-	ID       int      `json:"id"`
-	Name     string   `json:"name"`
-	VLAN     int      `json:"vlan"`
-	Building Building `json:"building"`
+	ID                 int      `json:"id"`
+	Name               string   `json:"name"`
+	Description        string   `json:"description"`
+	Building           Building `json:"building"`
+	CurrentVideoInput  int
+	CurrentAudioInput  int
+	CurrentVideoOutput int
+	CurrentAudioOutput int
 }
 
 type RoomRequest struct {
@@ -48,7 +52,7 @@ func (accessorGroup *AccessorGroup) GetAllRooms() ([]Room, error) {
 	for rows.Next() {
 		room := Room{}
 
-		err := rows.Scan(&room.ID, &room.Name, &room.Building.ID, &room.VLAN)
+		err := rows.Scan(&room.ID, &room.Name, &room.Building.ID, &room.Description)
 		if err != nil {
 			return []Room{}, err
 		}
@@ -75,7 +79,7 @@ func (accessorGroup *AccessorGroup) GetAllRooms() ([]Room, error) {
 func (accessorGroup *AccessorGroup) GetRoomByID(id int) (Room, error) {
 	room := &Room{}
 
-	err := accessorGroup.Database.QueryRow("SELECT * FROM rooms WHERE id=?", id).Scan(&room.ID, &room.Name, &room.Building.ID, &room.VLAN)
+	err := accessorGroup.Database.QueryRow("SELECT * FROM rooms WHERE id=?", id).Scan(&room.ID, &room.Name, &room.Building.ID, &room.Description)
 	if err != nil {
 		return Room{}, err
 	}
@@ -87,7 +91,7 @@ func (accessorGroup *AccessorGroup) GetRoomByID(id int) (Room, error) {
 func (accessorGroup *AccessorGroup) GetRoomsByBuilding(building int) ([]Room, error) {
 	allRooms := []Room{}
 
-	rows, err := accessorGroup.Database.Query("SELECT * FROM rooms WHERE building=?", building)
+	rows, err := accessorGroup.Database.Query("SELECT * FROM Rooms WHERE buildingID=?", building)
 	if err != nil {
 		return []Room{}, err
 	}
@@ -97,7 +101,7 @@ func (accessorGroup *AccessorGroup) GetRoomsByBuilding(building int) ([]Room, er
 	for rows.Next() {
 		room := Room{}
 
-		err := rows.Scan(&room.ID, &room.Name, &room.Building.ID, &room.VLAN)
+		err := rows.Scan(&room.ID, &room.Name, &room.Building.ID, &room.Description)
 		if err != nil {
 			return []Room{}, err
 		}
@@ -123,7 +127,7 @@ func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname s
 	room := &Room{}
 	room.Building = building
 
-	err = accessorGroup.Database.QueryRow("SELECT * FROM rooms WHERE building=? AND name=?", building.ID, name).Scan(&room.ID, &room.Name, &room.Building.ID, &room.VLAN)
+	err = accessorGroup.Database.QueryRow("SELECT * FROM Rooms WHERE buildingID=? AND name=?", building.ID, name).Scan(&room.ID, &room.Name, &room.Building.ID, &room.Description, &room.CurrentAudioInput, &room.CurrentAudioOutput, &room.CurrentVideoInput, &room.CurrentVideoOutput)
 	if err != nil {
 		return Room{}, err
 	}
