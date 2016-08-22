@@ -6,6 +6,7 @@ import (
 
 	"github.com/byuoitav/configuration-database-microservice/accessors"
 	"github.com/byuoitav/configuration-database-microservice/handlers"
+	"github.com/byuoitav/wso2jwt"
 	"github.com/jessemillar/health"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/fasthttp"
@@ -26,28 +27,31 @@ func main() {
 	port := ":8006"
 	router := echo.New()
 	router.Pre(middleware.RemoveTrailingSlash())
+	router.Use(middleware.CORS())
 
 	router.Get("/health", health.Check)
 
-	router.Get("/buildings", handlerGroup.GetAllBuildings)
-	router.Get("/buildings/id/:id", handlerGroup.GetBuildingByID)
-	router.Get("/buildings/shortname/:shortname", handlerGroup.GetBuildingByShortname)
-	router.Get("/buildings/:building/rooms/:room", handlerGroup.GetRoomByBuildingAndName)
-	router.Get("/buildings/:building/rooms/:room/devices", handlerGroup.GetDevicesByBuildingAndRoom)
-	router.Get("/buildings/:building/rooms/:room/devices/role/:role", handlerGroup.GetDevicesByBuildingAndRoomAndRole)
-	router.Get("/buildings/:building/rooms/:room/devices/:device", handlerGroup.GetDeviceByBuildingAndRoomAndName)
+	router.Get("/buildings", handlerGroup.GetAllBuildings, wso2jwt.ValidateJWT())
+	router.Get("/buildings/id/:id", handlerGroup.GetBuildingByID, wso2jwt.ValidateJWT())
+	router.Get("/buildings/shortname/:shortname", handlerGroup.GetBuildingByShortname, wso2jwt.ValidateJWT())
+	router.Get("/buildings/:building/rooms/:room", handlerGroup.GetRoomByBuildingAndName, wso2jwt.ValidateJWT())
+	router.Get("/buildings/:building/rooms/:room/devices", handlerGroup.GetDevicesByBuildingAndRoom, wso2jwt.ValidateJWT())
+	router.Get("/buildings/:building/rooms/:room/devices/role/:role", handlerGroup.GetDevicesByBuildingAndRoomAndRole, wso2jwt.ValidateJWT())
+	router.Get("/buildings/:building/rooms/:room/devices/:device", handlerGroup.GetDeviceByBuildingAndRoomAndName, wso2jwt.ValidateJWT())
 
-	router.Post("/buildings", handlerGroup.MakeBuilding)
+	router.Post("/buildings", handlerGroup.MakeBuilding, wso2jwt.ValidateJWT())
 
-	router.Get("/rooms", handlerGroup.GetAllRooms)
-	router.Get("/rooms/id/:id", handlerGroup.GetRoomByID)
-	router.Get("/rooms/buildings/:building", handlerGroup.GetRoomsByBuilding)
+	router.Get("/rooms", handlerGroup.GetAllRooms, wso2jwt.ValidateJWT())
+	router.Get("/rooms/id/:id", handlerGroup.GetRoomByID, wso2jwt.ValidateJWT())
+	router.Get("/rooms/buildings/:building", handlerGroup.GetRoomsByBuilding, wso2jwt.ValidateJWT())
 
-	router.Post("/rooms", handlerGroup.MakeRoom)
+	router.Post("/rooms", handlerGroup.MakeRoom, wso2jwt.ValidateJWT())
 
-	router.Get("/devices", handlerGroup.GetAllDevices)
-	router.Post("/devices", handlerGroup.MakeDevice)
+	router.Get("/devices", handlerGroup.GetAllDevices, wso2jwt.ValidateJWT())
+	router.Post("/devices", handlerGroup.MakeDevice, wso2jwt.ValidateJWT())
 
 	log.Println("The Configuration Database microservice is listening on " + port)
-	router.Run(fasthttp.New(port))
+	server := fasthttp.New(port)
+	server.ReadBufferSize = 1024 * 10 // Needed to interface properly with WSO2
+	router.Run(server)
 }
