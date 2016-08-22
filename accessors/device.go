@@ -277,7 +277,7 @@ func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(bu
 func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]Port, error) {
 	allPorts := []Port{}
 
-	rows, err := accessorGroup.Database.Query(`SELECT srcDevice.Name as sourceName, Ports.Port as portName, destDevice.Name as DestinationDevice FROM Ports
+	rows, err := accessorGroup.Database.Query(`SELECT srcDevice.Name as sourceName, Ports.name as portName, destDevice.Name as DestinationDevice FROM Ports
     JOIN PortConfiguration ON Ports.PortID = PortConfiguration.PortID
     JOIN Devices as srcDevice on srcDevice.DeviceID = PortConfiguration.sourceDeviceID
     JOIN Devices as destDevice on destDevice.DeviceID = PortConfiguration.destinationDeviceID
