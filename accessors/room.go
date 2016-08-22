@@ -7,10 +7,10 @@ type Room struct {
 	Name               string   `json:"name"`
 	Description        string   `json:"description"`
 	Building           Building `json:"building"`
-	CurrentVideoInput  int
-	CurrentAudioInput  int
-	CurrentVideoOutput int
-	CurrentAudioOutput int
+	CurrentVideoInput  int      `json:"currentVideoInput"`
+	CurrentAudioInput  int      `json:"currentAudioInput"`
+	CurrentVideoOutput int      `json:"currentVideoOutput"`
+	CurrentAudioOutput int      `json:"currentAudioOutput"`
 }
 
 type RoomRequest struct {

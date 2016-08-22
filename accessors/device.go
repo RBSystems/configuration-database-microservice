@@ -71,29 +71,29 @@ Example 2:
 */
 func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters ...interface{}) ([]Device, error) {
 	baseQuery := `SELECT Devices.deviceID,
-	Devices.Name as deviceName,
-	Devices.address as deviceAddress,
-	Devices.input,
-	Devices.output,
-	Devices.Responding,
-	Rooms.roomID,
-	Rooms.name as roomName,
-	Rooms.description as roomDescription,
-	Buildings.buildingID,
-	Buildings.name as buildingName,
-	Buildings.shortName as buildingShortname,
-	Buildings.description as buildingDescription,
-	DeviceTypes.name as type,
-	PowerState.name as power
-	FROM Devices
-	JOIN Rooms on Rooms.roomID = Devices.roomID
-	JOIN Buildings on Buildings.buildingID = Devices.buildingID
-	JOIN DeviceTypes on Devices.typeID = DeviceTypes.deviceTypeID
-	JOIN PowerState on PowerState.powerStateID = Devices.powerID
-	`
+  	Devices.Name as deviceName,
+  	Devices.address as deviceAddress,
+  	Devices.input,
+  	Devices.output,
+  	Devices.Responding,
+  	Rooms.roomID,
+  	Rooms.name as roomName,
+  	Rooms.description as roomDescription,
+  	Buildings.buildingID,
+  	Buildings.name as buildingName,
+  	Buildings.shortName as buildingShortname,
+  	Buildings.description as buildingDescription,
+  	DeviceTypes.name as type,
+  	PowerState.name as power
+  	FROM Devices
+  	JOIN Rooms on Rooms.roomID = Devices.roomID
+  	JOIN Buildings on Buildings.buildingID = Devices.buildingID
+  	JOIN DeviceTypes on Devices.typeID = DeviceTypes.deviceTypeID
+  	JOIN PowerState on PowerState.powerStateID = Devices.powerID`
+
 	allDevices := []Device{}
 
-	rows, err := accessorGroup.Database.Query(baseQuery+query, parameters...)
+	rows, err := accessorGroup.Database.Query(baseQuery+" "+query, parameters...)
 	if err != nil {
 		return []Device{}, err
 	}
@@ -121,6 +121,17 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 		if err != nil {
 			return []Device{}, err
 		}
+
+		device.Commands, err = accessorGroup.GetDeviceCommandsByBuildingAndRoomAndName(device.Building.Shortname, device.Room.Name, device.Name)
+		if err != nil {
+			return []Device{}, err
+		}
+
+		device.Ports, err = accessorGroup.GetDevicePortsByBuildingAndRoomAndName(device.Building.Shortname, device.Room.Name, device.Name)
+		if err != nil {
+			return []Device{}, err
+		}
+
 		allDevices = append(allDevices, device)
 	}
 
@@ -215,7 +226,7 @@ func (accessorGroup *AccessorGroup) GetAllDevices() ([]Device, error) {
 }
 
 func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingShortname string, roomName string, roleName string) ([]Device, error) {
-	return accessorGroup.GetDevicesByQuery(` JOIN DeviceRole on DeviceRole.deviceID = Devices.deviceID
+	return accessorGroup.GetDevicesByQuery(`JOIN DeviceRole on DeviceRole.deviceID = Devices.deviceID
 		JOIN DeviceRoleDefinition on DeviceRole.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID
 		WHERE Rooms.name LIKE ? AND Buildings.shortname LIKE ? AND DeviceRoleDefinition.name LIKE ?`, roomName, buildingShortname, roleName)
 }
