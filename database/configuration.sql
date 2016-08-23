@@ -184,6 +184,17 @@ CREATE TABLE `PortConfiguration` (
     REFERENCES Devices(DeviceID)
 );
 
+CREATE TABLE `DevicePowerState` (
+  `devicePowerStateID` int NOT NULL AUTO_INCREMENT,
+  `deviceID` int,
+  `powerStateID` int,
+  PRIMARY KEY (devicePowerStateID),
+  FOREIGN KEY (deviceID)
+    REFERENCES Devices(deviceID),
+  FOREIGN KEY (powerStateID)
+    REFERENCES PowerState(powerStateID)
+);
+
 ALTER TABLE Devices
 ADD FOREIGN KEY (roomID)
   REFERENCES Rooms(roomID);
