@@ -422,22 +422,22 @@ func (AccessorGroup *AccessorGroup) GetAudioInformationForDevices(devices []Devi
 }
 
 func (AccessorGroup *AccessorGroup) GetDisplayInformationForDevices(devices []Device) ([]Device, error) {
-	// for _, val := range *devices {
-	// 	query := "SELECT blanked FROM Displays where deviceID = ?"
-	//
-	// 	rows, err := AccessorGroup.Database.Query(query, val.ID)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	//
-	// 	for rows.Next() {
-	// 		err = rows.Scan(&val.Blanked)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
-	return []Device{}, nil
+	for indx := 0; indx < len(devices); indx++ {
+		query := "SELECT blanked FROM Displays where deviceID = ?"
+
+		rows, err := AccessorGroup.Database.Query(query, devices[indx].ID)
+		if err != nil {
+			return []Device{}, err
+		}
+		log.Printf("Found some items.\n")
+		for rows.Next() {
+			err = rows.Scan(&devices[indx].Blanked)
+			if err != nil {
+				return []Device{}, err
+			}
+		}
+	}
+	return devices, nil
 }
 
 // MakeDevice adds a device to the database
