@@ -6,18 +6,19 @@ import (
 )
 
 type Device struct {
-	ID         int       `json:"id"`
-	Name       string    `json:"name"`
-	Address    string    `json:"address"`
-	Input      bool      `json:"input"`
-	Output     bool      `json:"output"`
-	Building   Building  `json:"building"`
-	Room       Room      `json:"room"`
-	Type       string    `json:"type"`
-	Power      string    `json:"power"`
-	Responding bool      `json:"responding"`
-	Ports      []Port    `json:"ports,omitempty"`
-	Commands   []Command `json:"commands,omitempty"`
+	ID          int       `json:"id"`
+	Name        string    `json:"name"`
+	Address     string    `json:"address"`
+	Input       bool      `json:"input"`
+	Output      bool      `json:"output"`
+	Building    Building  `json:"building"`
+	Room        Room      `json:"room"`
+	Type        string    `json:"type"`
+	Power       string    `json:"power"`
+	PowerStates []string  `json:"powerstates,omitempty"`
+	Responding  bool      `json:"responding"`
+	Ports       []Port    `json:"ports,omitempty"`
+	Commands    []Command `json:"commands,omitempty"`
 }
 
 type Port struct {
@@ -132,6 +133,11 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 			return []Device{}, err
 		}
 
+		device.PowerStates, err = accessorGroup.GetPowerStatesByDeviceID(device.ID)
+		if err != nil {
+			return []Device{}, err
+		}
+
 		allDevices = append(allDevices, device)
 	}
 
@@ -223,6 +229,29 @@ func (accessorGroup *AccessorGroup) GetAllDevices() ([]Device, error) {
 	}
 
 	return allDevices, nil
+}
+
+func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]string, error) {
+	query := `SELECT PowerStates.name FROM PowerStates
+	JOIN DevicePowerStates on DevicePowerStates.powerStateID = PowerStates.powerStateID
+	Where DevicePowerStates.deviceID = ?`
+
+	toReturn := []string{}
+	rows, err := AccessorGroup.Database.Query(query, deviceID)
+	if err != nil {
+		return []string{}, err
+	}
+
+	for rows.Next() {
+		var value string
+
+		err := rows.Scan(&value)
+		if err != nil {
+			return []string{}, err
+		}
+		toReturn = append(toReturn, value)
+	}
+	return toReturn, nil
 }
 
 func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingShortname string, roomName string, roleName string) ([]Device, error) {
