@@ -3,6 +3,7 @@ package accessors
 import (
 	"errors"
 	"log"
+	"strings"
 )
 
 type Device struct {
@@ -15,6 +16,9 @@ type Device struct {
 	Room        Room      `json:"room"`
 	Type        string    `json:"type"`
 	Power       string    `json:"power"`
+	Blanked     *bool     `json:"blanked,omitempty"`
+	Volume      *int      `json:"volume,omitempty"`
+	Muted       *bool     `json:"muted,omitempty"`
 	PowerStates []string  `json:"powerstates,omitempty"`
 	Responding  bool      `json:"responding"`
 	Ports       []Port    `json:"ports,omitempty"`
@@ -255,9 +259,28 @@ func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]st
 }
 
 func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingShortname string, roomName string, roleName string) ([]Device, error) {
-	return accessorGroup.GetDevicesByQuery(`JOIN DeviceRole on DeviceRole.deviceID = Devices.deviceID
+	devices, err := accessorGroup.GetDevicesByQuery(`JOIN DeviceRole on DeviceRole.deviceID = Devices.deviceID
 		JOIN DeviceRoleDefinition on DeviceRole.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID
 		WHERE Rooms.name LIKE ? AND Buildings.shortname LIKE ? AND DeviceRoleDefinition.name LIKE ?`, roomName, buildingShortname, roleName)
+
+	if err != nil {
+		return []Device{}, err
+	}
+	switch strings.ToLower(roleName) {
+	case "audioout":
+		log.Printf("AudioOutDetected")
+		devices, err = accessorGroup.GetAudioInformationForDevices(devices)
+		if err != nil {
+			return []Device{}, err
+		}
+		break
+	case "videoout":
+		devices, err = accessorGroup.GetDisplayInformationForDevices(devices)
+		if err != nil {
+			return []Device{}, err
+		}
+	}
+	return devices, nil
 }
 
 func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoom(buildingShortname string, roomName string) ([]Device, error) {
@@ -371,6 +394,44 @@ func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingSh
 	device.Ports = ports
 
 	return *device, nil
+}
+
+func (AccessorGroup *AccessorGroup) GetAudioInformationForDevices(devices []Device) ([]Device, error) {
+	for indx := 0; indx < len(devices); indx++ {
+		query := "SELECT muted, volume FROM AudioDevices where deviceID = ?"
+
+		rows, err := AccessorGroup.Database.Query(query, devices[indx].ID)
+		if err != nil {
+			return []Device{}, err
+		}
+		log.Printf("Found some items.\n")
+		for rows.Next() {
+			err = rows.Scan(&devices[indx].Muted, &devices[indx].Volume)
+			if err != nil {
+				return []Device{}, err
+			}
+		}
+	}
+	return devices, nil
+}
+
+func (AccessorGroup *AccessorGroup) GetDisplayInformationForDevices(devices []Device) ([]Device, error) {
+	// for _, val := range *devices {
+	// 	query := "SELECT blanked FROM Displays where deviceID = ?"
+	//
+	// 	rows, err := AccessorGroup.Database.Query(query, val.ID)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	//
+	// 	for rows.Next() {
+	// 		err = rows.Scan(&val.Blanked)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
+	return []Device{}, nil
 }
 
 // MakeDevice adds a device to the database
