@@ -71,7 +71,7 @@ Example 2:
 `WHERE Devices.RoomID = 1`
 */
 func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters ...interface{}) ([]Device, error) {
-	baseQuery := `SELECT Devices.deviceID,
+	baseQuery := `SELECT DISTINCT Devices.deviceID,
   	Devices.Name as deviceName,
   	Devices.address as deviceAddress,
   	Devices.input,
@@ -84,13 +84,15 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
   	Buildings.name as buildingName,
   	Buildings.shortName as buildingShortname,
   	Buildings.description as buildingDescription,
-  	DeviceTypes.name as type,
+  	DeviceTypes.name as deviceType,
   	PowerStates.name as power
   	FROM Devices
   	JOIN Rooms on Rooms.roomID = Devices.roomID
   	JOIN Buildings on Buildings.buildingID = Devices.buildingID
   	JOIN DeviceTypes on Devices.typeID = DeviceTypes.deviceTypeID
-  	JOIN PowerStates on PowerStates.powerStateID = Devices.powerID`
+  	JOIN PowerStates on PowerStates.powerStateID = Devices.powerID
+    JOIN DeviceRole on DeviceRole.deviceID = Devices.deviceID
+    JOIN DeviceRoleDefinition on DeviceRole.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID`
 
 	allDevices := []Device{}
 
@@ -255,9 +257,11 @@ func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]st
 }
 
 func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingShortname string, roomName string, roleName string) ([]Device, error) {
-	return accessorGroup.GetDevicesByQuery(`JOIN DeviceRole on DeviceRole.deviceID = Devices.deviceID
-		JOIN DeviceRoleDefinition on DeviceRole.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID
-		WHERE Rooms.name LIKE ? AND Buildings.shortname LIKE ? AND DeviceRoleDefinition.name LIKE ?`, roomName, buildingShortname, roleName)
+	return accessorGroup.GetDevicesByQuery(`WHERE Rooms.name LIKE ? AND Buildings.shortname LIKE ? AND DeviceRoleDefinition.name LIKE ?`, roomName, buildingShortname, roleName)
+}
+
+func (accessorGroup *AccessorGroup) GetDevicesByRoleAndType(deviceRole string, deviceType string) ([]Device, error) {
+	return accessorGroup.GetDevicesByQuery(`WHERE DeviceRoleDefinition.name LIKE ? AND DeviceTypes.name LIKE ?`, deviceRole, deviceType)
 }
 
 func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoom(buildingShortname string, roomName string) ([]Device, error) {

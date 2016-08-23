@@ -43,6 +43,15 @@ func (handlerGroup *HandlerGroup) GetDeviceByBuildingAndRoomAndName(context echo
 	return context.JSON(http.StatusOK, response)
 }
 
+func (handlerGroup *HandlerGroup) GetDevicesByRoleAndType(context echo.Context) error {
+	response, err := handlerGroup.Accessors.GetDevicesByRoleAndType(context.Param("role"), context.Param("type"))
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
 func (handlerGroup *HandlerGroup) MakeDevice(context echo.Context) error {
 	room := accessors.RoomRequest{}
 	err := context.Bind(&room)
