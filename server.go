@@ -49,6 +49,7 @@ func main() {
 	router.Post("/rooms", handlerGroup.MakeRoom, wso2jwt.ValidateJWT())
 
 	router.Get("/devices", handlerGroup.GetAllDevices, wso2jwt.ValidateJWT())
+	router.Get("/devices/roles/:role/types/:type", handlerGroup.GetDevicesByRoleAndType, wso2jwt.ValidateJWT())
 	router.Post("/devices", handlerGroup.MakeDevice, wso2jwt.ValidateJWT())
 
 	log.Println("The Configuration Database microservice is listening on " + port)
