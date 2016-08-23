@@ -3,6 +3,7 @@ package accessors
 import (
 	"errors"
 	"log"
+	"strconv"
 	"strings"
 )
 
@@ -458,4 +459,24 @@ func (accessorGroup *AccessorGroup) MakeDevice(name string, address string, buil
 	}
 
 	return device, nil
+}
+
+func (accessorGroup *AccessorGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding(building string, room string, device string, attribute string, attributeValue string) (Device, error) {
+	switch strings.ToLower(attribute) {
+	case "volume":
+		statement := `update AudioDevices SET volume = ? WHERE deviceID =
+			(Select deviceID from Devices WHERE name LIKE ? AND Rooms.name LIKE ? AND Buildings.name LIKE ?
+				JOIN Rooms on Rooms.RoomID = Devices.RoomID
+				JOIN Buildings on Buildings.RoomID = Buildings.RoomID)`
+		val, err := strconv.Atoi(attributeValue)
+		if err != nil {
+			return Device{}, err
+		}
+		err = accessorGroup.Database.Exec(statement, val, device, room, building)
+		if err != nil {
+			return Device{}, err
+		}
+		break
+	}
+	return Device{}, nil
 }
