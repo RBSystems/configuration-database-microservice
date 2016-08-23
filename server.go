@@ -36,7 +36,8 @@ func main() {
 	router.Get("/buildings/shortname/:shortname", handlerGroup.GetBuildingByShortname, wso2jwt.ValidateJWT())
 	router.Get("/buildings/:building/rooms/:room", handlerGroup.GetRoomByBuildingAndName, wso2jwt.ValidateJWT())
 	router.Get("/buildings/:building/rooms/:room/devices", handlerGroup.GetDevicesByBuildingAndRoom, wso2jwt.ValidateJWT())
-	router.Get("/buildings/:building/rooms/:room/devices/role/:role", handlerGroup.GetDevicesByBuildingAndRoomAndRole, wso2jwt.ValidateJWT())
+	// router.Get("/buildings/:building/rooms/:room/devices/roles", handlerGroup.GetDevicesByBuildingAndRoomAndRole, wso2jwt.ValidateJWT())
+	router.Get("/buildings/:building/rooms/:room/devices/roles/:role", handlerGroup.GetDevicesByBuildingAndRoomAndRole, wso2jwt.ValidateJWT())
 	router.Get("/buildings/:building/rooms/:room/devices/:device", handlerGroup.GetDeviceByBuildingAndRoomAndName, wso2jwt.ValidateJWT())
 
 	router.Post("/buildings", handlerGroup.MakeBuilding, wso2jwt.ValidateJWT())
