@@ -472,7 +472,18 @@ func (accessorGroup *AccessorGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding
 		if err != nil {
 			return Device{}, err
 		}
-		err = accessorGroup.Database.Exec(statement, val, device, room, building)
+		_, err = accessorGroup.Database.Exec(statement, val, device, room, building)
+		if err != nil {
+			return Device{}, err
+		}
+		break
+
+	case "muted":
+		statement := `udpate AudioDevices SET muted = ? WHERE deviceID =
+			(Select deviceID from Devices WHERE name LIKE ? AND Rooms.name LIKE ? AND Buildings.name LIKE ?
+				JOIN Rooms on Rooms.RoomID = Devices.RoomID
+				JOIN Buildings on Buildings.RoomID = Buildings.RoomID)`
+		_, err := accessorGroup.Database.Exec(statement, attributeValue, device, room, building)
 		if err != nil {
 			return Device{}, err
 		}
