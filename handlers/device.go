@@ -34,6 +34,23 @@ func (handlerGroup *HandlerGroup) GetDevicesByBuildingAndRoomAndRole(context ech
 	return context.JSON(http.StatusOK, response)
 }
 
+func (handlerGroup *HandlerGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding(context echo.Context) error {
+	values := make(map[string]string)
+	context.Bind(&values)
+	response, err := handlerGroup.Accessors.PutDeviceAttributeByDeviceAndRoomAndBuilding(
+		context.Param("building"),
+		context.Param("room"),
+		context.Param("device"),
+		context.Param("attribute"),
+		values["value"])
+
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
 func (handlerGroup *HandlerGroup) GetDeviceByBuildingAndRoomAndName(context echo.Context) error {
 	response, err := handlerGroup.Accessors.GetDeviceByBuildingAndRoomAndName(context.Param("building"), context.Param("room"), context.Param("device"))
 	if err != nil {
