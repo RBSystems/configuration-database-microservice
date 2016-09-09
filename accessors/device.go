@@ -400,6 +400,15 @@ func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingSh
 
 	device.Ports = ports
 
+	devices, err := accessorGroup.GetAudioInformationForDevices([]Device{*device})
+	if err != nil {
+		return Device{}, errors.New("Error in attempt to get AudioInformation")
+	}
+
+	if len(devices) == 1 {
+		return devices[0], nil
+	}
+
 	return *device, nil
 }
 
@@ -465,13 +474,15 @@ func (accessorGroup *AccessorGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding
 	switch strings.ToLower(attribute) {
 	case "volume":
 		statement := `update AudioDevices SET volume = ? WHERE deviceID =
-			(Select deviceID from Devices WHERE name LIKE ? AND Rooms.name LIKE ? AND Buildings.name LIKE ?
-				JOIN Rooms on Rooms.RoomID = Devices.RoomID
-				JOIN Buildings on Buildings.RoomID = Buildings.RoomID)`
+			(Select deviceID from Devices
+				JOIN Rooms on Rooms.roomID = Devices.roomID
+				JOIN Buildings on Buildings.buildingID = Rooms.buildingID
+				WHERE Devices.name LIKE ? AND Rooms.name LIKE ? AND Buildings.shortName LIKE ?)`
 		val, err := strconv.Atoi(attributeValue)
 		if err != nil {
 			return Device{}, err
 		}
+
 		_, err = accessorGroup.Database.Exec(statement, val, device, room, building)
 		if err != nil {
 			return Device{}, err
@@ -480,14 +491,17 @@ func (accessorGroup *AccessorGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding
 
 	case "muted":
 		statement := `udpate AudioDevices SET muted = ? WHERE deviceID =
-			(Select deviceID from Devices WHERE name LIKE ? AND Rooms.name LIKE ? AND Buildings.name LIKE ?
+			(Select deviceID from Devices
 				JOIN Rooms on Rooms.RoomID = Devices.RoomID
-				JOIN Buildings on Buildings.RoomID = Buildings.RoomID)`
+				JOIN Buildings on Buildings.RoomID = Buildings.RoomID
+				WHERE Devices.name LIKE ? AND Rooms.name LIKE ? AND Buildings.shortName LIKE ?)`
 		_, err := accessorGroup.Database.Exec(statement, attributeValue, device, room, building)
 		if err != nil {
 			return Device{}, err
 		}
 		break
 	}
-	return Device{}, nil
+
+	dev, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(building, room, device)
+	return dev, err
 }
