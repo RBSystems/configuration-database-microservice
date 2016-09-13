@@ -3,6 +3,8 @@ package accessors
 import (
 	"errors"
 	"log"
+	"strconv"
+	"strings"
 )
 
 type Device struct {
@@ -15,6 +17,9 @@ type Device struct {
 	Room        Room      `json:"room"`
 	Type        string    `json:"type"`
 	Power       string    `json:"power"`
+	Blanked     *bool     `json:"blanked,omitempty"`
+	Volume      *int      `json:"volume,omitempty"`
+	Muted       *bool     `json:"muted,omitempty"`
 	PowerStates []string  `json:"powerstates,omitempty"`
 	Responding  bool      `json:"responding"`
 	Ports       []Port    `json:"ports,omitempty"`
@@ -257,7 +262,28 @@ func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]st
 }
 
 func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingShortname string, roomName string, roleName string) ([]Device, error) {
-	return accessorGroup.GetDevicesByQuery(`WHERE Rooms.name LIKE ? AND Buildings.shortname LIKE ? AND DeviceRoleDefinition.name LIKE ?`, roomName, buildingShortname, roleName)
+	devices, err := accessorGroup.GetDevicesByQuery(`WHERE Rooms.name LIKE ? AND Buildings.shortname LIKE ? AND DeviceRoleDefinition.name LIKE ?`,
+		roomName, buildingShortname, roleName)
+
+	if err != nil {
+		return []Device{}, err
+	}
+	switch strings.ToLower(roleName) {
+	case "audioout":
+		log.Printf("AudioOutDetected")
+		devices, err = accessorGroup.GetAudioInformationForDevices(devices)
+		if err != nil {
+			return []Device{}, err
+		}
+		break
+	case "videoout":
+		devices, err = accessorGroup.GetDisplayInformationForDevices(devices)
+		if err != nil {
+			return []Device{}, err
+		}
+	}
+	return devices, nil
+
 }
 
 func (accessorGroup *AccessorGroup) GetDevicesByRoleAndType(deviceRole string, deviceType string) ([]Device, error) {
@@ -374,7 +400,54 @@ func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingSh
 
 	device.Ports = ports
 
+	devices, err := accessorGroup.GetAudioInformationForDevices([]Device{*device})
+	if err != nil {
+		return Device{}, errors.New("Error in attempt to get AudioInformation")
+	}
+
+	if len(devices) == 1 {
+		return devices[0], nil
+	}
+
 	return *device, nil
+}
+
+func (AccessorGroup *AccessorGroup) GetAudioInformationForDevices(devices []Device) ([]Device, error) {
+	for indx := 0; indx < len(devices); indx++ {
+		query := "SELECT muted, volume FROM AudioDevices where deviceID = ?"
+
+		rows, err := AccessorGroup.Database.Query(query, devices[indx].ID)
+		if err != nil {
+			return []Device{}, err
+		}
+		log.Printf("Found some items.\n")
+		for rows.Next() {
+			err = rows.Scan(&devices[indx].Muted, &devices[indx].Volume)
+			if err != nil {
+				return []Device{}, err
+			}
+		}
+	}
+	return devices, nil
+}
+
+func (AccessorGroup *AccessorGroup) GetDisplayInformationForDevices(devices []Device) ([]Device, error) {
+	for indx := 0; indx < len(devices); indx++ {
+		query := "SELECT blanked FROM Displays where deviceID = ?"
+
+		rows, err := AccessorGroup.Database.Query(query, devices[indx].ID)
+		if err != nil {
+			return []Device{}, err
+		}
+		log.Printf("Found some items.\n")
+		for rows.Next() {
+			err = rows.Scan(&devices[indx].Blanked)
+			if err != nil {
+				return []Device{}, err
+			}
+		}
+	}
+	return devices, nil
 }
 
 // MakeDevice adds a device to the database
@@ -395,4 +468,40 @@ func (accessorGroup *AccessorGroup) MakeDevice(name string, address string, buil
 	}
 
 	return device, nil
+}
+
+func (accessorGroup *AccessorGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding(building string, room string, device string, attribute string, attributeValue string) (Device, error) {
+	switch strings.ToLower(attribute) {
+	case "volume":
+		statement := `update AudioDevices SET volume = ? WHERE deviceID =
+			(Select deviceID from Devices
+				JOIN Rooms on Rooms.roomID = Devices.roomID
+				JOIN Buildings on Buildings.buildingID = Rooms.buildingID
+				WHERE Devices.name LIKE ? AND Rooms.name LIKE ? AND Buildings.shortName LIKE ?)`
+		val, err := strconv.Atoi(attributeValue)
+		if err != nil {
+			return Device{}, err
+		}
+
+		_, err = accessorGroup.Database.Exec(statement, val, device, room, building)
+		if err != nil {
+			return Device{}, err
+		}
+		break
+
+	case "muted":
+		statement := `udpate AudioDevices SET muted = ? WHERE deviceID =
+			(Select deviceID from Devices
+				JOIN Rooms on Rooms.RoomID = Devices.RoomID
+				JOIN Buildings on Buildings.RoomID = Buildings.RoomID
+				WHERE Devices.name LIKE ? AND Rooms.name LIKE ? AND Buildings.shortName LIKE ?)`
+		_, err := accessorGroup.Database.Exec(statement, attributeValue, device, room, building)
+		if err != nil {
+			return Device{}, err
+		}
+		break
+	}
+
+	dev, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(building, room, device)
+	return dev, err
 }
