@@ -40,7 +40,7 @@ func main() {
 	router.Get("/buildings/:building/rooms/:room/devices/roles/:role", handlerGroup.GetDevicesByBuildingAndRoomAndRole, wso2jwt.ValidateJWT())
 	router.Get("/buildings/:building/rooms/:room/devices/:device", handlerGroup.GetDeviceByBuildingAndRoomAndName, wso2jwt.ValidateJWT())
 
-	router.Put("/buildings/:building/rooms/:room/devices/:device/attributes/:attribute", handlerGroup.PutDeviceAttributeByDeviceAndRoomAndBuilding, wso2jwt.ValidateJWT())
+	router.Put("/buildings/:building/rooms/:room/devices/:device/attributes/:attribute/:value", handlerGroup.PutDeviceAttributeByDeviceAndRoomAndBuilding, wso2jwt.ValidateJWT())
 
 	router.Post("/buildings", handlerGroup.MakeBuilding, wso2jwt.ValidateJWT())
 

@@ -35,14 +35,12 @@ func (handlerGroup *HandlerGroup) GetDevicesByBuildingAndRoomAndRole(context ech
 }
 
 func (handlerGroup *HandlerGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding(context echo.Context) error {
-	values := make(map[string]string)
-	context.Bind(&values)
 	response, err := handlerGroup.Accessors.PutDeviceAttributeByDeviceAndRoomAndBuilding(
 		context.Param("building"),
 		context.Param("room"),
 		context.Param("device"),
 		context.Param("attribute"),
-		values["value"])
+		context.Param("value"))
 
 	if err != nil {
 		return context.String(http.StatusBadRequest, err.Error())

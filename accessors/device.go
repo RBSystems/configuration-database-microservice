@@ -270,7 +270,6 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingS
 	}
 	switch strings.ToLower(roleName) {
 	case "audioout":
-		log.Printf("AudioOutDetected")
 		devices, err = accessorGroup.GetAudioInformationForDevices(devices)
 		if err != nil {
 			return []Device{}, err
@@ -420,7 +419,6 @@ func (AccessorGroup *AccessorGroup) GetAudioInformationForDevices(devices []Devi
 		if err != nil {
 			return []Device{}, err
 		}
-		log.Printf("Found some items.\n")
 		for rows.Next() {
 			err = rows.Scan(&devices[indx].Muted, &devices[indx].Volume)
 			if err != nil {
@@ -439,7 +437,6 @@ func (AccessorGroup *AccessorGroup) GetDisplayInformationForDevices(devices []De
 		if err != nil {
 			return []Device{}, err
 		}
-		log.Printf("Found some items.\n")
 		for rows.Next() {
 			err = rows.Scan(&devices[indx].Blanked)
 			if err != nil {
@@ -490,12 +487,23 @@ func (accessorGroup *AccessorGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding
 		break
 
 	case "muted":
-		statement := `udpate AudioDevices SET muted = ? WHERE deviceID =
+		var valToSet bool
+		switch attributeValue {
+		case "true":
+			valToSet = true
+			break
+		case "false":
+			valToSet = false
+			break
+		default:
+			return Device{}, errors.New("Invalid attribute value, must be a boolean.")
+		}
+		statement := `update AudioDevices SET muted = ? WHERE deviceID =
 			(Select deviceID from Devices
-				JOIN Rooms on Rooms.RoomID = Devices.RoomID
-				JOIN Buildings on Buildings.RoomID = Buildings.RoomID
+				JOIN Rooms on Rooms.roomID = Devices.roomID
+				JOIN Buildings on Buildings.buildingID = Rooms.buildingID
 				WHERE Devices.name LIKE ? AND Rooms.name LIKE ? AND Buildings.shortName LIKE ?)`
-		_, err := accessorGroup.Database.Exec(statement, attributeValue, device, room, building)
+		_, err := accessorGroup.Database.Exec(statement, valToSet, device, room, building)
 		if err != nil {
 			return Device{}, err
 		}
