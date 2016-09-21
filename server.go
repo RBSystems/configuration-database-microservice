@@ -6,6 +6,7 @@ import (
 
 	"github.com/byuoitav/configuration-database-microservice/accessors"
 	"github.com/byuoitav/configuration-database-microservice/handlers"
+	"github.com/byuoitav/wso2jwt"
 	"github.com/jessemillar/health"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/fasthttp"
@@ -39,7 +40,7 @@ func main() {
 	router.Get("/buildings/:building/rooms/:room/devices/roles/:role", handlerGroup.GetDevicesByBuildingAndRoomAndRole)
 	router.Get("/buildings/:building/rooms/:room/devices/:device", handlerGroup.GetDeviceByBuildingAndRoomAndName)
 
-	router.Put("/buildings/:building/rooms/:room/devices/:device/attributes/:attribute", handlerGroup.PutDeviceAttributeByDeviceAndRoomAndBuilding)
+	router.Put("/buildings/:building/rooms/:room/devices/:device/attributes/:attribute/:value", handlerGroup.PutDeviceAttributeByDeviceAndRoomAndBuilding, wso2jwt.ValidateJWT())
 
 	router.Post("/buildings", handlerGroup.MakeBuilding)
 
