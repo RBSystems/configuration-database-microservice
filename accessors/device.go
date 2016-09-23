@@ -51,7 +51,8 @@ type DeviceRequest struct {
 	Room     string `json:"room"`
 }
 
-/* GetDevicesByQuery is a function that abstracts some of the execution and extraction
+/*
+GetDevicesByQuery is a function that abstracts some of the execution and extraction
 of data from the database when we're looking for responses based on the COMPLETE device struct.
 The function MAY have the WHERE clause passed in to limit the devices found.
 The function MAY have any JOIN clauses necessary to the WEHRE Clause not included in
@@ -262,6 +263,7 @@ func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]st
 }
 
 func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingShortname string, roomName string, roleName string) ([]Device, error) {
+	log.Printf("Getting ")
 	devices, err := accessorGroup.GetDevicesByQuery(`WHERE Rooms.name LIKE ? AND Buildings.shortname LIKE ? AND DeviceRoleDefinition.name LIKE ?`,
 		roomName, buildingShortname, roleName)
 
@@ -290,30 +292,16 @@ func (accessorGroup *AccessorGroup) GetDevicesByRoleAndType(deviceRole string, d
 }
 
 func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoom(buildingShortname string, roomName string) ([]Device, error) {
-	room, err := accessorGroup.GetRoomByBuildingAndName(buildingShortname, roomName)
-	if err != nil {
-		return []Device{}, errors.New("Could not find a room named \"" + roomName + "\" in a building named \"" + buildingShortname + "\"")
-	}
+	log.Printf("Getting devices in room %s and building %s", roomName, buildingShortname)
 
-	allDevices := []Device{}
+	devices, err := accessorGroup.GetDevicesByQuery(
+		`WHERE Rooms.name=? AND Buildings.shortName=?`, roomName, buildingShortname)
 
-	rows, err := accessorGroup.Database.Query("SELECT * FROM Devices WHERE buildingID=? AND roomID=?", room.Building.ID, room.ID)
 	if err != nil {
 		return []Device{}, err
 	}
 
-	for rows.Next() {
-		device := Device{}
-
-		err := rows.Scan(&device.ID, &device.Name, &device.Address, &device.Input, &device.Output, &device.Building.ID, &device.Room.ID, &device.Type, &device.Power, &device.Responding)
-		if err != nil {
-			return []Device{}, err
-		}
-
-		allDevices = append(allDevices, device)
-	}
-
-	return allDevices, nil
+	return devices, nil
 }
 
 func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]Command, error) {

@@ -17,6 +17,7 @@ func (handlerGroup *HandlerGroup) GetAllDevices(context echo.Context) error {
 }
 
 func (handlerGroup *HandlerGroup) GetDevicesByBuildingAndRoom(context echo.Context) error {
+
 	response, err := handlerGroup.Accessors.GetDevicesByBuildingAndRoom(context.Param("building"), context.Param("room"))
 	if err != nil {
 		return context.String(http.StatusBadRequest, err.Error())

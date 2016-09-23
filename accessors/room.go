@@ -1,16 +1,20 @@
 package accessors
 
-import "errors"
+import (
+	"errors"
+	"log"
+)
 
 type Room struct {
-	ID                 int      `json:"id"`
-	Name               string   `json:"name"`
-	Description        string   `json:"description"`
-	Building           Building `json:"building"`
-	CurrentVideoInput  int      `json:"currentVideoInput"`
-	CurrentAudioInput  int      `json:"currentAudioInput"`
-	CurrentVideoOutput int      `json:"currentVideoOutput"`
-	CurrentAudioOutput int      `json:"currentAudioOutput"`
+	ID                 int      `json:"id,omitempty"`
+	Name               string   `json:"name,omitempty"`
+	Description        string   `json:"description,omitempty"`
+	Building           Building `json:"building,omitempty"`
+	CurrentVideoInput  int      `json:"currentVideoInput,omitempty"`
+	CurrentAudioInput  int      `json:"currentAudioInput,omitempty"`
+	CurrentVideoOutput int      `json:"currentVideoOutput,omitempty"`
+	CurrentAudioOutput int      `json:"currentAudioOutput,omitempty"`
+	Devices            []Device `json:"devices,omitempty"`
 }
 
 type RoomRequest struct {
@@ -119,6 +123,7 @@ func (accessorGroup *AccessorGroup) GetRoomsByBuilding(building int) ([]Room, er
 
 // GetRoomByBuildingAndName returns a room from the database by building shortname and room name
 func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname string, name string) (Room, error) {
+	log.Printf("Getting room info for %s - %s...", buildingShortname, name)
 	building, err := accessorGroup.GetBuildingByShortname(buildingShortname)
 	if err != nil {
 		return Room{}, err
@@ -126,12 +131,19 @@ func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname s
 
 	room := &Room{}
 	room.Building = building
-
+	log.Printf("Getting room info...")
 	err = accessorGroup.Database.QueryRow("SELECT * FROM Rooms WHERE buildingID=? AND name=?", building.ID, name).Scan(&room.ID, &room.Name, &room.Building.ID, &room.Description, &room.CurrentAudioInput, &room.CurrentAudioOutput, &room.CurrentVideoInput, &room.CurrentVideoOutput)
 	if err != nil {
 		return Room{}, err
 	}
 
+	log.Printf("Getting device info...")
+	room.Devices, err = accessorGroup.GetDevicesByBuildingAndRoom(buildingShortname, name)
+	if err != nil {
+		return *room, err
+	}
+
+	log.Printf("Done.")
 	return *room, nil
 }
 

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -46,6 +47,7 @@ func (handlerGroup *HandlerGroup) GetRoomsByBuilding(context echo.Context) error
 }
 
 func (handlerGroup *HandlerGroup) GetRoomByBuildingAndName(context echo.Context) error {
+	log.Printf("Getting room by building and name...")
 	response, err := handlerGroup.Accessors.GetRoomByBuildingAndName(context.Param("building"), context.Param("room"))
 	if err != nil {
 		return context.String(http.StatusBadRequest, err.Error())
