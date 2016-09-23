@@ -240,6 +240,7 @@ func (accessorGroup *AccessorGroup) GetAllDevices() ([]Device, error) {
 }
 
 func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]string, error) {
+	log.Printf("Getting power state for device with ID %v", deviceID)
 	query := `SELECT PowerStates.name FROM PowerStates
 	JOIN DevicePowerStates on DevicePowerStates.powerStateID = PowerStates.powerStateID
 	Where DevicePowerStates.deviceID = ?`
@@ -259,11 +260,12 @@ func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]st
 		}
 		toReturn = append(toReturn, value)
 	}
+	log.Printf("Done.")
 	return toReturn, nil
 }
 
 func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingShortname string, roomName string, roleName string) ([]Device, error) {
-	log.Printf("Getting ")
+	log.Printf("Getting device by building %s: and room %s: and role %s.", buildingShortname, roomName, roleName)
 	devices, err := accessorGroup.GetDevicesByQuery(`WHERE Rooms.name LIKE ? AND Buildings.shortname LIKE ? AND DeviceRoleDefinition.name LIKE ?`,
 		roomName, buildingShortname, roleName)
 
@@ -272,17 +274,20 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingS
 	}
 	switch strings.ToLower(roleName) {
 	case "audioout":
+		log.Printf("Getting audio information for device.")
 		devices, err = accessorGroup.GetAudioInformationForDevices(devices)
 		if err != nil {
 			return []Device{}, err
 		}
 		break
 	case "videoout":
+		log.Printf("Getting video information for device.")
 		devices, err = accessorGroup.GetDisplayInformationForDevices(devices)
 		if err != nil {
 			return []Device{}, err
 		}
 	}
+	log.Printf("Done.")
 	return devices, nil
 
 }
@@ -301,12 +306,22 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoom(buildingShortnam
 		return []Device{}, err
 	}
 
+	devices, err = accessorGroup.GetAudioInformationForDevices(devices)
+	if err != nil {
+		return []Device{}, err
+	}
+
+	devices, err = accessorGroup.GetDisplayInformationForDevices(devices)
+	if err != nil {
+		return []Device{}, err
+	}
+	log.Printf("Done.")
 	return devices, nil
 }
 
 func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]Command, error) {
 	allCommands := []Command{}
-
+	log.Printf("Getting commands for %s-%s-%s", buildingShortname, roomName, deviceName)
 	rows, err := accessorGroup.Database.Query(`SELECT Commands.name as commandName, Endpoints.name as endpointName, Endpoints.path as endpointPath, Microservices.address as microserviceAddress
     FROM Devices
     JOIN DeviceCommands on Devices.deviceID = DeviceCommands.deviceID JOIN Commands on DeviceCommands.commandID = Commands.commandID JOIN Endpoints on DeviceCommands.endpointID = Endpoints.endpointID JOIN Microservices ON DeviceCommands.microserviceID = Microservices.microserviceID
@@ -327,13 +342,13 @@ func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(bu
 
 		allCommands = append(allCommands, command)
 	}
-
+	log.Printf("Done.")
 	return allCommands, nil
 }
 
 func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]Port, error) {
 	allPorts := []Port{}
-
+	log.Printf("Getting port configuration for %s-%s-%s", buildingShortname, roomName, deviceName)
 	rows, err := accessorGroup.Database.Query(`SELECT srcDevice.Name as sourceName, Ports.name as portName, destDevice.Name as DestinationDevice FROM Ports
     JOIN PortConfiguration ON Ports.PortID = PortConfiguration.PortID
     JOIN Devices as srcDevice on srcDevice.DeviceID = PortConfiguration.sourceDeviceID
@@ -357,11 +372,12 @@ func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(build
 
 		allPorts = append(allPorts, port)
 	}
-
+	log.Printf("Done.")
 	return allPorts, nil
 }
 
 func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) (Device, error) {
+	log.Printf("Getting device %s-%s-%s", buildingShortname, roomName, deviceName)
 	room, err := accessorGroup.GetRoomByBuildingAndName(buildingShortname, roomName)
 	if err != nil {
 		return Device{}, errors.New("Could not find a room named \"" + roomName + "\" in a building named \"" + buildingShortname + "\"")
@@ -395,12 +411,14 @@ func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingSh
 	if len(devices) == 1 {
 		return devices[0], nil
 	}
-
+	log.Printf("Done.")
 	return *device, nil
 }
 
 func (AccessorGroup *AccessorGroup) GetAudioInformationForDevices(devices []Device) ([]Device, error) {
+	log.Printf("Getting audio information for %v devices.", len(devices))
 	for indx := 0; indx < len(devices); indx++ {
+		log.Printf("Getting audio information for device with id %v.", devices[indx].ID)
 		query := "SELECT muted, volume FROM AudioDevices where deviceID = ?"
 
 		rows, err := AccessorGroup.Database.Query(query, devices[indx].ID)
@@ -414,11 +432,14 @@ func (AccessorGroup *AccessorGroup) GetAudioInformationForDevices(devices []Devi
 			}
 		}
 	}
+	log.Printf("Done.")
 	return devices, nil
 }
 
 func (AccessorGroup *AccessorGroup) GetDisplayInformationForDevices(devices []Device) ([]Device, error) {
+	log.Printf("Getting display information for %v devices.", len(devices))
 	for indx := 0; indx < len(devices); indx++ {
+		log.Printf("Getting display information for device with id %v.", devices[indx].ID)
 		query := "SELECT blanked FROM Displays where deviceID = ?"
 
 		rows, err := AccessorGroup.Database.Query(query, devices[indx].ID)
@@ -432,6 +453,7 @@ func (AccessorGroup *AccessorGroup) GetDisplayInformationForDevices(devices []De
 			}
 		}
 	}
+	log.Printf("Done.")
 	return devices, nil
 }
 
@@ -456,6 +478,7 @@ func (accessorGroup *AccessorGroup) MakeDevice(name string, address string, buil
 }
 
 func (accessorGroup *AccessorGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding(building string, room string, device string, attribute string, attributeValue string) (Device, error) {
+	log.Printf("Setting device attribute for device %s-%s-%s and attribute name: %s value %s.", building, room, device, attribute, attributeValue)
 	switch strings.ToLower(attribute) {
 	case "volume":
 		statement := `update AudioDevices SET volume = ? WHERE deviceID =
@@ -472,6 +495,7 @@ func (accessorGroup *AccessorGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding
 		if err != nil {
 			return Device{}, err
 		}
+		log.Printf("Volume updated.")
 		break
 
 	case "muted":
@@ -495,9 +519,11 @@ func (accessorGroup *AccessorGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding
 		if err != nil {
 			return Device{}, err
 		}
+		log.Printf("Set muted.")
 		break
 	}
 
 	dev, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(building, room, device)
+	log.Printf("Done.")
 	return dev, err
 }
