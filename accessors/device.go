@@ -32,12 +32,6 @@ type Port struct {
 	Destination string `json:"destination"`
 }
 
-type Command struct {
-	Name         string   `json:"name"`
-	Endpoint     Endpoint `json:"endpoint"`
-	Microservice string   `json:"microservice"`
-}
-
 type Endpoint struct {
 	Name string `json:"name"`
 	Path string `json:"path"`
@@ -317,15 +311,9 @@ func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(bu
 		return []Command{}, err
 	}
 
-	for rows.Next() {
-		command := Command{}
-
-		err := rows.Scan(&command.Name, &command.Endpoint.Name, &command.Endpoint.Path, &command.Microservice)
-		if err != nil {
-			return []Command{}, err
-		}
-
-		allCommands = append(allCommands, command)
+	allCommands, err = ExtractCommand(rows)
+	if err != nil {
+		return allCommands, err
 	}
 
 	return allCommands, nil

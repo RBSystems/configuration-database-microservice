@@ -92,10 +92,11 @@ func (accessorGroup *AccessorGroup) GetRoomByID(id int) (Room, error) {
 }
 
 // GetRoomsByBuilding returns a room from the database by building
-func (accessorGroup *AccessorGroup) GetRoomsByBuilding(building int) ([]Room, error) {
+func (accessorGroup *AccessorGroup) GetRoomsByBuilding(building string) ([]Room, error) {
 	allRooms := []Room{}
 
-	rows, err := accessorGroup.Database.Query("SELECT * FROM Rooms WHERE buildingID=?", building)
+	rows, err := accessorGroup.Database.Query(`SELECT * FROM Rooms
+		JOIN Buildings ON Rooms.buildingID = Buildings.buildingID WHERE buildingShortname=?`, building)
 	if err != nil {
 		return []Room{}, err
 	}
@@ -131,13 +132,13 @@ func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname s
 
 	room := &Room{}
 	room.Building = building
-	log.Printf("Getting room info...")
+	log.Printf("Getting room info for %s-%s...", buildingShortname, name)
 	err = accessorGroup.Database.QueryRow("SELECT * FROM Rooms WHERE buildingID=? AND name=?", building.ID, name).Scan(&room.ID, &room.Name, &room.Building.ID, &room.Description, &room.CurrentAudioInput, &room.CurrentAudioOutput, &room.CurrentVideoInput, &room.CurrentVideoOutput)
 	if err != nil {
 		return Room{}, err
 	}
 
-	log.Printf("Getting device info...")
+	log.Printf("Getting device info for %s-%s...", buildingShortname, name)
 	room.Devices, err = accessorGroup.GetDevicesByBuildingAndRoom(buildingShortname, name)
 	if err != nil {
 		return *room, err

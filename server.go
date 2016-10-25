@@ -33,8 +33,10 @@ func main() {
 
 	router.Get("/buildings", handlerGroup.GetAllBuildings)
 	router.Get("/buildings/id/:id", handlerGroup.GetBuildingByID)
+	router.Get("/buildings/:shortname", handlerGroup.GetBuildingByShortname)
 	router.Get("/buildings/shortname/:shortname", handlerGroup.GetBuildingByShortname)
 	router.Get("/buildings/:building/rooms/:room", handlerGroup.GetRoomByBuildingAndName)
+	router.Get("/buildings/:building/rooms", handlerGroup.GetRoomsByBuilding)
 	router.Get("/buildings/:building/rooms/:room/devices", handlerGroup.GetDevicesByBuildingAndRoom)
 	// router.Get("/buildings/:building/rooms/:room/devices/roles", handlerGroup.GetDevicesByBuildingAndRoomAndRole)
 	router.Get("/buildings/:building/rooms/:room/devices/roles/:role", handlerGroup.GetDevicesByBuildingAndRoomAndRole)
@@ -53,6 +55,8 @@ func main() {
 	router.Get("/devices", handlerGroup.GetAllDevices)
 	router.Get("/devices/roles/:role/types/:type", handlerGroup.GetDevicesByRoleAndType)
 	router.Post("/devices", handlerGroup.MakeDevice)
+
+	router.Get("/commands", handlerGroup.GetAllCommands)
 
 	log.Println("The Configuration Database microservice is listening on " + port)
 	server := fasthttp.New(port)

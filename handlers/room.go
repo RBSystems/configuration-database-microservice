@@ -33,12 +33,9 @@ func (handlerGroup *HandlerGroup) GetRoomByID(context echo.Context) error {
 }
 
 func (handlerGroup *HandlerGroup) GetRoomsByBuilding(context echo.Context) error {
-	room, err := strconv.Atoi(context.Param("room"))
-	if err != nil {
-		return err
-	}
+	building := context.Param("building")
 
-	response, err := handlerGroup.Accessors.GetRoomsByBuilding(room)
+	response, err := handlerGroup.Accessors.GetRoomsByBuilding(building)
 	if err != nil {
 		return context.String(http.StatusBadRequest, err.Error())
 	}
