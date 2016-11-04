@@ -21,7 +21,7 @@ func (accessorGroup *AccessorGroup) GetAllBuildings() ([]Building, error) {
 	for rows.Next() {
 		building := Building{}
 
-		err := rows.Scan(&building.ID, &building.Name, &building.Shortname, &building.Description)
+		err = rows.Scan(&building.ID, &building.Name, &building.Shortname, &building.Description)
 		if err != nil {
 			return []Building{}, err
 		}
@@ -57,19 +57,4 @@ func (accessorGroup *AccessorGroup) GetBuildingByShortname(shortname string) (Bu
 	}
 
 	return *building, nil
-}
-
-// MakeBuilding adds a building to the database
-func (accessorGroup *AccessorGroup) MakeBuilding(name string, shortname string) (Building, error) {
-	_, err := accessorGroup.Database.Exec("INSERT INTO Buildings (name, shortname) VALUES (?, ?)", name, shortname)
-	if err != nil {
-		return Building{}, err
-	}
-
-	building, err := accessorGroup.GetBuildingByShortname(shortname)
-	if err != nil {
-		return Building{}, err
-	}
-
-	return building, nil
 }

@@ -2,7 +2,6 @@ package accessors
 
 import (
 	"database/sql"
-	"errors"
 	"log"
 )
 
@@ -163,25 +162,5 @@ func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname s
 	}
 
 	log.Printf("Done.")
-	return room, nil
-}
-
-// MakeRoom adds a room to the database
-func (accessorGroup *AccessorGroup) MakeRoom(name string, buildingShortname string, vlan int) (Room, error) {
-	building, err := accessorGroup.GetBuildingByShortname(buildingShortname)
-	if err != nil {
-		return Room{}, errors.New("Could not find a building with the \"" + buildingShortname + "\" shortname")
-	}
-
-	_, err = accessorGroup.Database.Exec("INSERT INTO rooms (name, building, vlan) VALUES (?, ?, ?)", name, building.ID, vlan)
-	if err != nil {
-		return Room{}, err
-	}
-
-	room, err := accessorGroup.GetRoomByBuildingAndName(building.Shortname, name)
-	if err != nil {
-		return Room{}, err
-	}
-
 	return room, nil
 }
