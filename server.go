@@ -50,7 +50,6 @@ func main() {
 	router.Get("/rooms/id/:id", handlerGroup.GetRoomByID)
 	router.Get("/rooms/buildings/:building", handlerGroup.GetRoomsByBuilding)
 
-	router.Get("/devices", handlerGroup.GetAllDevices)
 	router.Get("/devices/roles/:role/types/:type", handlerGroup.GetDevicesByRoleAndType)
 	router.Post("/devices", handlerGroup.MakeDevice)
 
