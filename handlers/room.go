@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/byuoitav/configuration-database-microservice/accessors"
 	"github.com/labstack/echo"
 )
 
+//GetAllRooms gets al rooms
 func (handlerGroup *HandlerGroup) GetAllRooms(context echo.Context) error {
 	response, err := handlerGroup.Accessors.GetAllRooms()
 	if err != nil {
@@ -18,6 +18,7 @@ func (handlerGroup *HandlerGroup) GetAllRooms(context echo.Context) error {
 	return context.JSON(http.StatusOK, response)
 }
 
+//GetRoomByID returns the room with a given ID.
 func (handlerGroup *HandlerGroup) GetRoomByID(context echo.Context) error {
 	id, err := strconv.Atoi(context.Param("id"))
 	if err != nil {
@@ -32,6 +33,7 @@ func (handlerGroup *HandlerGroup) GetRoomByID(context echo.Context) error {
 	return context.JSON(http.StatusOK, response)
 }
 
+//GetRoomsByBuilding returns all the rooms in a given building
 func (handlerGroup *HandlerGroup) GetRoomsByBuilding(context echo.Context) error {
 	building := context.Param("building")
 
@@ -43,6 +45,7 @@ func (handlerGroup *HandlerGroup) GetRoomsByBuilding(context echo.Context) error
 	return context.JSON(http.StatusOK, response)
 }
 
+//GetRoomByBuildingAndName returns the room by building and name
 func (handlerGroup *HandlerGroup) GetRoomByBuildingAndName(context echo.Context) error {
 	log.Printf("Getting room by building and name...")
 	response, err := handlerGroup.Accessors.GetRoomByBuildingAndName(context.Param("building"), context.Param("room"))
@@ -53,14 +56,26 @@ func (handlerGroup *HandlerGroup) GetRoomByBuildingAndName(context echo.Context)
 	return context.JSON(http.StatusOK, response)
 }
 
-func (handlerGroup *HandlerGroup) MakeRoom(context echo.Context) error {
-	room := accessors.RoomRequest{}
-	err := context.Bind(&room)
+//GetConfigurationByName gets the configuration by name
+func (handlerGroup *HandlerGroup) GetConfigurationByName(context echo.Context) error {
+	name := context.Param("configuration")
+
+	response, err := handlerGroup.Accessors.GetConfigurationByConfigurationName(name)
+
 	if err != nil {
-		return err
+		return context.String(http.StatusBadRequest, err.Error())
 	}
 
-	response, err := handlerGroup.Accessors.MakeRoom(room.Name, room.Building, room.VLAN)
+	return context.JSON(http.StatusOK, response)
+}
+
+//GetConfigurationByRoomAndBuilding gets the configuration by room and building
+func (handlerGroup *HandlerGroup) GetConfigurationByRoomAndBuilding(context echo.Context) error {
+	building := context.Param("building")
+	room := context.Param("room")
+
+	response, err := handlerGroup.Accessors.GetConfigurationByRoomAndBuilding(building, room)
+
 	if err != nil {
 		return context.String(http.StatusBadRequest, err.Error())
 	}

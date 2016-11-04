@@ -50,13 +50,12 @@ func main() {
 	router.Get("/rooms/id/:id", handlerGroup.GetRoomByID)
 	router.Get("/rooms/buildings/:building", handlerGroup.GetRoomsByBuilding)
 
-	router.Post("/rooms", handlerGroup.MakeRoom)
-
 	router.Get("/devices", handlerGroup.GetAllDevices)
 	router.Get("/devices/roles/:role/types/:type", handlerGroup.GetDevicesByRoleAndType)
 	router.Post("/devices", handlerGroup.MakeDevice)
 
-	router.Get("/commands", handlerGroup.GetAllCommands)
+	router.Get("/buildings/:building/rooms/:room/configuration", handlerGroup.GetConfigurationByRoomAndBuilding)
+	router.Get("/configurations/:configuration", handlerGroup.GetConfigurationByName)
 
 	log.Println("The Configuration Database microservice is listening on " + port)
 	server := fasthttp.New(port)
