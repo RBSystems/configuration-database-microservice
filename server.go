@@ -38,25 +38,19 @@ func main() {
 	router.Get("/buildings/:building/rooms/:room", handlerGroup.GetRoomByBuildingAndName)
 	router.Get("/buildings/:building/rooms", handlerGroup.GetRoomsByBuilding)
 	router.Get("/buildings/:building/rooms/:room/devices", handlerGroup.GetDevicesByBuildingAndRoom)
-	// router.Get("/buildings/:building/rooms/:room/devices/roles", handlerGroup.GetDevicesByBuildingAndRoomAndRole)
 	router.Get("/buildings/:building/rooms/:room/devices/roles/:role", handlerGroup.GetDevicesByBuildingAndRoomAndRole)
 	router.Get("/buildings/:building/rooms/:room/devices/:device", handlerGroup.GetDeviceByBuildingAndRoomAndName)
 
 	router.Put("/buildings/:building/rooms/:room/devices/:device/attributes/:attribute/:value", handlerGroup.PutDeviceAttributeByDeviceAndRoomAndBuilding, wso2jwt.ValidateJWT())
 
-	router.Post("/buildings", handlerGroup.MakeBuilding)
-
 	router.Get("/rooms", handlerGroup.GetAllRooms)
 	router.Get("/rooms/id/:id", handlerGroup.GetRoomByID)
 	router.Get("/rooms/buildings/:building", handlerGroup.GetRoomsByBuilding)
 
-	router.Post("/rooms", handlerGroup.MakeRoom)
-
-	router.Get("/devices", handlerGroup.GetAllDevices)
 	router.Get("/devices/roles/:role/types/:type", handlerGroup.GetDevicesByRoleAndType)
-	router.Post("/devices", handlerGroup.MakeDevice)
 
-	router.Get("/commands", handlerGroup.GetAllCommands)
+	router.Get("/buildings/:building/rooms/:room/configuration", handlerGroup.GetConfigurationByRoomAndBuilding)
+	router.Get("/configurations/:configuration", handlerGroup.GetConfigurationByName)
 
 	log.Println("The Configuration Database microservice is listening on " + port)
 	server := fasthttp.New(port)

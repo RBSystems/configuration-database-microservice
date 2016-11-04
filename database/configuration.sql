@@ -170,6 +170,25 @@ CREATE TABLE `Ports` (
   PRIMARY KEY (portID)
 );
 
+CREATE TABLE `RoomConfiguration` (
+  `roomConfigurationID` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(256),
+  `description` text,
+  PRIMARY KEY (roomConfigurationID)
+);
+
+CREATE TABLE `RoomConfigurationMapping` (
+  `roomConfigurationMappingID` int NOT NULL AUTO_INCREMENT,
+  `commandID` varchar(256),
+  `roomConfigurationID` text,
+  `commandCodeKey` varchar(256),
+  PRIMARY KEY (roomConfigurationMappingID),
+  FOREIGN KEY (commandID)
+    REFERENCES Commands(commandID),
+  FOREIGN KEY (roomConfigurationID)
+    REFERENCES RoomConfiguration(roomConfigurationID)
+);
+
 CREATE TABLE `PortConfiguration` (
   `portConfigurationID` int NOT NULL AUTO_INCREMENT,
   `destinationDeviceID` int,

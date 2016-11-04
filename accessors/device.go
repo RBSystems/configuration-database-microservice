@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+//Device represents a device object as found in the DB.
 type Device struct {
 	ID          int       `json:"id"`
 	Name        string    `json:"name"`
@@ -26,23 +27,17 @@ type Device struct {
 	Commands    []Command `json:"commands,omitempty"`
 }
 
+//Port represents a physical port on a device (HDMI, DP, Audo, etc.)
 type Port struct {
 	Source      string `json:"source"`
 	Name        string `json:"name"`
 	Destination string `json:"destination"`
 }
 
+//Endpoint represents a path on a microservice.
 type Endpoint struct {
 	Name string `json:"name"`
 	Path string `json:"path"`
-}
-
-type DeviceRequest struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Protocol string `json:"protocol"`
-	Building string `json:"building"`
-	Room     string `json:"room"`
 }
 
 /*
@@ -146,93 +141,8 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 	return allDevices, nil
 }
 
-// GetAllDevices returns a list of devices from the database
-func (accessorGroup *AccessorGroup) GetAllDevices() ([]Device, error) {
-	allBuildings := []Building{}
-
-	rows, err := accessorGroup.Database.Query("SELECT * FROM Devices")
-	if err != nil {
-		return []Device{}, err
-	}
-
-	for rows.Next() {
-		building := Building{}
-
-		err := rows.Scan(&building.ID, &building.Name, &building.Shortname)
-		if err != nil {
-			return []Device{}, err
-		}
-
-		allBuildings = append(allBuildings, building)
-	}
-
-	allRooms := []RoomRequest{}
-
-	rows, err = accessorGroup.Database.Query("SELECT rooms.id, rooms.name, rooms.vlan FROM rooms")
-	if err != nil {
-		return []Device{}, err
-	}
-
-	defer rows.Close()
-
-	for rows.Next() {
-		room := RoomRequest{}
-
-		err := rows.Scan(&room.ID, &room.Name, &room.VLAN)
-		if err != nil {
-			return []Device{}, err
-		}
-
-		allRooms = append(allRooms, room)
-	}
-
-	err = rows.Err()
-	if err != nil {
-		return []Device{}, err
-	}
-
-	allDevices := []Device{}
-
-	rows, err = accessorGroup.Database.Query("SELECT * FROM devices")
-	if err != nil {
-		return []Device{}, err
-	}
-
-	defer rows.Close()
-
-	for rows.Next() {
-		device := Device{}
-
-		err := rows.Scan(&device.ID, &device.Name, &device.Address, &device.Room.ID, &device.Building.ID)
-		if err != nil {
-			return []Device{}, err
-		}
-
-		for i := 0; i < len(allBuildings); i++ {
-			if allBuildings[i].ID == device.Building.ID {
-				device.Building = allBuildings[i]
-				break
-			}
-		}
-
-		for i := 0; i < len(allRooms); i++ {
-			if allRooms[i].ID == device.Room.ID {
-				// device.Room = allRooms[i]
-				break
-			}
-		}
-
-		allDevices = append(allDevices, device)
-	}
-
-	err = rows.Err()
-	if err != nil {
-		return []Device{}, err
-	}
-
-	return allDevices, nil
-}
-
+//GetPowerStatesByDeviceID gets the powerstates allowed for a given devices based on the
+//DevicePowerStates table in the DB.
 func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]string, error) {
 	query := `SELECT PowerStates.name FROM PowerStates
 	JOIN DevicePowerStates on DevicePowerStates.powerStateID = PowerStates.powerStateID
@@ -256,6 +166,8 @@ func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]st
 	return toReturn, nil
 }
 
+//GetDevicesByBuildingAndRoomAndRole gets the devices in the room specified with the given role,
+//as specified in the DeviceRole table in the DB
 func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingShortname string, roomName string, roleName string) ([]Device, error) {
 	log.Printf("Getting ")
 	devices, err := accessorGroup.GetDevicesByQuery(`WHERE Rooms.name LIKE ? AND Buildings.shortname LIKE ? AND DeviceRoleDefinition.name LIKE ?`,
@@ -281,10 +193,12 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingS
 
 }
 
+//GetDevicesByRoleAndType Gets all teh devices that have a given role and type.
 func (accessorGroup *AccessorGroup) GetDevicesByRoleAndType(deviceRole string, deviceType string) ([]Device, error) {
 	return accessorGroup.GetDevicesByQuery(`WHERE DeviceRoleDefinition.name LIKE ? AND DeviceTypes.name LIKE ?`, deviceRole, deviceType)
 }
 
+//GetDevicesByBuildingAndRoom get all the devices in the room specified.
 func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoom(buildingShortname string, roomName string) ([]Device, error) {
 	log.Printf("Getting devices in room %s and building %s", roomName, buildingShortname)
 
@@ -298,6 +212,8 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoom(buildingShortnam
 	return devices, nil
 }
 
+//GetDeviceCommandsByBuildingAndRoomAndName gets all the commands for the device
+//specified. Note that we assume that device names are unique within a room.
 func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]Command, error) {
 	allCommands := []Command{}
 
@@ -319,6 +235,8 @@ func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(bu
 	return allCommands, nil
 }
 
+//GetDevicePortsByBuildingAndRoomAndName gets the ports for the device
+//specified. Note that we assume that device names are unique within a room.
 func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]Port, error) {
 	allPorts := []Port{}
 
@@ -349,6 +267,8 @@ func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(build
 	return allPorts, nil
 }
 
+//GetDeviceByBuildingAndRoomAndName gets the device
+//specified. Note that we assume that device names are unique within a room.
 func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) (Device, error) {
 	room, err := accessorGroup.GetRoomByBuildingAndName(buildingShortname, roomName)
 	if err != nil {
@@ -387,6 +307,10 @@ func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingSh
 	return *device, nil
 }
 
+//GetAudioInformationForDevices gets the audio information for any of the devices
+//passed in.
+//It 1)checks if the device is an audio device and if so
+//2) retreives the audio specific information associated with that device.
 func (AccessorGroup *AccessorGroup) GetAudioInformationForDevices(devices []Device) ([]Device, error) {
 	for indx := 0; indx < len(devices); indx++ {
 		query := "SELECT muted, volume FROM AudioDevices where deviceID = ?"
@@ -405,6 +329,10 @@ func (AccessorGroup *AccessorGroup) GetAudioInformationForDevices(devices []Devi
 	return devices, nil
 }
 
+//GetAudioInformationForDevices gets the display information for any of the devices
+//passed in.
+//It 1)checks if the device is an display device and if so
+//2) retreives the display specific information associated with that device.
 func (AccessorGroup *AccessorGroup) GetDisplayInformationForDevices(devices []Device) ([]Device, error) {
 	for indx := 0; indx < len(devices); indx++ {
 		query := "SELECT blanked FROM Displays where deviceID = ?"
@@ -423,26 +351,8 @@ func (AccessorGroup *AccessorGroup) GetDisplayInformationForDevices(devices []De
 	return devices, nil
 }
 
-// MakeDevice adds a device to the database
-func (accessorGroup *AccessorGroup) MakeDevice(name string, address string, buildingShortname string, roomName string, protocol string) (Device, error) {
-	room, err := accessorGroup.GetRoomByBuildingAndName(buildingShortname, roomName)
-	if err != nil {
-		return Device{}, errors.New("Could not find a room named \"" + roomName + "\" in a building named \"" + buildingShortname + "\"")
-	}
-
-	_, err = accessorGroup.Database.Exec("INSERT INTO devices (name, address, room, protocol) VALUES (?, ?, ?, ?)", name, address, room.ID, protocol)
-	if err != nil {
-		return Device{}, err
-	}
-
-	device, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(buildingShortname, roomName, name)
-	if err != nil {
-		return Device{}, err
-	}
-
-	return device, nil
-}
-
+//PutDeviceAttributeByDeviceAndRoomAndBuilding allows you to change attribute values for devices
+//Currently sets volume and muted.
 func (accessorGroup *AccessorGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding(building string, room string, device string, attribute string, attributeValue string) (Device, error) {
 	switch strings.ToLower(attribute) {
 	case "volume":
