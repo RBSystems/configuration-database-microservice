@@ -130,7 +130,7 @@ func (accessorGroup *AccessorGroup) GetRoomsByBuilding(building string) ([]Room,
 
 // GetRoomByBuildingAndName returns a room from the database by building shortname and room name
 func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname string, name string) (Room, error) {
-	log.Printf("Getting room info for %s - %s...", buildingShortname, name)
+	log.Printf("Getting building info for %s - %s...", buildingShortname, name)
 	building, err := accessorGroup.GetBuildingByShortname(buildingShortname)
 	if err != nil {
 		return Room{}, err

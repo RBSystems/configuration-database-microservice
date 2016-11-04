@@ -108,7 +108,7 @@ func (accessorGroup *AccessorGroup) ExtractConfigurationCommand(rows *sql.Rows) 
 	for rows.Next() {
 		command := ConfigurationCommand{}
 
-		err = rows.Scan(&command.CommandID, &command.CommandName, &command.Priority, &command.CommandKey)
+		err = rows.Scan(&command.CommandID, &command.CommandName, &command.CommandKey, &command.Priority)
 		if err != nil {
 			log.Printf("Error: %s", err.Error())
 			return
