@@ -1,0 +1,12 @@
+package: github.com/byuoitav/configuration-database-microservice
+import:
+- package: github.com/byuoitav/wso2jwt
+- package: github.com/go-sql-driver/mysql
+  version: ~1.2.0
+- package: github.com/jessemillar/health
+  version: ~1.0.0
+- package: github.com/labstack/echo
+  version: ~2.2.0
+  subpackages:
+  - engine/fasthttp
+  - middleware
