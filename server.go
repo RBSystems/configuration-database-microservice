@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"net/http"
 	"os"
 
 	"github.com/byuoitav/configuration-database-microservice/accessors"
@@ -9,7 +9,6 @@ import (
 	"github.com/byuoitav/wso2jwt"
 	"github.com/jessemillar/health"
 	"github.com/labstack/echo"
-	"github.com/labstack/echo/engine/fasthttp"
 	"github.com/labstack/echo/middleware"
 )
 
@@ -29,31 +28,36 @@ func main() {
 	router.Pre(middleware.RemoveTrailingSlash())
 	router.Use(middleware.CORS())
 
-	router.Get("/health", health.Check)
+	// Use the `secure` routing group to require authentication
+	secure := router.Group("", echo.WrapMiddleware(wso2jwt.ValidateJWT))
 
-	router.Get("/buildings", handlerGroup.GetAllBuildings)
-	router.Get("/buildings/id/:id", handlerGroup.GetBuildingByID)
-	router.Get("/buildings/:shortname", handlerGroup.GetBuildingByShortname)
-	router.Get("/buildings/shortname/:shortname", handlerGroup.GetBuildingByShortname)
-	router.Get("/buildings/:building/rooms/:room", handlerGroup.GetRoomByBuildingAndName)
-	router.Get("/buildings/:building/rooms", handlerGroup.GetRoomsByBuilding)
-	router.Get("/buildings/:building/rooms/:room/devices", handlerGroup.GetDevicesByBuildingAndRoom)
-	router.Get("/buildings/:building/rooms/:room/devices/roles/:role", handlerGroup.GetDevicesByBuildingAndRoomAndRole)
-	router.Get("/buildings/:building/rooms/:room/devices/:device", handlerGroup.GetDeviceByBuildingAndRoomAndName)
+	router.GET("/health", echo.WrapHandler(http.HandlerFunc(health.Check)))
 
-	router.Put("/buildings/:building/rooms/:room/devices/:device/attributes/:attribute/:value", handlerGroup.PutDeviceAttributeByDeviceAndRoomAndBuilding, wso2jwt.ValidateJWT())
+	secure.GET("/buildings", handlerGroup.GetAllBuildings)
+	secure.GET("/buildings/id/:id", handlerGroup.GetBuildingByID)
+	secure.GET("/buildings/:shortname", handlerGroup.GetBuildingByShortname)
+	secure.GET("/buildings/shortname/:shortname", handlerGroup.GetBuildingByShortname)
+	secure.GET("/buildings/:building/rooms/:room", handlerGroup.GetRoomByBuildingAndName)
+	secure.GET("/buildings/:building/rooms", handlerGroup.GetRoomsByBuilding)
+	secure.GET("/buildings/:building/rooms/:room/devices", handlerGroup.GetDevicesByBuildingAndRoom)
+	secure.GET("/buildings/:building/rooms/:room/devices/roles/:role", handlerGroup.GetDevicesByBuildingAndRoomAndRole)
+	secure.GET("/buildings/:building/rooms/:room/devices/:device", handlerGroup.GetDeviceByBuildingAndRoomAndName)
 
-	router.Get("/rooms", handlerGroup.GetAllRooms)
-	router.Get("/rooms/id/:id", handlerGroup.GetRoomByID)
-	router.Get("/rooms/buildings/:building", handlerGroup.GetRoomsByBuilding)
+	secure.PUT("/buildings/:building/rooms/:room/devices/:device/attributes/:attribute/:value", handlerGroup.PutDeviceAttributeByDeviceAndRoomAndBuilding)
 
-	router.Get("/devices/roles/:role/types/:type", handlerGroup.GetDevicesByRoleAndType)
+	secure.GET("/rooms", handlerGroup.GetAllRooms)
+	secure.GET("/rooms/id/:id", handlerGroup.GetRoomByID)
+	secure.GET("/rooms/buildings/:building", handlerGroup.GetRoomsByBuilding)
 
-	router.Get("/buildings/:building/rooms/:room/configuration", handlerGroup.GetConfigurationByRoomAndBuilding)
-	router.Get("/configurations/:configuration", handlerGroup.GetConfigurationByName)
+	secure.GET("/devices/roles/:role/types/:type", handlerGroup.GetDevicesByRoleAndType)
 
-	log.Println("The Configuration Database microservice is listening on " + port)
-	server := fasthttp.New(port)
-	server.ReadBufferSize = 1024 * 10 // Needed to interface properly with WSO2
-	router.Run(server)
+	secure.GET("/buildings/:building/rooms/:room/configuration", handlerGroup.GetConfigurationByRoomAndBuilding)
+	secure.GET("/configurations/:configuration", handlerGroup.GetConfigurationByName)
+
+	server := http.Server{
+		Addr:           port,
+		MaxHeaderBytes: 1024 * 10,
+	}
+
+	router.StartServer(&server)
 }
