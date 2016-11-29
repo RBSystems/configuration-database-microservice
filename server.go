@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/byuoitav/authmiddleware"
 	"github.com/byuoitav/configuration-database-microservice/accessors"
 	"github.com/byuoitav/configuration-database-microservice/handlers"
-	"github.com/byuoitav/wso2jwt"
 	"github.com/jessemillar/health"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -29,7 +29,7 @@ func main() {
 	router.Use(middleware.CORS())
 
 	// Use the `secure` routing group to require authentication
-	secure := router.Group("", echo.WrapMiddleware(wso2jwt.ValidateJWT))
+	secure := router.Group("", echo.WrapMiddleware(authmiddleware.Authenticate))
 
 	router.GET("/health", echo.WrapHandler(http.HandlerFunc(health.Check)))
 
