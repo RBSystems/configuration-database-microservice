@@ -18,9 +18,8 @@ type RoomConfiguration struct {
 //ConfigurationCommand commands is the command information correlated with the
 //specifics for the configuration (key and priority)
 type ConfigurationCommand struct {
-	CommandName string `json:"commandName"`
-	Priority    int    `json:"priority"`
-	CommandKey  string `json:"commandKey"`
+	Priority   int    `json:"priority"`
+	CommandKey string `json:"commandKey"`
 }
 
 //GetConfigurationByRoomAndBuilding will get the configuration information tied to a given room.
@@ -80,7 +79,7 @@ func (accessorGroup *AccessorGroup) GetConfigurationByQuery(queryAddition string
 func (accessorGroup *AccessorGroup) GetCommandsForConfigurationByID(configurationID int) (allCommands []ConfigurationCommand, err error) {
 	//Get configuration commands
 	query := `
-	Select CommandName, CodeKey, Priority
+	Select CodeKey, Priority
 	FROM vConfigurationMapping
 	WHERE ConfigurationID = ?`
 
@@ -107,7 +106,7 @@ func (accessorGroup *AccessorGroup) ExtractConfigurationCommand(rows *sql.Rows) 
 	for rows.Next() {
 		command := ConfigurationCommand{}
 
-		err = rows.Scan(&command.CommandName, &command.CommandKey, &command.Priority)
+		err = rows.Scan(&command.CommandKey, &command.Priority)
 		if err != nil {
 			log.Printf("Error: %s", err.Error())
 			return
