@@ -73,6 +73,7 @@ func (accessorGroup *AccessorGroup) GetConfigurationByQuery(queryAddition string
 	}
 
 	config.Commands, err = accessorGroup.GetCommandsForConfigurationByID(config.ID)
+
 	return
 }
 
@@ -97,7 +98,9 @@ func (accessorGroup *AccessorGroup) GetCommandsForConfigurationByID(configuratio
 //ExtractRoomConfiguration pulls the items from the row to fill the config item.
 func (accessorGroup *AccessorGroup) ExtractRoomConfiguration(rows *sql.Rows) (config RoomConfiguration, err error) {
 	rows.Next()
+
 	err = rows.Scan(&config.ID, &config.Name, &config.Description, &config.RoomKey, &config.RoomInitKey)
+
 	return
 }
 

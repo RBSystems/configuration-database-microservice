@@ -2,6 +2,7 @@ package accessors
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 )
 
@@ -147,6 +148,11 @@ func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname s
 	if err != nil {
 		return Room{}, err
 	}
+
+	if len(rooms) < 1 {
+		return Room{}, errors.New("No rooms found with that name.")
+	}
+
 	room = rooms[0]
 
 	log.Printf("Getting device info for %s-%s...", buildingShortname, name)
@@ -155,7 +161,7 @@ func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname s
 		return room, err
 	}
 
-	log.Printf("Getting configuration information for %s-%s...", buildingShortname, name)
+	log.Printf("Getting configuration information for %s-%s, room key %v...", buildingShortname, name, room.ConfigurationID)
 	room.Configuration, err = accessorGroup.GetConfigurationByConfigurationID(room.ConfigurationID)
 	if err != nil {
 		return room, err
