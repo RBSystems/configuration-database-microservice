@@ -155,7 +155,7 @@ func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname s
 		return room, err
 	}
 
-	log.Printf("Gettign configuration information for %s-%s...", buildingShortname, name)
+	log.Printf("Getting configuration information for %s-%s...", buildingShortname, name)
 	room.Configuration, err = accessorGroup.GetConfigurationByConfigurationID(room.ConfigurationID)
 	if err != nil {
 		return room, err

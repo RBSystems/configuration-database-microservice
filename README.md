@@ -5,4 +5,4 @@
 The environment variables `CONFIGURATION_DATABASE_USERNAME`, `CONFIGURATION_DATABASE_PASSWORD`, `CONFIGURATION_DATABASE_HOST`, `CONFIGURATION_DATABASE_PORT`, `CONFIGURATION_DATABASE_NAME` need to be set in order for the microservice to function.
 
 ## Schema
-![Schema](schema.png)
+![Schema](https://raw.githubusercontent.com/byuoitav/configuration-database-microservice/master/docs/schema.png)
