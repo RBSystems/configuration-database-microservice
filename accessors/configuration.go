@@ -12,6 +12,7 @@ type RoomConfiguration struct {
 	Name        string                 `json:"name"`
 	RoomKey     string                 `json:"roomKey"`
 	Description string                 `json:"description"`
+	RoomInitKey string                 `json:"roomInitKey"`
 	Commands    []ConfigurationCommand `json:"commands"`
 }
 
@@ -56,7 +57,7 @@ func (accessorGroup *AccessorGroup) GetConfigurationByConfigurationID(configurat
 //fill the data. Note that this is meant to only access the TOP 1 of any objects returned.
 func (accessorGroup *AccessorGroup) GetConfigurationByQuery(queryAddition string, params ...interface{}) (config RoomConfiguration, err error) {
 	baseQuery := `
-	Select roomConfigurationID, name, description, roomConfigurationKey
+	Select roomConfigurationID, name, description, roomConfigurationKey, roomInitializationKey
 	FROM RoomConfiguration
 	`
 	limit := `
@@ -98,7 +99,7 @@ func (accessorGroup *AccessorGroup) GetCommandsForConfigurationByID(configuratio
 //ExtractRoomConfiguration pulls the items from the row to fill the config item.
 func (accessorGroup *AccessorGroup) ExtractRoomConfiguration(rows *sql.Rows) (config RoomConfiguration, err error) {
 	rows.Next()
-	err = rows.Scan(&config.ID, &config.Name, &config.Description, &config.RoomKey)
+	err = rows.Scan(&config.ID, &config.Name, &config.Description, &config.RoomKey, &config.RoomInitKey)
 	return
 }
 
