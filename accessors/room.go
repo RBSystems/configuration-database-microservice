@@ -8,17 +8,13 @@ import (
 
 //Room represents a room object as represented in the DB.
 type Room struct {
-	ID                 int               `json:"id,omitempty"`
-	Name               string            `json:"name,omitempty"`
-	Description        string            `json:"description,omitempty"`
-	Building           Building          `json:"building,omitempty"`
-	CurrentVideoInput  int               `json:"currentVideoInput,omitempty"`
-	CurrentAudioInput  int               `json:"currentAudioInput,omitempty"`
-	CurrentVideoOutput int               `json:"currentVideoOutput,omitempty"`
-	CurrentAudioOutput int               `json:"currentAudioOutput,omitempty"`
-	Devices            []Device          `json:"devices,omitempty"`
-	ConfigurationID    int               `json:"configurationID,omitempty"`
-	Configuration      RoomConfiguration `json:"configuration"`
+	ID              int               `json:"id,omitempty"`
+	Name            string            `json:"name,omitempty"`
+	Description     string            `json:"description,omitempty"`
+	Building        Building          `json:"building,omitempty"`
+	Devices         []Device          `json:"devices,omitempty"`
+	ConfigurationID int               `json:"configurationID,omitempty"`
+	Configuration   RoomConfiguration `json:"configuration"`
 }
 
 // GetAllRooms returns a list of rooms from the database
@@ -99,10 +95,6 @@ func (accessorGroup *AccessorGroup) ExtractRoomData(rows *sql.Rows) (rooms []Roo
 			&room.Name,
 			&room.Building.ID,
 			&room.Description,
-			&room.CurrentVideoOutput,
-			&room.CurrentAudioOutput,
-			&room.CurrentVideoInput,
-			&room.CurrentAudioInput,
 			&room.ConfigurationID,
 		)
 		if err != nil {
