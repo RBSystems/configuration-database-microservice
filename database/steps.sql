@@ -73,7 +73,7 @@ INSERT INTO DeviceCommands  (commandID, deviceID, enabled, endpointID, microserv
 --Where we are
 -------------------------------
 
--- Get all commands/microservice/endpoints for output devices in a given room. 
+-- Get all commands/microservice/endpoints for output devices in a given room.
 SELECT
 Devices.name as deviceName,
 Devices.address as deviceAddress,
@@ -82,4 +82,29 @@ Endpoints.name as endpointName,
 Endpoints.path as endpointPath,
 Microservices.address as microserviceAddress
  FROM Devices JOIN DeviceCommands on Devices.deviceID = DeviceCommands.deviceID JOIN Commands on DeviceCommands.commandID = Commands.commandID JOIN Endpoints on DeviceCommands.endpointID = Endpoints.endpointID JOIN Microservices ON DeviceCommands.microserviceID = Microservices.microserviceID
- WHERE Devices.RoomID = 1 AND Devices.output = 1
+ WHERE Devices.RoomID = 1 AND Devices.output = 1;
+
+ CREATE VIEW vDevice
+ AS
+ SELECT
+ name as deviceName,
+ address as deviceAddress
+ rooom.name as roomName
+ building.shortName as buildingName
+ type.name as deviceTypeID
+ FROM Devices
+ JOIN Rooms as room on Devices.roomID = room.roomID
+ JOIN Buildings as building on Devices.buildingID = building.buildingID
+ JOIN DeviceTypes as type on Devices.typeID = type.typeID
+
+ CREATE VIEW vDeviceRoles
+ AS
+ Select
+ concat(building.shortName,' ', room.name, ' ', device.name) as deviceName,
+ role.name as roleName
+ FROM DeviceRole
+ JOIN Devices as device on DeviceRole.deviceID = device.deviceID
+ JOIN DeviceRoleDefinition as role on DeviceRole.deviceRoleDefinitionID = role.deviceRoleDefinitionID
+ JOIN Buildings as building on building.buildingID = device.buildingID
+ JOIN Rooms as room on device.roomID = room.roomID
+ ORDER BY device.deviceID

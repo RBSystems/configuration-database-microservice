@@ -71,7 +71,6 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
   	Devices.address as deviceAddress,
   	Devices.input,
   	Devices.output,
-  	Devices.Responding,
   	Rooms.roomID,
   	Rooms.name as roomName,
   	Rooms.description as roomDescription,
@@ -79,13 +78,11 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
   	Buildings.name as buildingName,
   	Buildings.shortName as buildingShortname,
   	Buildings.description as buildingDescription,
-  	DeviceTypes.name as deviceType,
-  	PowerStates.name as power
+  	DeviceTypes.name as deviceType
   	FROM Devices
   	JOIN Rooms on Rooms.roomID = Devices.roomID
   	JOIN Buildings on Buildings.buildingID = Devices.buildingID
   	JOIN DeviceTypes on Devices.typeID = DeviceTypes.deviceTypeID
-  	JOIN PowerStates on PowerStates.powerStateID = Devices.powerID
     JOIN DeviceRole on DeviceRole.deviceID = Devices.deviceID
     JOIN DeviceRoleDefinition on DeviceRole.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID`
 
@@ -99,6 +96,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 	defer rows.Close()
 
 	for rows.Next() {
+
 		device := Device{}
 
 		err := rows.Scan(&device.ID,
@@ -106,7 +104,6 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 			&device.Address,
 			&device.Input,
 			&device.Output,
-			&device.Responding,
 			&device.Room.ID,
 			&device.Room.Name,
 			&device.Room.Description,
@@ -114,8 +111,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 			&device.Building.Name,
 			&device.Building.Shortname,
 			&device.Building.Description,
-			&device.Type,
-			&device.Power)
+			&device.Type)
 		if err != nil {
 			return []Device{}, err
 		}
@@ -174,20 +170,11 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingS
 		roomName, buildingShortname, roleName)
 
 	if err != nil {
+		log.Printf("Error: %v", err.Error())
 		return []Device{}, err
 	}
 	switch strings.ToLower(roleName) {
-	case "audioout":
-		devices, err = accessorGroup.GetAudioInformationForDevices(devices)
-		if err != nil {
-			return []Device{}, err
-		}
-		break
-	case "videoout":
-		devices, err = accessorGroup.GetDisplayInformationForDevices(devices)
-		if err != nil {
-			return []Device{}, err
-		}
+
 	}
 	return devices, nil
 
@@ -295,60 +282,7 @@ func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingSh
 
 	device.Ports = ports
 
-	devices, err := accessorGroup.GetAudioInformationForDevices([]Device{*device})
-	if err != nil {
-		return Device{}, errors.New("Error in attempt to get AudioInformation")
-	}
-
-	if len(devices) == 1 {
-		return devices[0], nil
-	}
-
 	return *device, nil
-}
-
-//GetAudioInformationForDevices gets the audio information for any of the devices
-//passed in.
-//It 1)checks if the device is an audio device and if so
-//2) retreives the audio specific information associated with that device.
-func (AccessorGroup *AccessorGroup) GetAudioInformationForDevices(devices []Device) ([]Device, error) {
-	for indx := 0; indx < len(devices); indx++ {
-		query := "SELECT muted, volume FROM AudioDevices where deviceID = ?"
-
-		rows, err := AccessorGroup.Database.Query(query, devices[indx].ID)
-		if err != nil {
-			return []Device{}, err
-		}
-		for rows.Next() {
-			err = rows.Scan(&devices[indx].Muted, &devices[indx].Volume)
-			if err != nil {
-				return []Device{}, err
-			}
-		}
-	}
-	return devices, nil
-}
-
-//GetAudioInformationForDevices gets the display information for any of the devices
-//passed in.
-//It 1)checks if the device is an display device and if so
-//2) retreives the display specific information associated with that device.
-func (AccessorGroup *AccessorGroup) GetDisplayInformationForDevices(devices []Device) ([]Device, error) {
-	for indx := 0; indx < len(devices); indx++ {
-		query := "SELECT blanked FROM Displays where deviceID = ?"
-
-		rows, err := AccessorGroup.Database.Query(query, devices[indx].ID)
-		if err != nil {
-			return []Device{}, err
-		}
-		for rows.Next() {
-			err = rows.Scan(&devices[indx].Blanked)
-			if err != nil {
-				return []Device{}, err
-			}
-		}
-	}
-	return devices, nil
 }
 
 //PutDeviceAttributeByDeviceAndRoomAndBuilding allows you to change attribute values for devices
