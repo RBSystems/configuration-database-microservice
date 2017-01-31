@@ -27,6 +27,11 @@ type Device struct {
 	Commands    []Command `json:"commands,omitempty"`
 }
 
+//GetFullName reutrns the string of building + room + name
+func (d *Device) GetFullName() string {
+	return (d.Room.Name + "-" + d.Building.Shortname + "-" + d.Name)
+}
+
 //Port represents a physical port on a device (HDMI, DP, Audo, etc.)
 type Port struct {
 	Source      string `json:"source"`
