@@ -257,7 +257,7 @@ func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(build
 //GetDeviceByBuildingAndRoomAndName gets the device
 //specified. Note that we assume that device names are unique within a room.
 func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) (Device, error) {
-	dev, err := accessorGroup.GetDevicesByQuery("WHERE Buildings.shortName = ? AND Rooms.name = ? AND Devices.name = ?", []string{buildingShortname, roomName, deviceName})
+	dev, err := accessorGroup.GetDevicesByQuery("WHERE Buildings.shortName = ? AND Rooms.name = ? AND Devices.name = ?", buildingShortname, roomName, deviceName)
 	if err != nil {
 		return Device{}, err
 	}
