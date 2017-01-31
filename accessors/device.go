@@ -257,32 +257,12 @@ func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(build
 //GetDeviceByBuildingAndRoomAndName gets the device
 //specified. Note that we assume that device names are unique within a room.
 func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) (Device, error) {
-	room, err := accessorGroup.GetRoomByBuildingAndName(buildingShortname, roomName)
-	if err != nil {
-		return Device{}, errors.New("Could not find a room named \"" + roomName + "\" in a building named \"" + buildingShortname + "\"")
-	}
-
-	device := &Device{}
-	err = accessorGroup.Database.QueryRow("SELECT * FROM Devices WHERE buildingID=? AND roomID=? AND name=?", room.Building.ID, room.ID, deviceName).Scan(&device.ID, &device.Name, &device.Address, &device.Input, &device.Output, &device.Building.ID, &device.Room.ID, &device.Type, &device.Power, &device.Responding)
+	dev, err := accessorGroup.GetDevicesByQuery("WHERE Buildings.shortName = ? AND Rooms.name = ? AND Devices.name = ?", []string{buildingShortname, roomName, deviceName})
 	if err != nil {
 		return Device{}, err
 	}
 
-	commands, err := accessorGroup.GetDeviceCommandsByBuildingAndRoomAndName(buildingShortname, roomName, deviceName)
-	if err != nil {
-		return Device{}, errors.New("Could not find a device named \"" + deviceName + "\" in a room named \"" + roomName + "\" in a building named \"" + buildingShortname + "\"")
-	}
-
-	device.Commands = commands
-
-	ports, err := accessorGroup.GetDevicePortsByBuildingAndRoomAndName(buildingShortname, roomName, deviceName)
-	if err != nil {
-		return Device{}, errors.New("Poots Could not find a device named \"" + deviceName + "\" in a room named \"" + roomName + "\" in a building named \"" + buildingShortname + "\"")
-	}
-
-	device.Ports = ports
-
-	return *device, nil
+	return dev[0], nil
 }
 
 //PutDeviceAttributeByDeviceAndRoomAndBuilding allows you to change attribute values for devices
