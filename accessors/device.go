@@ -29,7 +29,7 @@ type Device struct {
 
 //GetFullName reutrns the string of building + room + name
 func (d *Device) GetFullName() string {
-	return (d.Room.Name + "-" + d.Building.Shortname + "-" + d.Name)
+	return (d.Building.Shortname + "-" + d.Room.Name + "-" + d.Name)
 }
 
 //Port represents a physical port on a device (HDMI, DP, Audo, etc.)
