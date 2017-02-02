@@ -37,8 +37,6 @@ func (accessorGroup *AccessorGroup) GetAllRooms() ([]Room, error) {
 		allBuildings = append(allBuildings, building)
 	}
 
-	allRooms := []Room{}
-
 	rows, err = accessorGroup.Database.Query("SELECT * FROM Rooms")
 	if err != nil {
 		return []Room{}, err
@@ -46,22 +44,9 @@ func (accessorGroup *AccessorGroup) GetAllRooms() ([]Room, error) {
 
 	defer rows.Close()
 
-	for rows.Next() {
-		room := Room{}
-
-		err = rows.Scan(&room.ID, &room.Name, &room.Building.ID, &room.Description)
-		if err != nil {
-			return []Room{}, err
-		}
-
-		for i := 0; i < len(allBuildings); i++ {
-			if allBuildings[i].ID == room.Building.ID {
-				room.Building = allBuildings[i]
-				break
-			}
-		}
-
-		allRooms = append(allRooms, room)
+	allRooms, err := accessorGroup.ExtractRoomData(rows)
+	if err != nil {
+		return []Room{}, err
 	}
 
 	err = rows.Err()

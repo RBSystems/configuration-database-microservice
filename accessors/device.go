@@ -9,22 +9,22 @@ import (
 
 //Device represents a device object as found in the DB.
 type Device struct {
-	ID          int       `json:"id"`
-	Name        string    `json:"name"`
-	Address     string    `json:"address"`
-	Input       bool      `json:"input"`
-	Output      bool      `json:"output"`
-	Building    Building  `json:"building"`
-	Room        Room      `json:"room"`
-	Type        string    `json:"type"`
-	Power       string    `json:"power"`
-	Blanked     *bool     `json:"blanked,omitempty"`
-	Volume      *int      `json:"volume,omitempty"`
-	Muted       *bool     `json:"muted,omitempty"`
-	PowerStates []string  `json:"powerstates,omitempty"`
-	Responding  bool      `json:"responding"`
-	Ports       []Port    `json:"ports,omitempty"`
-	Commands    []Command `json:"commands,omitempty"`
+	ID          int                 `json:"id"`
+	Name        string              `json:"name"`
+	Address     string              `json:"address"`
+	Input       bool                `json:"input"`
+	Output      bool                `json:"output"`
+	Building    Building            `json:"building"`
+	Room        Room                `json:"room"`
+	Type        string              `json:"type"`
+	Power       string              `json:"power"`
+	Blanked     *bool               `json:"blanked,omitempty"`
+	Volume      *int                `json:"volume,omitempty"`
+	Muted       *bool               `json:"muted,omitempty"`
+	PowerStates []string            `json:"powerstates,omitempty"`
+	Responding  bool                `json:"responding"`
+	Ports       []PortConfiguration `json:"ports,omitempty"`
+	Commands    []DeviceCommand     `json:"commands,omitempty"`
 }
 
 //GetFullName reutrns the string of building + room + name
@@ -32,8 +32,8 @@ func (d *Device) GetFullName() string {
 	return (d.Building.Shortname + "-" + d.Room.Name + "-" + d.Name)
 }
 
-//Port represents a physical port on a device (HDMI, DP, Audo, etc.)
-type Port struct {
+//PortConfiguration represents a physical port on a device (HDMI, DP, Audo, etc.)
+type PortConfiguration struct {
 	Source      string `json:"source"`
 	Name        string `json:"name"`
 	Destination string `json:"destination"`
@@ -206,8 +206,8 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoom(buildingShortnam
 
 //GetDeviceCommandsByBuildingAndRoomAndName gets all the commands for the device
 //specified. Note that we assume that device names are unique within a room.
-func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]Command, error) {
-	allCommands := []Command{}
+func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]DeviceCommand, error) {
+	allCommands := []DeviceCommand{}
 
 	rows, err := accessorGroup.Database.Query(`SELECT Commands.name as commandName, Endpoints.name as endpointName, Endpoints.path as endpointPath, Microservices.address as microserviceAddress
     FROM Devices
@@ -216,10 +216,10 @@ func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(bu
     JOIN Buildings ON Rooms.buildingID=Buildings.buildingID
     WHERE Rooms.name=? AND Buildings.shortName=? AND Devices.name=?`, roomName, buildingShortname, deviceName)
 	if err != nil {
-		return []Command{}, err
+		return []DeviceCommand{}, err
 	}
 
-	allCommands, err = ExtractCommand(rows)
+	allCommands, err = ExtractDeviceCommands(rows)
 	if err != nil {
 		return allCommands, err
 	}
@@ -229,8 +229,8 @@ func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(bu
 
 //GetDevicePortsByBuildingAndRoomAndName gets the ports for the device
 //specified. Note that we assume that device names are unique within a room.
-func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]Port, error) {
-	allPorts := []Port{}
+func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]PortConfiguration, error) {
+	allPorts := []PortConfiguration{}
 
 	rows, err := accessorGroup.Database.Query(`SELECT srcDevice.Name as sourceName, Ports.name as portName, destDevice.Name as DestinationDevice FROM Ports
     JOIN PortConfiguration ON Ports.PortID = PortConfiguration.PortID
@@ -241,16 +241,16 @@ func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(build
     WHERE Rooms.name=? AND Buildings.shortName=? AND destDevice.name=?`, roomName, buildingShortname, deviceName)
 	if err != nil {
 		log.Print(err)
-		return []Port{}, err
+		return []PortConfiguration{}, err
 	}
 
 	for rows.Next() {
-		port := Port{}
+		port := PortConfiguration{}
 
 		err := rows.Scan(&port.Source, &port.Name, &port.Destination)
 		if err != nil {
 			log.Print(err)
-			return []Port{}, err
+			return []PortConfiguration{}, err
 		}
 
 		allPorts = append(allPorts, port)
