@@ -1,6 +1,7 @@
 package accessors
 
 import (
+	"database/sql"
 	"errors"
 	"log"
 	"strconv"
@@ -39,10 +40,87 @@ type PortConfiguration struct {
 	Destination string `json:"destination"`
 }
 
-//Endpoint represents a path on a microservice.
-type Endpoint struct {
-	Name string `json:"name"`
-	Path string `json:"path"`
+//DeviceType represents the DeviceType table in the database
+type DeviceType struct {
+	DeviceTypeID int    `json:"deviceTypeID"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+}
+
+//PowerState represents the PowerState table in the database
+type PowerState struct {
+	PowerStateID int    `json:"powerStateID"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+}
+
+//GetDeviceTypes simply returns the contents of the DeviceTypes table
+func (accessorGroup *AccessorGroup) GetDeviceTypes() ([]DeviceType, error) {
+
+	rows, err := accessorGroup.Database.Query("SELECT * FROM DeviceTypes")
+	if err != nil {
+		return []DeviceType{}, err
+	}
+	defer rows.Close()
+
+	deviceTypes, err := extractDeviceTypes(rows)
+	if err != nil {
+		return []DeviceType{}, err
+	}
+
+	return deviceTypes, nil
+}
+
+func extractDeviceTypes(rows *sql.Rows) ([]DeviceType, error) {
+	deviceTypes := []DeviceType{}
+
+	for rows.Next() {
+
+		deviceType := DeviceType{}
+		err := rows.Scan(&deviceType.DeviceTypeID, &deviceType.Name, &deviceType.Description)
+		if err != nil {
+			return []DeviceType{}, err
+		}
+		deviceTypes = append(deviceTypes, deviceType)
+
+	}
+
+	return deviceTypes, nil
+}
+
+//GetPowerStates simply returns the contents of the PowerStates table
+func (accessorGroup *AccessorGroup) GetPowerStates() ([]PowerState, error) {
+
+	rows, err := accessorGroup.Database.Query("SELECT * FROM PowerStates")
+	if err != nil {
+		return []PowerState{}, err
+	}
+
+	defer rows.Close()
+
+	powerStates, err := extractPowerStates(rows)
+	if err != nil {
+		return []PowerState{}, err
+	}
+
+	return powerStates, nil
+}
+
+func extractPowerStates(rows *sql.Rows) ([]PowerState, error) {
+	powerStates := []PowerState{}
+
+	for rows.Next() {
+
+		powerState := PowerState{}
+		err := rows.Scan(&powerState.PowerStateID, &powerState.Name, &powerState.Description)
+		if err != nil {
+			return []PowerState{}, err
+		}
+		powerStates = append(powerStates, powerState)
+
+	}
+
+	return powerStates, nil
 }
 
 /*
@@ -144,13 +222,13 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 
 //GetPowerStatesByDeviceID gets the powerstates allowed for a given devices based on the
 //DevicePowerStates table in the DB.
-func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]string, error) {
+func (accessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]string, error) {
 	query := `SELECT PowerStates.name FROM PowerStates
 	JOIN DevicePowerStates on DevicePowerStates.powerStateID = PowerStates.powerStateID
 	Where DevicePowerStates.deviceID = ?`
 
 	toReturn := []string{}
-	rows, err := AccessorGroup.Database.Query(query, deviceID)
+	rows, err := accessorGroup.Database.Query(query, deviceID)
 	if err != nil {
 		return []string{}, err
 	}
