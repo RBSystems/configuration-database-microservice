@@ -8,7 +8,27 @@ import (
 	"github.com/labstack/echo"
 )
 
-//GetAllRooms gets al rooms
+//GetRoomConfigurationKeys returns all distinct room configuration keys
+func (handlerGroup *HandlerGroup) GetRoomConfigurationKeys(context echo.Context) error {
+	response, err := handlerGroup.Accessors.GetAllRoomConfigurationKeys()
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
+//GetRoomInitializationKeys returns all distinct room initialization keys
+func (handlerGroup *HandlerGroup) GetRoomInitializationKeys(context echo.Context) error {
+	response, err := handlerGroup.Accessors.GetAllInitializationKeys()
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
+//GetAllRooms gets all rooms
 func (handlerGroup *HandlerGroup) GetAllRooms(context echo.Context) error {
 	response, err := handlerGroup.Accessors.GetAllRooms()
 	if err != nil {

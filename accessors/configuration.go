@@ -23,6 +23,80 @@ type ConfigurationCommand struct {
 	CommandKey string `json:"commandKey"`
 }
 
+//GetAllRoomConfigurationKeys returns an array of all the distinct room configuration keys in the database
+func (accessorGroup *AccessorGroup) GetAllRoomConfigurationKeys() ([]string, error) {
+
+	rows, err := accessorGroup.Database.Query("SELECT DISTINCT roomConfigurationKey FROM RoomConfiguration")
+	if err != nil {
+		return []string{}, err
+	}
+
+	defer rows.Close()
+
+	roomConfigurationKeys, err := extractRoomConfigurationKeys(rows)
+	if err != nil {
+		return []string{}, err
+	}
+
+	return roomConfigurationKeys, nil
+
+}
+
+func extractRoomConfigurationKeys(rows *sql.Rows) ([]string, error) {
+
+	roomConfigurationKeys := []string{}
+
+	for rows.Next() {
+		var roomConfigurationKey string
+
+		err := rows.Scan(&roomConfigurationKey)
+		if err != nil {
+			return []string{}, err
+		}
+
+		roomConfigurationKeys = append(roomConfigurationKeys, roomConfigurationKey)
+
+	}
+
+	return roomConfigurationKeys, nil
+
+}
+
+//GetAllInitializationKeys returns an array of all the distinct room initialization keys in the database
+func (accessorGroup *AccessorGroup) GetAllInitializationKeys() ([]string, error) {
+
+	rows, err := accessorGroup.Database.Query("SELECT DISTINCT roomInitializationKey FROM RoomConfiguration")
+	if err != nil {
+		return []string{}, err
+	}
+
+	defer rows.Close()
+
+	roomKeys, err := extractRoomInitializationKeys(rows)
+	if err != nil {
+		return []string{}, err
+	}
+
+	return roomKeys, nil
+}
+
+func extractRoomInitializationKeys(rows *sql.Rows) ([]string, error) {
+	var roomKeys []string
+
+	for rows.Next() {
+
+		var roomKey string
+		err := rows.Scan(&roomKey)
+		if err != nil {
+			return []string{}, err
+		}
+		roomKeys = append(roomKeys, roomKey)
+
+	}
+
+	return roomKeys, nil
+}
+
 //GetConfigurationByRoomAndBuilding will get the configuration information tied to a given room.
 func (accessorGroup *AccessorGroup) GetConfigurationByRoomAndBuilding(building string, room string) (toReturn RoomConfiguration, err error) {
 

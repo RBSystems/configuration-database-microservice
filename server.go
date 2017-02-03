@@ -54,6 +54,15 @@ func main() {
 	secure.GET("/buildings/:building/rooms/:room/configuration", handlerGroup.GetConfigurationByRoomAndBuilding)
 	secure.GET("/configurations/:configuration", handlerGroup.GetConfigurationByName)
 
+	secure.GET("/ports", handlerGroup.GetAllPorts)
+	secure.GET("/commands", handlerGroup.GetAllCommands)
+	secure.GET("/microservices", handlerGroup.GetAllMicroservices)
+	secure.GET("/endpoints", handlerGroup.GetAllMicroservices)
+	secure.GET("/devices/types", handlerGroup.GetAllDeviceTypes)
+
+	secure.GET("/rooms/configuration/initializationKey", handlerGroup.GetRoomConfigurationKeys)
+	secure.GET("/rooms/configuration/", handlerGroup.GetRoomInitializationKeys)
+
 	server := http.Server{
 		Addr:           port,
 		MaxHeaderBytes: 1024 * 10,

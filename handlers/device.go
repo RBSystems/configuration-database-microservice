@@ -6,6 +6,36 @@ import (
 	"github.com/labstack/echo"
 )
 
+//GetAllDeviceTypes returns a dump of all device types in the database
+func (handlerGroup *HandlerGroup) GetAllDeviceTypes(context echo.Context) error {
+	response, err := handlerGroup.Accessors.GetDeviceTypes()
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
+//GetAllPorts returns all the ports in the database
+func (handlerGroup *HandlerGroup) GetAllPorts(context echo.Context) error {
+	response, err := handlerGroup.Accessors.GetAllPorts()
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
+//GetPowerStates returns a dump of all the power StatusBadRequest
+func (handlerGroup *HandlerGroup) GetPowerStates(context echo.Context) error {
+	response, err := handlerGroup.Accessors.GetPowerStates()
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
 func (handlerGroup *HandlerGroup) GetDevicesByBuildingAndRoom(context echo.Context) error {
 
 	response, err := handlerGroup.Accessors.GetDevicesByBuildingAndRoom(context.Param("building"), context.Param("room"))
