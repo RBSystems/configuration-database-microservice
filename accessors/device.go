@@ -38,6 +38,7 @@ type PortConfiguration struct {
 	Source      string `json:"source"`
 	Name        string `json:"name"`
 	Destination string `json:"destination"`
+	Host        string `json:"host"`
 }
 
 //DeviceType represents the DeviceType table in the database
@@ -310,13 +311,14 @@ func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(bu
 func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]PortConfiguration, error) {
 	allPorts := []PortConfiguration{}
 
-	rows, err := accessorGroup.Database.Query(`SELECT srcDevice.Name as sourceName, Ports.name as portName, destDevice.Name as DestinationDevice FROM Ports
+	rows, err := accessorGroup.Database.Query(`SELECT srcDevice.Name as sourceName, Ports.name as portName, destDevice.Name as DestinationDevice, hostDevice.name as HostDevice FROM Ports
     JOIN PortConfiguration ON Ports.PortID = PortConfiguration.PortID
     JOIN Devices as srcDevice on srcDevice.DeviceID = PortConfiguration.sourceDeviceID
     JOIN Devices as destDevice on destDevice.DeviceID = PortConfiguration.destinationDeviceID
+		JOIN Devices as hostDevice on hostDevice.DeviceID = PortConfiguration.hostDeviceID
     JOIN Rooms ON Rooms.roomID=destDevice.roomID
     JOIN Buildings ON Rooms.buildingID=Buildings.buildingID
-    WHERE Rooms.name=? AND Buildings.shortName=? AND destDevice.name=?`, roomName, buildingShortname, deviceName)
+    WHERE Rooms.name=? AND Buildings.shortName=? AND hostDevice.name=?`, roomName, buildingShortname, deviceName)
 	if err != nil {
 		log.Print(err)
 		return []PortConfiguration{}, err
@@ -325,7 +327,7 @@ func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(build
 	for rows.Next() {
 		port := PortConfiguration{}
 
-		err := rows.Scan(&port.Source, &port.Name, &port.Destination)
+		err := rows.Scan(&port.Source, &port.Name, &port.Destination, &port.Host)
 		if err != nil {
 			log.Print(err)
 			return []PortConfiguration{}, err
