@@ -130,7 +130,6 @@ func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname s
 	}
 
 	room := Room{}
-	room.Building = building
 	log.Printf("Getting room info for %s-%s...", buildingShortname, name)
 	row, err := accessorGroup.Database.Query("SELECT * FROM Rooms WHERE buildingID=? AND name=?", building.ID, name)
 	if err != nil {
@@ -146,6 +145,7 @@ func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname s
 	}
 
 	room = rooms[0]
+	room.Building = building
 
 	log.Printf("Getting device info for %s-%s...", buildingShortname, name)
 	room.Devices, err = accessorGroup.GetDevicesByBuildingAndRoom(buildingShortname, name)
