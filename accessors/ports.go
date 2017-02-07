@@ -23,7 +23,6 @@ func (accessorGroup *AccessorGroup) GetAllPorts() ([]Port, error) {
 
 	defer rows.Close()
 
-	log.Printf("Extracting data...")
 	ports, err := extractPortData(rows)
 	if err != nil {
 		return []Port{}, err
@@ -33,12 +32,13 @@ func (accessorGroup *AccessorGroup) GetAllPorts() ([]Port, error) {
 }
 
 func extractPortData(rows *sql.Rows) ([]Port, error) {
+
+	log.Printf("Extracting data...")
+
 	ports := []Port{}
 
 	for rows.Next() {
-		// var tableID sql.NullInt64
-		// var tableName sql.NullString
-		// var tableDescription sql.NullString
+
 		var tableID *int
 		var tableName *string
 		var tableDescription *string
@@ -51,15 +51,6 @@ func extractPortData(rows *sql.Rows) ([]Port, error) {
 		if err != nil {
 			return []Port{}, err
 		}
-		// if tableID.Valid {
-		// 	portID, _ = tableID.Value().(int)
-		// }
-		// if tableName.Valid {
-		// 	portName, _ = tableName.Value().(string)
-		// }
-		// if tableDescription.Valid {
-		// 	tableDescription, _ = tableDescription.Value().(string)
-		// }
 
 		if tableID != nil {
 			portID = *tableID

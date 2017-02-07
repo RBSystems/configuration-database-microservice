@@ -1,6 +1,9 @@
 package accessors
 
-import "database/sql"
+import (
+	"database/sql"
+	"log"
+)
 
 //Building represents a building
 type Building struct {
@@ -13,6 +16,7 @@ type Building struct {
 // GetAllBuildings returns a list of buildings from the database
 func (accessorGroup *AccessorGroup) GetAllBuildings() ([]Building, error) {
 
+	log.Printf("Querying database...")
 	rows, err := accessorGroup.Database.Query("SELECT * FROM Buildings")
 	if err != nil {
 		return []Building{}, err
@@ -35,6 +39,8 @@ func (accessorGroup *AccessorGroup) GetAllBuildings() ([]Building, error) {
 
 func extractBuildingData(rows *sql.Rows) ([]Building, error) {
 
+	log.Printf("Extracting data...")
+
 	var allBuildings []Building
 
 	for rows.Next() {
@@ -49,7 +55,7 @@ func extractBuildingData(rows *sql.Rows) ([]Building, error) {
 		var structShortName string
 		var structDescription string
 
-		err = rows.Scan(&tableID, &tableName, tableShortName, &tableDescription)
+		err := rows.Scan(&tableID, &tableName, &tableShortName, &tableDescription)
 		if err != nil {
 			return []Building{}, err
 		}
@@ -67,39 +73,51 @@ func extractBuildingData(rows *sql.Rows) ([]Building, error) {
 			structDescription = *tableDescription
 		}
 
+		log.Printf("Creating struct...")
 		building := Building{
 			structID,
 			structName,
 			structShortName,
-			tableDescription,
+			structDescription,
 		}
 
 		allBuildings = append(allBuildings, building)
 	}
+
+	return allBuildings, nil
 }
 
 // GetBuildingByID returns a building from the database by ID
 func (accessorGroup *AccessorGroup) GetBuildingByID(id int) (Building, error) {
-	building := &Building{}
 
-	rows, err := accessorGroup.Database.Query("SELECT * FROM Buildings WHERE buildingID=?", id)
-	// err := accessorGroup.Database.QueryRow("SELECT * FROM Buildings WHERE buildingID=?", id).Scan(&building.ID, &building.Name, &building.Shortname, &building.Description)
+	row, err := accessorGroup.Database.Query("SELECT * FROM Buildings WHERE buildingID=?", id)
 	if err != nil {
 		return Building{}, err
 	}
 
-	defer rows.Close()
+	defer row.Close()
 
-	return *building, nil
+	building, err := extractBuildingData(row)
+	if err != nil {
+		return Building{}, err
+	}
+
+	log.Printf("Done.")
+	return building[0], nil
 }
 
 // GetBuildingByShortname returns a building from the database by shortname
 func (accessorGroup *AccessorGroup) GetBuildingByShortname(shortname string) (Building, error) {
-	building := &Building{}
-	err := accessorGroup.Database.QueryRow("SELECT * FROM Buildings WHERE shortname=?", shortname).Scan(&building.ID, &building.Name, &building.Shortname, &building.Description)
+	row, err := accessorGroup.Database.Query("SELECT * FROM Buildings WHERE shortname=?", shortname)
 	if err != nil {
 		return Building{}, err
 	}
 
-	return *building, nil
+	building, err := extractBuildingData(row)
+	if err != nil {
+		return Building{}, err
+	}
+
+	log.Printf("Done.")
+	return building[0], nil
 }

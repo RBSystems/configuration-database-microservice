@@ -92,6 +92,7 @@ func extractDeviceTypes(rows *sql.Rows) ([]DeviceType, error) {
 //GetPowerStates simply returns the contents of the PowerStates table
 func (accessorGroup *AccessorGroup) GetPowerStates() ([]PowerState, error) {
 
+	log.Printf("Querying database...")
 	rows, err := accessorGroup.Database.Query("SELECT * FROM PowerStates")
 	if err != nil {
 		return []PowerState{}, err
@@ -104,19 +105,45 @@ func (accessorGroup *AccessorGroup) GetPowerStates() ([]PowerState, error) {
 		return []PowerState{}, err
 	}
 
+	log.Printf("Done.")
 	return powerStates, nil
 }
 
 func extractPowerStates(rows *sql.Rows) ([]PowerState, error) {
-	powerStates := []PowerState{}
+
+	log.Printf("Extracting data...")
+	var powerStates []PowerState
 
 	for rows.Next() {
+		var tableID *int
+		var tableName *string
+		var tableDescription *string
 
-		powerState := PowerState{}
-		err := rows.Scan(&powerState.PowerStateID, &powerState.Name, &powerState.Description)
+		var structID int
+		var structName string
+		var structDescription string
+
+		err := rows.Scan(&tableID, &tableName, &tableDescription)
 		if err != nil {
 			return []PowerState{}, err
 		}
+		if tableID != nil {
+			structID = *tableID
+		}
+		if tableName != nil {
+			structName = *tableName
+		}
+		if tableDescription != nil {
+			structDescription = *tableDescription
+		}
+
+		log.Printf("Creating struct...")
+		powerState := PowerState{
+			structID,
+			structName,
+			structDescription,
+		}
+
 		powerStates = append(powerStates, powerState)
 
 	}
@@ -224,6 +251,9 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 //GetPowerStatesByDeviceID gets the powerstates allowed for a given devices based on the
 //DevicePowerStates table in the DB.
 func (accessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]string, error) {
+
+	log.Printf("Querying database...")
+
 	query := `SELECT PowerStates.name FROM PowerStates
 	JOIN DevicePowerStates on DevicePowerStates.powerStateID = PowerStates.powerStateID
 	Where DevicePowerStates.deviceID = ?`
@@ -234,15 +264,24 @@ func (accessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]st
 		return []string{}, err
 	}
 
+	log.Printf("Extracting data...")
 	for rows.Next() {
+		var tableValue *string
 		var value string
 
-		err := rows.Scan(&value)
+		err := rows.Scan(&tableValue)
 		if err != nil {
 			return []string{}, err
 		}
+
+		if tableValue != nil {
+			value = *tableValue
+		}
+
 		toReturn = append(toReturn, value)
 	}
+
+	log.Printf("Done.")
 	return toReturn, nil
 }
 
@@ -288,7 +327,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoom(buildingShortnam
 func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]DeviceCommand, error) {
 	allCommands := []DeviceCommand{}
 
-	rows, err := accessorGroup.Database.Query(`SELECT Commands.name as commandName, Endpoints.name as endpointName, Endpoints.path as endpointPath, Microservices.address as microserviceAddress
+	rows, err := accessorGroup.Database.Query(`SELECT Commands.name as commandName, Endpoints.name as endpointName, Endpoints.path as endpointPath, Microservices.address as microserviceAddress, Commands.priority as commandPriority
     FROM Devices
     JOIN DeviceCommands on Devices.deviceID = DeviceCommands.deviceID JOIN Commands on DeviceCommands.commandID = Commands.commandID JOIN Endpoints on DeviceCommands.endpointID = Endpoints.endpointID JOIN Microservices ON DeviceCommands.microserviceID = Microservices.microserviceID
     JOIN Rooms ON Rooms.roomID=Devices.roomID
@@ -324,19 +363,62 @@ func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(build
 		return []PortConfiguration{}, err
 	}
 
-	for rows.Next() {
-		port := PortConfiguration{}
+	defer rows.Close()
 
-		err := rows.Scan(&port.Source, &port.Name, &port.Destination, &port.Host)
+	log.Printf("Done.")
+	return allPorts, nil
+}
+
+func extractPortConfigurations(rows *sql.Rows) ([]PortConfiguration, error) {
+
+	log.Printf("Extracting data...")
+
+	var portConfigurations []PortConfiguration
+
+	for rows.Next() {
+
+		var tableSource *string
+		var tableName *string
+		var tableDestinaion *string
+		var tableHost *string
+
+		var structSource string
+		var structName string
+		var structDestination string
+		var structHost string
+
+		err := rows.Scan(&tableSource, &tableName, &tableDestinaion, &tableHost)
 		if err != nil {
-			log.Print(err)
+			log.Printf("Error: %s", err.Error())
 			return []PortConfiguration{}, err
 		}
 
-		allPorts = append(allPorts, port)
+		if tableSource != nil {
+			structSource = *tableSource
+		}
+		if tableName != nil {
+			structName = *tableName
+		}
+		if tableDestinaion != nil {
+			structDestination = *tableDestinaion
+		}
+		if tableHost != nil {
+			structHost = *tableHost
+		}
+
+		log.Printf("Creating struct...")
+		port := PortConfiguration{
+			structSource,
+			structName,
+			structDestination,
+			structHost,
+		}
+
+		portConfigurations = append(portConfigurations, port)
 	}
 
-	return allPorts, nil
+	return portConfigurations, nil
+
 }
 
 //GetDeviceByBuildingAndRoomAndName gets the device

@@ -42,26 +42,29 @@ func main() {
 	secure.GET("/buildings/:building/rooms/:room/devices", handlerGroup.GetDevicesByBuildingAndRoom)
 	secure.GET("/buildings/:building/rooms/:room/devices/roles/:role", handlerGroup.GetDevicesByBuildingAndRoomAndRole)
 	secure.GET("/buildings/:building/rooms/:room/devices/:device", handlerGroup.GetDeviceByBuildingAndRoomAndName)
-
+	secure.GET("/buildings/:building/rooms/:room/configuration", handlerGroup.GetConfigurationByRoomAndBuilding)
 	secure.PUT("/buildings/:building/rooms/:room/devices/:device/attributes/:attribute/:value", handlerGroup.PutDeviceAttributeByDeviceAndRoomAndBuilding)
 
 	secure.GET("/rooms", handlerGroup.GetAllRooms)
 	secure.GET("/rooms/id/:id", handlerGroup.GetRoomByID)
 	secure.GET("/rooms/buildings/:building", handlerGroup.GetRoomsByBuilding)
+	secure.GET("/rooms/configuration/initializationKey", handlerGroup.GetRoomConfigurationKeys)
+	secure.GET("/rooms/configuration/", handlerGroup.GetRoomInitializationKeys)
 
+	secure.GET("/devices/types", handlerGroup.GetAllDeviceTypes)
 	secure.GET("/devices/roles/:role/types/:type", handlerGroup.GetDevicesByRoleAndType)
 
-	secure.GET("/buildings/:building/rooms/:room/configuration", handlerGroup.GetConfigurationByRoomAndBuilding)
 	secure.GET("/configurations/:configuration", handlerGroup.GetConfigurationByName)
 
 	secure.GET("/ports", handlerGroup.GetAllPorts)
-	secure.GET("/commands", handlerGroup.GetAllCommands)
-	secure.GET("/microservices", handlerGroup.GetAllMicroservices)
-	secure.GET("/endpoints", handlerGroup.GetAllMicroservices)
-	secure.GET("/devices/types", handlerGroup.GetAllDeviceTypes)
 
-	secure.GET("/rooms/configuration/initializationKey", handlerGroup.GetRoomConfigurationKeys)
-	secure.GET("/rooms/configuration/", handlerGroup.GetRoomInitializationKeys)
+	secure.GET("/commands", handlerGroup.GetAllCommands)
+
+	secure.GET("/microservices", handlerGroup.GetAllMicroservices)
+
+	secure.GET("/endpoints", handlerGroup.GetAllMicroservices)
+
+	secure.GET("/powerStates", handlerGroup.GetPowerStates)
 
 	server := http.Server{
 		Addr:           port,
