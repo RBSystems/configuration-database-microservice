@@ -15,8 +15,9 @@ type Port struct {
 //GetAllPorts returns an array of all the port objects in the database
 func (accessorGroup *AccessorGroup) GetAllPorts() ([]Port, error) {
 
-	log.Printf("Querying database...")
-	rows, err := accessorGroup.Database.Query("SELECT * FROM Ports")
+	query := `SELECT * FROM Ports`
+	log.Printf("Querying: \"%v\"", query)
+	rows, err := accessorGroup.Database.Query(query)
 	if err != nil {
 		return []Port{}, err
 	}
@@ -28,6 +29,7 @@ func (accessorGroup *AccessorGroup) GetAllPorts() ([]Port, error) {
 		return []Port{}, err
 	}
 
+	log.Printf("Done.")
 	return ports, nil
 }
 
@@ -35,38 +37,29 @@ func extractPortData(rows *sql.Rows) ([]Port, error) {
 
 	log.Printf("Extracting data...")
 
-	ports := []Port{}
+	var ports []Port
 
 	for rows.Next() {
 
+		var port Port
 		var tableID *int
 		var tableName *string
 		var tableDescription *string
-
-		var portID int
-		var portName string
-		var portDescription string
 
 		err := rows.Scan(&tableID, &tableName, &tableDescription)
 		if err != nil {
 			return []Port{}, err
 		}
 
+		log.Printf("Creating struct...")
 		if tableID != nil {
-			portID = *tableID
+			port.PortID = *tableID
 		}
 		if tableName != nil {
-			portName = *tableName
+			port.Name = *tableName
 		}
 		if tableDescription != nil {
-			portDescription = *tableDescription
-		}
-
-		log.Printf("Creating Port struct...")
-		port := Port{
-			portID,
-			portName,
-			portDescription,
+			port.Description = *tableDescription
 		}
 
 		ports = append(ports, port)
