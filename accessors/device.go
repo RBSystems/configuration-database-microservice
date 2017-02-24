@@ -149,12 +149,12 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 	return allDevices, nil
 }
 
-func (AccessorGropu *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, error) {
+func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, error) {
 	query := `Select DeviceRoleDefinition.Name From DeviceRoleDefinition 
 	JOIN DeviceRole dr on dr.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID 
 	WHERE dr.deviceID = ?`
 
-	toReturn = []string{}
+	toReturn := []string{}
 
 	rows, err := AccessorGroup.Database.Query(query, deviceID)
 	if err != nil {
@@ -170,7 +170,7 @@ func (AccessorGropu *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, 
 		}
 		toReturn = append(toReturn, value)
 	}
-	return toReutrn, nil
+	return toReturn, nil
 }
 
 //GetPowerStatesByDeviceID gets the powerstates allowed for a given devices based on the
