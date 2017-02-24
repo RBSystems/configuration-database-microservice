@@ -18,6 +18,7 @@ type Device struct {
 	Room        Room      `json:"room"`
 	Type        string    `json:"type"`
 	Power       string    `json:"power"`
+	Roles       []string  `json:"roles,omitempty"`
 	Blanked     *bool     `json:"blanked,omitempty"`
 	Volume      *int      `json:"volume,omitempty"`
 	Muted       *bool     `json:"muted,omitempty"`
@@ -137,10 +138,39 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 			return []Device{}, err
 		}
 
+		device.Roles, err = accessorGroup.GetRolesByDeviceID(device.ID)
+		if err != nil {
+			return []Device{}, err
+		}
+
 		allDevices = append(allDevices, device)
 	}
 
 	return allDevices, nil
+}
+
+func (AccessorGropu *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, error) {
+	query := `Select DeviceRoleDefinition.Name From DeviceRoleDefinition 
+	JOIN DeviceRole dr on dr.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID 
+	WHERE dr.deviceID = ?`
+
+	toReturn = []string{}
+
+	rows, err := AccessorGroup.Database.Query(query, deviceID)
+	if err != nil {
+		return []string{}, err
+	}
+
+	for rows.Next() {
+		var value string
+
+		err = rows.Scan(&value)
+		if err != nil {
+			return []string{}, err
+		}
+		toReturn = append(toReturn, value)
+	}
+	return toReutrn, nil
 }
 
 //GetPowerStatesByDeviceID gets the powerstates allowed for a given devices based on the
