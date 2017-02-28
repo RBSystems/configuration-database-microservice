@@ -70,53 +70,25 @@ func (accessorGroup *AccessorGroup) GetRoomByID(id int) (Room, error) {
 }
 
 //ExtractRoomData pulls data from a sql query
-func (accessorGroup *AccessorGroup) ExtractRoomData(rows *sql.Rows) ([]Room, error) {
-
-	log.Printf("Extracting data...")
-
-	var rooms []Room
+func (accessorGroup *AccessorGroup) ExtractRoomData(rows *sql.Rows) (rooms []Room, err error) {
 
 	for rows.Next() {
-		var room Room
-		var tableID *int
-		var tableName *string
-		var tableBuildingID *int
-		var tableDescription *string
-		var tableConfigurationID *int
+		room := Room{}
 
-		var err = rows.Scan(
-			&tableID,
-			&tableName,
-			&tableBuildingID,
-			&tableDescription,
-			&tableConfigurationID,
+		err = rows.Scan(
+			&room.ID,
+			&room.Name,
+			&room.Building.ID,
+			&room.Description,
+			&room.ConfigurationID,
 		)
 		if err != nil {
 			log.Printf("Error: %s", err.Error())
-			return []Room{}, err
+			return
 		}
-
-		log.Printf("Creating struct...")
-		if tableID != nil {
-			room.ID = *tableID
-		}
-		if tableName != nil {
-			room.Name = *tableName
-		}
-		if tableBuildingID != nil {
-			room.Building.ID = *tableBuildingID
-		}
-		if tableDescription != nil {
-			room.Description = *tableDescription
-		}
-		if tableConfigurationID != nil {
-			room.ConfigurationID = *tableConfigurationID
-		}
-
 		rooms = append(rooms, room)
 	}
-
-	return rooms, nil
+	return
 }
 
 // GetRoomsByBuilding returns a room from the database by building

@@ -26,9 +26,7 @@ type ConfigurationCommand struct {
 //GetAllRoomConfigurationKeys returns an array of all the distinct room configuration keys in the database
 func (accessorGroup *AccessorGroup) GetAllRoomConfigurationKeys() ([]string, error) {
 
-	query := `SELECT DISTINCT roomConfigurationKey FROM RoomConfiguration`
-	log.Printf("Querying: \"%v\"", query)
-	rows, err := accessorGroup.Database.Query(query)
+	rows, err := accessorGroup.Database.Query("SELECT DISTINCT roomConfigurationKey FROM RoomConfiguration")
 	if err != nil {
 		return []string{}, err
 	}
@@ -40,30 +38,22 @@ func (accessorGroup *AccessorGroup) GetAllRoomConfigurationKeys() ([]string, err
 		return []string{}, err
 	}
 
-	log.Printf("Done.")
 	return roomConfigurationKeys, nil
 
 }
 
 func extractRoomConfigurationKeys(rows *sql.Rows) ([]string, error) {
 
-	log.Printf("Extracting data...")
 	roomConfigurationKeys := []string{}
 
 	for rows.Next() {
-		var tableRoomConfigurationKey *string
 		var roomConfigurationKey string
 
-		err := rows.Scan(&tableRoomConfigurationKey)
+		err := rows.Scan(&roomConfigurationKey)
 		if err != nil {
 			return []string{}, err
 		}
 
-		if tableRoomConfigurationKey != nil {
-			roomConfigurationKey = *tableRoomConfigurationKey
-		}
-
-		log.Printf("Creating struct...")
 		roomConfigurationKeys = append(roomConfigurationKeys, roomConfigurationKey)
 
 	}
@@ -75,9 +65,7 @@ func extractRoomConfigurationKeys(rows *sql.Rows) ([]string, error) {
 //GetAllInitializationKeys returns an array of all the distinct room initialization keys in the database
 func (accessorGroup *AccessorGroup) GetAllInitializationKeys() ([]string, error) {
 
-	query := `SELECT DISTINCT roomInitializationKey FROM RoomConfiguration`
-	log.Printf("Querying: \"%v\"", query)
-	rows, err := accessorGroup.Database.Query(query)
+	rows, err := accessorGroup.Database.Query("SELECT DISTINCT roomInitializationKey FROM RoomConfiguration")
 	if err != nil {
 		return []string{}, err
 	}
@@ -93,29 +81,19 @@ func (accessorGroup *AccessorGroup) GetAllInitializationKeys() ([]string, error)
 }
 
 func extractRoomInitializationKeys(rows *sql.Rows) ([]string, error) {
-
-	log.Printf("Extracting data...")
-
 	var roomKeys []string
 
 	for rows.Next() {
 
-		var tableKey *string
 		var roomKey string
-
-		err := rows.Scan(&tableKey)
+		err := rows.Scan(&roomKey)
 		if err != nil {
 			return []string{}, err
-		}
-
-		if tableKey != nil {
-			roomKey = *tableKey
 		}
 		roomKeys = append(roomKeys, roomKey)
 
 	}
 
-	log.Printf("Done.")
 	return roomKeys, nil
 }
 
@@ -158,7 +136,6 @@ func (accessorGroup *AccessorGroup) GetConfigurationByQuery(queryAddition string
 	LIMIT 1
 	`
 
-	log.Printf("Querying: \"%v %v %v\"", baseQuery, queryAddition, limit)
 	rows, err := accessorGroup.Database.Query(baseQuery+" "+queryAddition+" "+limit, params...)
 	if err != nil {
 		return
@@ -182,7 +159,6 @@ func (accessorGroup *AccessorGroup) GetCommandsForConfigurationByID(configuratio
 	FROM vConfigurationMapping
 	WHERE ConfigurationID = ?`
 
-	log.Printf("Querying: \"%v %v\"", query, configurationID)
 	rows, err := accessorGroup.Database.Query(query, configurationID)
 	if err != nil {
 		return
@@ -190,45 +166,14 @@ func (accessorGroup *AccessorGroup) GetCommandsForConfigurationByID(configuratio
 
 	allCommands, err = accessorGroup.ExtractConfigurationCommand(rows)
 
-	log.Printf("Done.")
 	return
 }
 
 //ExtractRoomConfiguration pulls the items from the row to fill the config item.
 func (accessorGroup *AccessorGroup) ExtractRoomConfiguration(rows *sql.Rows) (config RoomConfiguration, err error) {
+	rows.Next()
 
-	log.Printf("Extracting data...")
-	for rows.Next() {
-		var ID *int
-		var name *string
-		var description *string
-		var roomKey *string
-		var roomInitKey *string
-
-		err = rows.Scan(&ID, &name, &description, &roomKey, &roomInitKey)
-		if err != nil {
-			log.Printf("Error: %s", err.Error())
-			return
-		}
-
-		log.Printf("Creating struct...")
-		if ID != nil {
-			config.ID = *ID
-		}
-		if name != nil {
-			config.Name = *name
-		}
-		if description != nil {
-			config.Description = *description
-		}
-		if roomKey != nil {
-			config.RoomKey = *roomKey
-		}
-		if roomInitKey != nil {
-			config.RoomInitKey = *roomInitKey
-		}
-
-	}
+	err = rows.Scan(&config.ID, &config.Name, &config.Description, &config.RoomKey, &config.RoomInitKey)
 
 	return
 }
@@ -236,24 +181,13 @@ func (accessorGroup *AccessorGroup) ExtractRoomConfiguration(rows *sql.Rows) (co
 //ExtractConfigurationCommand pulls a set ConfigurationCommand of objects from a set of sql.Rows
 func (accessorGroup *AccessorGroup) ExtractConfigurationCommand(rows *sql.Rows) (allCommands []ConfigurationCommand, err error) {
 
-	log.Printf("Extracting data...")
 	for rows.Next() {
-		var command ConfigurationCommand
-		var key *string
-		var priority *int
+		command := ConfigurationCommand{}
 
-		err = rows.Scan(&key, &priority)
+		err = rows.Scan(&command.CommandKey, &command.Priority)
 		if err != nil {
 			log.Printf("Error: %s", err.Error())
 			return
-		}
-
-		log.Printf("Creating struct...")
-		if key != nil {
-			command.CommandKey = *key
-		}
-		if priority != nil {
-			command.Priority = *priority
 		}
 
 		allCommands = append(allCommands, command)
