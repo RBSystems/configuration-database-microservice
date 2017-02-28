@@ -20,13 +20,13 @@ type DeviceCommand struct {
 	Priority     int      `json:"priority"`
 }
 
-/*Command represents all the information needed to issue a particular command to a device.
+/* RawCommand represents all the information needed to issue a particular command to a device.
 Name: Command name
 Description: command description
 Priority: The relative priority of the command relative to other commands. Commands
 					with a higher (closer to 1) priority will be issued to the devices first.
 */
-type Command struct {
+type RawCommand struct {
 	ID          int    `json:"ID"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
@@ -35,7 +35,7 @@ type Command struct {
 
 //CommandSorterByPriority sorts commands by priority and implements sort.Interface
 type CommandSorterByPriority struct {
-	Commands []Command
+	Commands []RawCommand
 }
 
 //Len is part of sort.Interface
@@ -76,7 +76,7 @@ func (accessorGroup *AccessorGroup) GetAllDeviceCommands() ([]DeviceCommand, err
 }
 
 //GetAllCommands simply dumps the commands table
-func (accessorGroup *AccessorGroup) GetAllCommands() (commands []Command, err error) {
+func (accessorGroup *AccessorGroup) GetAllCommands() (commands []RawCommand, err error) {
 
 	query := `Select * FROM Commands`
 	log.Printf("Querying: \"%v\"", query)
@@ -136,11 +136,11 @@ func ExtractDeviceCommands(rows *sql.Rows) ([]DeviceCommand, error) {
 }
 
 //ExtractCommands pulls a Command object from a set of sql.Rows
-func extractCommands(rows *sql.Rows) ([]Command, error) {
+func extractCommands(rows *sql.Rows) ([]RawCommand, error) {
 
 	log.Printf("Extracting data...")
 
-	var commands []Command
+	var commands []RawCommand
 
 	for rows.Next() {
 
@@ -157,7 +157,7 @@ func extractCommands(rows *sql.Rows) ([]Command, error) {
 		err := rows.Scan(&tableID, &tableName, &tableDescription, &tablePriority)
 		if err != nil {
 			log.Printf("Error: %s", err.Error())
-			return []Command{}, nil
+			return []RawCommand{}, nil
 		}
 
 		if tableID != nil {
@@ -174,7 +174,7 @@ func extractCommands(rows *sql.Rows) ([]Command, error) {
 		}
 
 		log.Printf("Creating struct...")
-		command := Command{
+		command := RawCommand{
 			structID,
 			structName,
 			structDescription,
