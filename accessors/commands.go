@@ -60,6 +60,7 @@ func (accessorGroup *AccessorGroup) GetAllCommands() (commands []RawCommand, err
 		log.Printf("Error: %s", err.Error())
 		return
 	}
+	defer rows.Close()
 
 	commands, err = ExtractRawCommands(rows)
 	log.Printf("Done.")

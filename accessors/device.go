@@ -160,6 +160,7 @@ func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, 
 	if err != nil {
 		return []string{}, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var value string
@@ -185,6 +186,7 @@ func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]st
 	if err != nil {
 		return []string{}, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var value string
@@ -249,6 +251,7 @@ func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(bu
 	if err != nil {
 		return []Command{}, err
 	}
+	defer rows.Close()
 
 	allCommands, err = ExtractCommand(rows)
 	if err != nil {
@@ -275,6 +278,7 @@ func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(build
 		log.Print(err)
 		return []Port{}, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		port := Port{}
