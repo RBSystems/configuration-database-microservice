@@ -99,6 +99,9 @@ func (accessorGroup *AccessorGroup) GetRoomsByBuilding(building string) ([]Room,
 	if err != nil {
 		return []Room{}, err
 	}
+
+	defer rows.Close()
+
 	allRooms, err := accessorGroup.ExtractRoomData(rows)
 	if err != nil {
 		return []Room{}, err
@@ -120,6 +123,8 @@ func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname s
 	if err != nil {
 		return Room{}, err
 	}
+	defer row.Close()
+
 	rooms, err := accessorGroup.ExtractRoomData(row)
 	if err != nil {
 		return Room{}, err

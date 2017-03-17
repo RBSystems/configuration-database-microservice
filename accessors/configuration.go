@@ -140,6 +140,7 @@ func (accessorGroup *AccessorGroup) GetConfigurationByQuery(queryAddition string
 	if err != nil {
 		return
 	}
+	defer rows.Close()
 
 	config, err = accessorGroup.ExtractRoomConfiguration(rows)
 	if err != nil {
@@ -163,6 +164,7 @@ func (accessorGroup *AccessorGroup) GetCommandsForConfigurationByID(configuratio
 	if err != nil {
 		return
 	}
+	defer rows.Close()
 
 	allCommands, err = accessorGroup.ExtractConfigurationCommand(rows)
 

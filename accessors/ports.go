@@ -5,13 +5,6 @@ import (
 	"log"
 )
 
-//Port represents the port table in the database
-type Port struct {
-	PortID      int    `json:"portID,omitempty"`
-	Name        string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
-}
-
 //GetAllPorts returns an array of all the port objects in the database
 func (accessorGroup *AccessorGroup) GetAllPorts() ([]Port, error) {
 

@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-/*DeviceCommand represents all the information needed to issue a particular command to a device.
+/* Command represents all the information needed to issue a particular command to a device.
 
 Name: Command name
 Endpoint: the endpoint within the microservice
@@ -13,7 +13,7 @@ Microservice: the location of the microservice to call to communicate with the d
 Priority: The relative priority of the command relative to other commands. Commands
 					with a higher (closer to 1) priority will be issued to the devices first.
 */
-type DeviceCommand struct {
+type Command struct {
 	Name         string   `json:"name"`
 	Endpoint     Endpoint `json:"endpoint"`
 	Microservice string   `json:"microservice"`
@@ -35,7 +35,7 @@ type RawCommand struct {
 
 //CommandSorterByPriority sorts commands by priority and implements sort.Interface
 type CommandSorterByPriority struct {
-	Commands []RawCommand
+	Commands []Command
 }
 
 //Len is part of sort.Interface
@@ -54,19 +54,19 @@ func (c *CommandSorterByPriority) Less(i, j int) bool {
 }
 
 //GetAllDeviceCommands simply dumps the DeviceCommands
-func (accessorGroup *AccessorGroup) GetAllDeviceCommands() ([]DeviceCommand, error) {
+func (accessorGroup *AccessorGroup) GetAllDeviceCommands() ([]Command, error) {
 
 	log.Printf("Querying database...")
 	rows, err := accessorGroup.Database.Query("SELECT * FROM DeviceCommands")
 	if err != nil {
-		return []DeviceCommand{}, err
+		return []Command{}, err
 	}
 
 	defer rows.Close()
 
-	deviceCommands, err := ExtractDeviceCommands(rows)
+	deviceCommands, err := ExtractCommands(rows)
 	if err != nil {
-		return []DeviceCommand{}, err
+		return []Command{}, err
 	}
 
 	log.Printf("Done.")
@@ -81,29 +81,27 @@ func (accessorGroup *AccessorGroup) GetAllCommands() (commands []RawCommand, err
 		log.Printf("Error: %s", err.Error())
 		return
 	}
+	defer rows.Close()
 
-	commands, err = extractCommands(rows)
+	commands, err = extractRawCommands(rows)
 	log.Printf("Done.")
 	return
 }
 
-//ExtractDeviceCommands pulls a command object from a set of sql.Rows
-func ExtractDeviceCommands(rows *sql.Rows) (allCommands []DeviceCommand, err error) {
+//ExtractCommands pulls a command object from a set of sql.Rows
+func ExtractCommands(rows *sql.Rows) (allCommands []Command, err error) {
 
 	log.Printf("Extracting data...")
 	for rows.Next() {
+
+		var command Command
+		var endpoint Endpoint
 
 		var tableName *string
 		var tableEndpointName *string
 		var tableEndpointPath *string
 		var tableMicroservice *string
 		var tablePriority *int
-
-		var structName string
-		var structEndpointName string
-		var structEndpointPath string
-		var structMicroservice string
-		var structPriority int
 
 		err = rows.Scan(&tableName, &tableEndpointName, &tableEndpointPath, &tableMicroservice, &tablePriority)
 		if err != nil {
@@ -112,31 +110,19 @@ func ExtractDeviceCommands(rows *sql.Rows) (allCommands []DeviceCommand, err err
 		}
 
 		if tableName != nil {
-			structName = *tableName
+			command.Name = *tableName
 		}
 		if tableEndpointName != nil {
-			structEndpointName = *tableEndpointName
+			endpoint.Name = *tableEndpointName
 		}
 		if tableEndpointPath != nil {
-			structEndpointPath = *tableEndpointPath
+			endpoint.Path = *tableEndpointPath
 		}
 		if tableMicroservice != nil {
-			structMicroservice = *tableMicroservice
+			command.Microservice = *tableMicroservice
 		}
 		if tablePriority != nil {
-			structPriority = *tablePriority
-		}
-
-		log.Printf("Creating struct...")
-		structEndpoint := Endpoint{
-			structEndpointName,
-			structEndpointPath,
-		}
-		command := DeviceCommand{
-			structName,
-			structEndpoint,
-			structMicroservice,
-			structPriority,
+			command.Priority = *tablePriority
 		}
 
 		allCommands = append(allCommands, command)
@@ -146,7 +132,7 @@ func ExtractDeviceCommands(rows *sql.Rows) (allCommands []DeviceCommand, err err
 }
 
 //ExtractCommands pulls a Command object from a set of sql.Rows
-func extractCommands(rows *sql.Rows) ([]RawCommand, error) {
+func extractRawCommands(rows *sql.Rows) ([]RawCommand, error) {
 
 	log.Printf("Extracting data...")
 
@@ -154,15 +140,12 @@ func extractCommands(rows *sql.Rows) ([]RawCommand, error) {
 
 	for rows.Next() {
 
+		var command RawCommand
+
 		var tableID *int
 		var tableName *string
 		var tableDescription *string
 		var tablePriority *int
-
-		var structID int
-		var structName string
-		var structDescription string
-		var structPriority int
 
 		err := rows.Scan(&tableID, &tableName, &tableDescription, &tablePriority)
 		if err != nil {
@@ -171,24 +154,16 @@ func extractCommands(rows *sql.Rows) ([]RawCommand, error) {
 		}
 
 		if tableID != nil {
-			structID = *tableID
+			command.ID = *tableID
 		}
 		if tableName != nil {
-			structName = *tableName
+			command.Name = *tableName
 		}
 		if tableDescription != nil {
-			structDescription = *tableDescription
+			command.Description = *tableDescription
 		}
 		if tablePriority != nil {
-			structPriority = *tablePriority
-		}
-
-		log.Printf("Creating struct...")
-		command := RawCommand{
-			structID,
-			structName,
-			structDescription,
-			structPriority,
+			command.Priority = *tablePriority
 		}
 
 		commands = append(commands, command)
