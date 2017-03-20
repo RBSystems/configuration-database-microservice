@@ -58,3 +58,24 @@ func (accessorGroup *AccessorGroup) GetBuildingByShortname(shortname string) (Bu
 
 	return *building, nil
 }
+
+func (accessorGroup *AccessorGroup) AddBuilding(name string, shortname string, description string) (Building, error) {
+	result, err := accessorGroup.Database.Exec(`INSERT into BUILDINGS (name, shortname, description) VALUES (?,?,?)`, name, shortname, description)
+	if err != nil {
+		return Building{}, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return Building{}, err
+	}
+
+	building := Building{
+		Name:        name,
+		Shortname:   shortname,
+		Description: description,
+	}
+	building.ID = int(id) // cast id into an int
+
+	return building, err
+}

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/byuoitav/configuration-database-microservice/accessors"
 	"github.com/labstack/echo"
 )
 
@@ -40,4 +41,20 @@ func (handlerGroup *HandlerGroup) GetBuildingByShortname(context echo.Context) e
 	}
 
 	return context.JSON(http.StatusOK, response)
+}
+
+// AddBuilding asdf
+func (handlerGroup *HandlerGroup) AddBuilding(context echo.Context) error {
+	var building accessors.Building
+	err := context.Bind(&building)
+
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	building, err = handlerGroup.Accessors.AddBuilding(building.Name, building.Shortname, building.Description)
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return context.JSON(http.StatusOK, building)
 }
