@@ -59,7 +59,10 @@ func (accessorGroup *AccessorGroup) GetBuildingByShortname(shortname string) (Bu
 	return *building, nil
 }
 
+//AddBuilding adds a building
+
 func (accessorGroup *AccessorGroup) AddBuilding(name string, shortname string, description string) (Building, error) {
+
 	result, err := accessorGroup.Database.Exec(`INSERT into BUILDINGS (name, shortname, description) VALUES (?,?,?)`, name, shortname, description)
 	if err != nil {
 		return Building{}, err

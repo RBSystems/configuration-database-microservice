@@ -47,9 +47,13 @@ func (handlerGroup *HandlerGroup) GetBuildingByShortname(context echo.Context) e
 func (handlerGroup *HandlerGroup) AddBuilding(context echo.Context) error {
 	var building accessors.Building
 	err := context.Bind(&building)
-
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	_, err = handlerGroup.Accessors.GetBuildingByShortname(building.Shortname)
+	if err == nil {
+		return context.JSON(http.StatusBadRequest, "Building already exists in database")
 	}
 
 	building, err = handlerGroup.Accessors.AddBuilding(building.Name, building.Shortname, building.Description)
