@@ -55,6 +55,7 @@ func main() {
 	secure.GET("/configurations/:configuration", handlerGroup.GetConfigurationByName)
 
 	secure.POST("/buildings/:building", handlerGroup.AddBuilding)
+	secure.POST("/buildings/:building/rooms/:room", handlerGroup.AddRoom)
 
 	server := http.Server{
 		Addr:           port,
