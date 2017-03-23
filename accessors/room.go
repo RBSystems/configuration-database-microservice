@@ -110,8 +110,8 @@ func (accessorGroup *AccessorGroup) ExtractRoomData(rows *sql.Rows) (rooms []Roo
 func (accessorGroup *AccessorGroup) GetRoomsByBuilding(building string) ([]Room, error) {
 
 	rows, err := accessorGroup.Database.Query(`SELECT Rooms.roomID,
-		Rooms.name, Rooms.buildingID, Rooms.description, Rooms.configurationID  FROM Rooms
-		JOIN Buildings ON Rooms.buildingID = Buildings.buildingID WHERE Buildings.shortName=? WHERE Production = 1`, building)
+		Rooms.name, Rooms.buildingID, Rooms.description, Rooms.configurationID FROM Rooms
+		JOIN Buildings ON Rooms.buildingID = Buildings.buildingID WHERE Buildings.shortName=? AND Rooms.Production = 1`, building)
 	if err != nil {
 		return []Room{}, err
 	}
