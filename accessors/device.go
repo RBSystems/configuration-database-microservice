@@ -204,7 +204,7 @@ func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]st
 //as specified in the DeviceRole table in the DB
 func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingShortname string, roomName string, roleName string) ([]Device, error) {
 	log.Printf("Getting ")
-	devices, err := accessorGroup.GetDevicesByQuery(`WHERE Rooms.name LIKE ? AND Buildings.shortname LIKE ? AND DeviceRoleDefinition.name LIKE ?`,
+	devices, err := accessorGroup.GetDevicesByQuery(`WHERE Rooms.name LIKE ? AND Buildings.shortname LIKE ? AND DeviceRoleDefinition.name LIKE ? AND Rooms.Production = 1`,
 		roomName, buildingShortname, roleName)
 
 	if err != nil {
@@ -220,7 +220,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingS
 
 //GetDevicesByRoleAndType Gets all teh devices that have a given role and type.
 func (accessorGroup *AccessorGroup) GetDevicesByRoleAndType(deviceRole string, deviceType string) ([]Device, error) {
-	return accessorGroup.GetDevicesByQuery(`WHERE DeviceRoleDefinition.name LIKE ? AND DeviceTypes.name LIKE ?`, deviceRole, deviceType)
+	return accessorGroup.GetDevicesByQuery(`WHERE DeviceRoleDefinition.name LIKE ? AND DeviceTypes.name LIKE ? AND Rooms.Production = 1`, deviceRole, deviceType)
 }
 
 //GetDevicesByBuildingAndRoom get all the devices in the room specified.
@@ -228,7 +228,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoom(buildingShortnam
 	log.Printf("Getting devices in room %s and building %s", roomName, buildingShortname)
 
 	devices, err := accessorGroup.GetDevicesByQuery(
-		`WHERE Rooms.name=? AND Buildings.shortName=?`, roomName, buildingShortname)
+		`WHERE Rooms.name=? AND Buildings.shortName=? AND Rooms.Production = 1`, roomName, buildingShortname)
 
 	if err != nil {
 		return []Device{}, err
@@ -298,7 +298,7 @@ func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(build
 //GetDeviceByBuildingAndRoomAndName gets the device
 //specified. Note that we assume that device names are unique within a room.
 func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) (Device, error) {
-	dev, err := accessorGroup.GetDevicesByQuery("WHERE Buildings.shortName = ? AND Rooms.name = ? AND Devices.name = ?", buildingShortname, roomName, deviceName)
+	dev, err := accessorGroup.GetDevicesByQuery("WHERE Buildings.shortName = ? AND Rooms.name = ? AND Devices.name = ? AND Rooms.Production = 1", buildingShortname, roomName, deviceName)
 	if err != nil {
 		return Device{}, err
 	}
