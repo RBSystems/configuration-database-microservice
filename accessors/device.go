@@ -204,7 +204,7 @@ func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]st
 //as specified in the DeviceRole table in the DB
 func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingShortname string, roomName string, roleName string) ([]Device, error) {
 	log.Printf("Getting ")
-	devices, err := accessorGroup.GetDevicesByQuery(`WHERE Rooms.name LIKE ? AND Buildings.shortname LIKE ? AND DeviceRoleDefinition.name LIKE ? AND Rooms.Production = 1`,
+	devices, err := accessorGroup.GetDevicesByQuery(`WHERE Rooms.name LIKE ? AND Buildings.shortname LIKE ? AND DeviceRoleDefinition.name LIKE ?`,
 		roomName, buildingShortname, roleName)
 
 	if err != nil {
@@ -298,7 +298,7 @@ func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(build
 //GetDeviceByBuildingAndRoomAndName gets the device
 //specified. Note that we assume that device names are unique within a room.
 func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) (Device, error) {
-	dev, err := accessorGroup.GetDevicesByQuery("WHERE Buildings.shortName = ? AND Rooms.name = ? AND Devices.name = ? AND Rooms.Production = 1", buildingShortname, roomName, deviceName)
+	dev, err := accessorGroup.GetDevicesByQuery("WHERE Buildings.shortName = ? AND Rooms.name = ? AND Devices.name = ?", buildingShortname, roomName, deviceName)
 	if err != nil {
 		return Device{}, err
 	}
