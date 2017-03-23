@@ -15,6 +15,7 @@ type Room struct {
 	Devices         []Device          `json:"devices,omitempty"`
 	ConfigurationID int               `json:"configurationID,omitempty"`
 	Configuration   RoomConfiguration `json:"configuration"`
+	Production      bool              `json:"production"`
 }
 
 // GetAllRooms returns a list of rooms from the database
@@ -96,6 +97,7 @@ func (accessorGroup *AccessorGroup) ExtractRoomData(rows *sql.Rows) (rooms []Roo
 			&room.Building.ID,
 			&room.Description,
 			&room.ConfigurationID,
+			&room.Production,
 		)
 		if err != nil {
 			log.Printf("Error: %s", err.Error())
