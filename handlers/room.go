@@ -1,14 +1,13 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo"
 )
 
-//GetAllRooms gets al rooms
+//GetAllRooms gets all rooms
 func (handlerGroup *HandlerGroup) GetAllRooms(context echo.Context) error {
 	response, err := handlerGroup.Accessors.GetAllRooms()
 	if err != nil {
@@ -47,7 +46,6 @@ func (handlerGroup *HandlerGroup) GetRoomsByBuilding(context echo.Context) error
 
 //GetRoomByBuildingAndName returns the room by building and name
 func (handlerGroup *HandlerGroup) GetRoomByBuildingAndName(context echo.Context) error {
-	log.Printf("Getting room by building and name...")
 	response, err := handlerGroup.Accessors.GetRoomByBuildingAndName(context.Param("building"), context.Param("room"))
 	if err != nil {
 		return context.String(http.StatusBadRequest, err.Error())
