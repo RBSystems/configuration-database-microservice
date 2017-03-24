@@ -219,8 +219,8 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoomAndRole(buildingS
 }
 
 //GetDevicesByRoleAndType Gets all teh devices that have a given role and type.
-func (accessorGroup *AccessorGroup) GetDevicesByRoleAndType(deviceRole string, deviceType string) ([]Device, error) {
-	return accessorGroup.GetDevicesByQuery(`WHERE DeviceRoleDefinition.name LIKE ? AND DeviceTypes.name LIKE ? AND Rooms.Production = 1`, deviceRole, deviceType)
+func (accessorGroup *AccessorGroup) GetDevicesByRoleAndType(deviceRole string, deviceType string, production string) ([]Device, error) {
+	return accessorGroup.GetDevicesByQuery(`WHERE DeviceRoleDefinition.name LIKE ? AND DeviceTypes.name LIKE ? AND Rooms.Production = `+production, deviceRole, deviceType)
 }
 
 //GetDevicesByBuildingAndRoom get all the devices in the room specified.

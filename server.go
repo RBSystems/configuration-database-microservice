@@ -50,6 +50,7 @@ func main() {
 	secure.GET("/rooms/buildings/:building", handlerGroup.GetRoomsByBuilding)
 
 	secure.GET("/devices/roles/:role/types/:type", handlerGroup.GetDevicesByRoleAndType)
+	secure.GET("/development/devices/roles/:role/types/:type", handlerGroup.GetDevDevicesByRoleAndType)
 
 	secure.GET("/buildings/:building/rooms/:room/configuration", handlerGroup.GetConfigurationByRoomAndBuilding)
 	secure.GET("/configurations/:configuration", handlerGroup.GetConfigurationByName)
