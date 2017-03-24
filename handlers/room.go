@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/byuoitav/configuration-database-microservice/accessors"
 	"github.com/labstack/echo"
 )
 
@@ -85,14 +86,14 @@ func (handlerGroup *HandlerGroup) AddRoom(context echo.Context) error {
 	building := context.Param("building")
 	roomName := context.Param("room")
 	var roomToAdd accessors.Room
-	err := context.Bind(*room)
+	err := context.Bind(&roomToAdd)
 
-	if roomName != roomToAdd.name && len(roomToAdd.name > 0) {
+	if roomName != roomToAdd.Name && len(roomToAdd.Name) > 0 {
 		return context.JSON(http.StatusBadRequest, "Parameter and room name must match!")
 	}
 
-	roomToAdd.name = roomName
-	response, err := handlerGroup.Accessors.AddRoom(building, room)
+	roomToAdd.Name = roomName
+	response, err := handlerGroup.Accessors.AddRoom(building, roomToAdd)
 	if err != nil {
 		return context.JSON(http.StatusBadRequest, err.Error())
 	}
