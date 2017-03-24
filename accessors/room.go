@@ -175,11 +175,17 @@ func (accessorGroup *AccessorGroup) AddRoom(buildingShortName string, roomToAdd 
 	log.Printf("Adding room %v to building %v...", roomToAdd.Name, buildingShortName)
 
 	result, err := accessorGroup.Database.Exec("INSERT into Rooms (name, buildingID, description, configurationID, production) VALUES (?,?,?,?,?)",
-		roomToAdd.Name, roomToAdd.Building.BuildingID, roomToAdd.Description, roomToAdd.ConfigurationID, roomToAdd.Production)
+		roomToAdd.Name, roomToAdd.Building.ID, roomToAdd.Description, roomToAdd.ConfigurationID, roomToAdd.Production)
 	if err != nil {
 		return Room{}, err
 	}
-	defer row.Close()
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return Room{}, err
+	}
+
+	roomToAdd.ID = int(id) // cast id into an int
 
 	return roomToAdd, nil
 }
