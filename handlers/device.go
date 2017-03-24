@@ -50,10 +50,20 @@ func (handlerGroup *HandlerGroup) GetDeviceByBuildingAndRoomAndName(context echo
 }
 
 func (handlerGroup *HandlerGroup) GetDevicesByRoleAndType(context echo.Context) error {
-	response, err := handlerGroup.Accessors.GetDevicesByRoleAndType(context.Param("role"), context.Param("type"))
+	response, err := handlerGroup.Accessors.GetDevicesByRoleAndType(context.Param("role"), context.Param("type"), "1")
 	if err != nil {
 		return context.String(http.StatusBadRequest, err.Error())
 	}
 
 	return context.JSON(http.StatusOK, response)
+}
+
+func (handlerGroup *HandlerGroup) GetDevDevicesByRoleAndType(context echo.Context) error {
+	response, err := handlerGroup.Accessors.GetDevicesByRoleAndType(context.Param("role"), context.Param("type"), "0")
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+
 }
