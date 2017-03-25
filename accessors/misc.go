@@ -1,5 +1,8 @@
 package accessors
 
+import "database/sql"
+
+//DeviceType corresponds to the DeviceType table in the database
 type DeviceType struct {
 	ID          int    `json:"id,omitempty"`
 	Name        string `json:"name"`
@@ -11,7 +14,7 @@ func (accessorGroup *AccessorGroup) GetDeviceTypes() ([]DeviceType, error) {
 
 	var DeviceTypes []DeviceType
 
-	rows, err := accesssorGroup.Database.Query("SELECT * FROM DeviceTypes")
+	rows, err := accessorGroup.Database.Query("SELECT * FROM DeviceTypes")
 	if err != nil {
 		return []DeviceType{}, err
 	}
@@ -24,7 +27,7 @@ func (accessorGroup *AccessorGroup) GetDeviceTypes() ([]DeviceType, error) {
 	return DeviceTypes, nil
 }
 
-func extractDeviceTypeData([]DeviceType, error) {
+func extractDeviceTypeData(rows *sql.Rows) ([]DeviceType, error) {
 
 	var deviceTypes []DeviceType
 	var deviceType DeviceType
@@ -40,16 +43,16 @@ func extractDeviceTypeData([]DeviceType, error) {
 		}
 
 		if id != nil {
-			deviceType.id = *id
+			deviceType.ID = *id
 		}
 		if name != nil {
-			deviceType.name = *name
+			deviceType.Name = *name
 		}
 		if description != nil {
-			deviceType.description = *description
+			deviceType.Description = *description
 		}
 
-		deviceTypes = append(deviceType)
+		deviceTypes = append(deviceTypes, deviceType)
 	}
 
 	return deviceTypes, nil

@@ -34,6 +34,7 @@ func (d *Device) GetFullName() string {
 }
 
 //Port represents a physical port on a device (HDMI, DP, Audo, etc.)
+//TODO: this corresponds to the PortConfiguration table in the database!!!
 type Port struct {
 	Source      string `json:"source"`
 	Name        string `json:"name"`
