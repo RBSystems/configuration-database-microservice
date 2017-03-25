@@ -47,25 +47,7 @@ func (accessorGroup *AccessorGroup) GetAllRooms() ([]Room, error) {
 
 	defer rows.Close()
 
-	for rows.Next() {
-		room := Room{}
-
-		err = rows.Scan(&room.ID, &room.Name, &room.Building.ID, &room.Description)
-		if err != nil {
-			return []Room{}, err
-		}
-
-		for i := 0; i < len(allBuildings); i++ {
-			if allBuildings[i].ID == room.Building.ID {
-				room.Building = allBuildings[i]
-				break
-			}
-		}
-
-		allRooms = append(allRooms, room)
-	}
-
-	err = rows.Err()
+	allRooms, err = accessorGroup.ExtractRoomData(rows)
 	if err != nil {
 		return []Room{}, err
 	}
@@ -169,4 +151,23 @@ func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname s
 
 	log.Printf("Done.")
 	return room, nil
+}
+
+func (accessorGroup *AccessorGroup) AddRoom(buildingShortName string, roomToAdd Room) (Room, error) {
+	log.Printf("Adding room %v to building %v...", roomToAdd.Name, buildingShortName)
+
+	result, err := accessorGroup.Database.Exec("INSERT into Rooms (name, buildingID, description, configurationID, production) VALUES (?,?,?,?,?)",
+		roomToAdd.Name, roomToAdd.Building.ID, roomToAdd.Description, roomToAdd.ConfigurationID, roomToAdd.Production)
+	if err != nil {
+		return Room{}, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return Room{}, err
+	}
+
+	roomToAdd.ID = int(id) // cast id into an int
+
+	return roomToAdd, nil
 }
