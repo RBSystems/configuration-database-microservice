@@ -1,11 +1,17 @@
 package handlers
 
-import "net/http"
+import (
+	"net/http"
 
-func (handlerGroup *HandlerGroup) AddPort(context echo.context) error {
-	var portToAdd PortType
-	portName = context.Param("port")
-	err := context.Bind(portToAdd)
+	"github.com/byuoitav/configuration-database-microservice/accessors"
+	"github.com/labstack/echo"
+)
+
+func (handlerGroup *HandlerGroup) AddPort(context echo.Context) error {
+	portName := context.Param("port")
+	var portToAdd accessors.PortType
+
+	err := context.Bind(&portToAdd)
 	if err != nil {
 		return context.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -13,20 +19,18 @@ func (handlerGroup *HandlerGroup) AddPort(context echo.context) error {
 		return context.JSON(http.StatusBadRequest, "Endpoint parameter and json name must match!")
 	}
 
-	portToAdd, err = handlerGroup.accessorGroup.AddPort(portToAdd)
+	response, err := handlerGroup.Accessors.AddPort(portToAdd)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	return context.JSON(http.StatusOK, nil)
+	return context.JSON(http.StatusOK, response)
 }
 
-func (handlerGroup *HandlerGroup) GetAllPorts(context echo.context) error {
-
-	allPorts, err := handlerGroup.Accessors.GetAllPorts()
+func (handlerGroup *HandlerGroup) GetPorts(context echo.Context) error {
+	response, err := handlerGroup.Accessors.GetAllPorts()
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
-
-	return context.JSON(http.StatusOK, allPorts)
+	return context.JSON(http.StatusOK, response)
 }
