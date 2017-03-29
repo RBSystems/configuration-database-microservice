@@ -68,7 +68,7 @@ func extractDeviceCommands(rows *sql.Rows) ([]DeviceCommand, error) {
 			devicecommand.Device.ID = *dID
 		}
 		if cID != nil {
-			devicecommand.ID = *cID
+			devicecommand.ID = *cID // also needs to be changed to devicecommand.Command.ID
 		}
 		if mID != nil {
 			devicecommand.Microservice.ID = *mID
