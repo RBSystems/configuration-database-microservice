@@ -15,7 +15,7 @@ type Room struct {
 	Devices         []Device          `json:"devices,omitempty"`
 	ConfigurationID int               `json:"configurationID,omitempty"`
 	Configuration   RoomConfiguration `json:"configuration"`
-	Production      string            `json:"production"`
+	RoomDesignation string            `json:"roomDesignation"`
 }
 
 // GetAllRooms returns a list of rooms from the database
@@ -59,7 +59,7 @@ func (accessorGroup *AccessorGroup) GetAllRooms() ([]Room, error) {
 func (accessorGroup *AccessorGroup) GetRoomByID(id int) (Room, error) {
 	room := &Room{}
 
-	err := accessorGroup.Database.QueryRow("SELECT * FROM rooms WHERE id=?", id).Scan(&room.ID, &room.Name, &room.Building.ID, &room.Description, &room.Production)
+	err := accessorGroup.Database.QueryRow("SELECT * FROM rooms WHERE id=?", id).Scan(&room.ID, &room.Name, &room.Building.ID, &room.Description, &room.RoomDesignation)
 	if err != nil {
 		return Room{}, err
 	}
@@ -79,7 +79,7 @@ func (accessorGroup *AccessorGroup) ExtractRoomData(rows *sql.Rows) (rooms []Roo
 			&room.Building.ID,
 			&room.Description,
 			&room.ConfigurationID,
-			&room.Production,
+			&room.RoomDesignation,
 		)
 		if err != nil {
 			log.Printf("Error: %s", err.Error())
@@ -157,7 +157,7 @@ func (accessorGroup *AccessorGroup) AddRoom(buildingShortName string, roomToAdd 
 	log.Printf("Adding room %v to building %v...", roomToAdd.Name, buildingShortName)
 
 	result, err := accessorGroup.Database.Exec("INSERT into Rooms (name, buildingID, description, configurationID, production) VALUES (?,?,?,?,?)",
-		roomToAdd.Name, roomToAdd.Building.ID, roomToAdd.Description, roomToAdd.ConfigurationID, roomToAdd.Production)
+		roomToAdd.Name, roomToAdd.Building.ID, roomToAdd.Description, roomToAdd.ConfigurationID, roomToAdd.RoomDesignation)
 	if err != nil {
 		return Room{}, err
 	}
