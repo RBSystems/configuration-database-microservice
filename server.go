@@ -61,6 +61,7 @@ func main() {
 	secure.GET("/powerstates", handlerGroup.GetPowerStates)
 	secure.GET("/microservices", handlerGroup.GetMicroservices)
 	secure.GET("/deviceroledefinitions", handlerGroup.GetDeviceRoleDefs)
+	secure.GET("/devicecommands", handlerGroup.GetDeviceCommands)
 
 	secure.POST("/buildings/:building", handlerGroup.AddBuilding)
 	secure.POST("/buildings/:building/rooms/:room", handlerGroup.AddRoom)
@@ -70,6 +71,7 @@ func main() {
 	secure.POST("/powerstates/:powerstate", handlerGroup.AddPowerState)
 	secure.POST("/microservices/:microservice", handlerGroup.AddMicroservice)
 	secure.POST("/deviceroledefinitions/:deviceroledefinition", handlerGroup.AddDeviceRoleDef)
+	secure.POST("/devicecommands/:id", handlerGroup.AddDeviceCommand)
 
 	server := http.Server{
 		Addr:           port,

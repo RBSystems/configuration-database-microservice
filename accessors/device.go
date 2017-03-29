@@ -44,7 +44,7 @@ type Port struct {
 
 //Endpoint represents a path on a microservice.
 type Endpoint struct {
-	ID          int64  `json:"id"`
+	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Path        string `json:"path"`
 	Description string `json:"description"`

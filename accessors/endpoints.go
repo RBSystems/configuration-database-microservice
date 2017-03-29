@@ -26,7 +26,7 @@ func (accessorGroup *AccessorGroup) AddEndpoint(toAdd Endpoint) (Endpoint, error
 	}
 
 	id, err := response.LastInsertId()
-	toAdd.ID = id
+	toAdd.ID = int(id)
 
 	return toAdd, nil
 }
@@ -45,7 +45,7 @@ func exctractEndpointData(rows *sql.Rows) ([]Endpoint, error) {
 
 	var endpoints []Endpoint
 	var endpoint Endpoint
-	var id *int64
+	var id *int
 	var name *string
 	var path *string
 	var description *string
