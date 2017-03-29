@@ -56,11 +56,13 @@ func main() {
 	secure.GET("/configurations/:configuration", handlerGroup.GetConfigurationByName)
 	secure.GET("/ports", handlerGroup.GetPorts)
 	secure.GET("/devicetypes", handlerGroup.GetDeviceTypes)
+	secure.GET("/endpoints", handlerGroup.GetEndpoints)
 
 	secure.POST("/buildings/:building", handlerGroup.AddBuilding)
 	secure.POST("/buildings/:building/rooms/:room", handlerGroup.AddRoom)
 	secure.POST("/ports/:port", handlerGroup.AddPort)
 	secure.POST("/devicetypes/:devicetype", handlerGroup.AddDeviceType)
+	secure.POST("/endpoints/:endpoint", handlerGroup.AddEndpoint)
 
 	server := http.Server{
 		Addr:           port,
