@@ -21,6 +21,7 @@ func (accessorGroup *AccessorGroup) GetPowerStates() ([]PowerState, error) {
 	if err != nil {
 		return []PowerState{}, err
 	}
+	defer rows.Close()
 
 	return powerstates, nil
 }

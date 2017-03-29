@@ -21,6 +21,7 @@ func (accessorGroup *AccessorGroup) GetDeviceRoleDefs() ([]DeviceRoleDef, error)
 	if err != nil {
 		return []DeviceRoleDef{}, err
 	}
+	defer rows.Close()
 
 	return deviceroledefs, nil
 }

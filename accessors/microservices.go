@@ -22,6 +22,7 @@ func (accessorGroup *AccessorGroup) GetMicroservices() ([]Microservice, error) {
 	if err != nil {
 		return []Microservice{}, err
 	}
+	defer rows.Close()
 
 	return microservices, nil
 }

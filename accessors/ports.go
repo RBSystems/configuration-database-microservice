@@ -16,8 +16,11 @@ func (accessorGroup *AccessorGroup) GetAllPorts() ([]PortType, error) {
 		return []PortType{}, err
 	}
 
-	defer rows.Close()
 	allPorts, err := extractPortData(rows)
+	if err != nil {
+		return []PortType{}, err
+	}
+	defer rows.Close()
 
 	return allPorts, nil
 }

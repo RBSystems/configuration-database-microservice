@@ -23,6 +23,7 @@ func (accessorGroup *AccessorGroup) GetDeviceTypes() ([]DeviceType, error) {
 	if err != nil {
 		return []DeviceType{}, err
 	}
+	defer rows.Close()
 
 	return DeviceTypes, nil
 }

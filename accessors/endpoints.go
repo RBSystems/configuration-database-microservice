@@ -8,12 +8,12 @@ func (accessorGroup *AccessorGroup) GetAllEndpoints() ([]Endpoint, error) {
 	if err != nil {
 		return []Endpoint{}, err
 	}
-	defer rows.Close()
 
 	endpoints, err := exctractEndpointData(rows)
 	if err != nil {
 		return []Endpoint{}, err
 	}
+	defer rows.Close()
 
 	return endpoints, nil
 }
