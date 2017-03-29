@@ -42,18 +42,25 @@ func (accessorGroup *AccessorGroup) AddPowerState(powerstate PowerState) (PowerS
 
 func extractPowerStates(rows *sql.Rows) ([]PowerState, error) {
 	var powerstates []PowerState
+	var ps PowerState
+	var id *int
+	var name *string
+	var description *string
 
 	for rows.Next() {
-		ps := PowerState{}
-
-		err := rows.Scan(
-			&ps.ID,
-			&ps.Name,
-			&ps.Description,
-		)
+		err := rows.Scan(&id, &name, &description)
 		if err != nil {
 			log.Printf("error: %s", err.Error())
 			return []PowerState{}, err
+		}
+		if id != nil {
+			ps.ID = *id
+		}
+		if name != nil {
+			ps.Name = *name
+		}
+		if description != nil {
+			ps.Description = *description
 		}
 
 		powerstates = append(powerstates, ps)
