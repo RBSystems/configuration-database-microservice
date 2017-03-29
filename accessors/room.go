@@ -15,7 +15,7 @@ type Room struct {
 	Devices         []Device          `json:"devices,omitempty"`
 	ConfigurationID int               `json:"configurationID,omitempty"`
 	Configuration   RoomConfiguration `json:"configuration"`
-	Production      bool              `json:"production"`
+	Production      string            `json:"production"`
 }
 
 // GetAllRooms returns a list of rooms from the database
@@ -40,7 +40,7 @@ func (accessorGroup *AccessorGroup) GetAllRooms() ([]Room, error) {
 
 	allRooms := []Room{}
 
-	rows, err = accessorGroup.Database.Query("SELECT * FROM Rooms WHERE Production = 1")
+	rows, err = accessorGroup.Database.Query("SELECT * FROM Rooms WHERE Production = 'production'")
 	if err != nil {
 		return []Room{}, err
 	}
@@ -95,7 +95,7 @@ func (accessorGroup *AccessorGroup) GetRoomsByBuilding(building string) ([]Room,
 
 	rows, err := accessorGroup.Database.Query(`SELECT Rooms.roomID,
 		Rooms.name, Rooms.buildingID, Rooms.description, Rooms.configurationID FROM Rooms
-		JOIN Buildings ON Rooms.buildingID = Buildings.buildingID WHERE Buildings.shortName=? AND Rooms.Production = 1`, building)
+		JOIN Buildings ON Rooms.buildingID = Buildings.buildingID WHERE Buildings.shortName=? AND Rooms.Production = 'production'`, building)
 	if err != nil {
 		return []Room{}, err
 	}
