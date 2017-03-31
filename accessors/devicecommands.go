@@ -2,7 +2,6 @@ package accessors
 
 import (
 	"database/sql"
-	"log"
 )
 
 type DeviceCommand struct {
@@ -58,7 +57,6 @@ func extractDeviceCommands(rows *sql.Rows) ([]DeviceCommand, error) {
 	for rows.Next() {
 		err := rows.Scan(&id, &dID, &cID, &mID, &eID, &enabled)
 		if err != nil {
-			log.Printf("error: %s", err.Error())
 			return []DeviceCommand{}, err
 		}
 		if id != nil {
