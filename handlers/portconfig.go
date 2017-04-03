@@ -8,15 +8,6 @@ import (
 	"github.com/labstack/echo"
 )
 
-func (handlerGroup *HandlerGroup) GetPortConfigurations(context echo.Context) error {
-	response, err := handlerGroup.Accessors.GetPortConfigurations()
-	if err != nil {
-		return context.String(http.StatusBadRequest, err.Error())
-	}
-
-	return context.JSON(http.StatusOK, response)
-}
-
 func (handlerGroup *HandlerGroup) AddPortConfiguration(context echo.Context) error {
 	pcID := context.Param("id")
 	var pc accessors.PortConfiguration
