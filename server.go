@@ -55,17 +55,12 @@ func main() {
 
 	secure.GET("/buildings/:building/rooms/:room/configuration", handlerGroup.GetConfigurationByRoomAndBuilding)
 	secure.GET("/configurations/:configuration", handlerGroup.GetConfigurationByName)
-	secure.GET("/ports", handlerGroup.GetPorts)
-	secure.GET("/devicetypes", handlerGroup.GetDeviceTypes)
-	secure.GET("/endpoints", handlerGroup.GetEndpoints)
-	secure.GET("/powerstates", handlerGroup.GetPowerStates)
-	secure.GET("/microservices", handlerGroup.GetMicroservices)
-	secure.GET("/deviceroledefinitions", handlerGroup.GetDeviceRoleDefs)
-
-	secure.GET("/devicecommands", handlerGroup.GetDeviceCommands)
-	secure.GET("/devicepowerstates", handlerGroup.GetDevicePowerStates)
-	secure.GET("/portconfigurations", handlerGroup.GetPortConfigurations)
-	secure.GET("/deviceroles", handlerGroup.GetDeviceRoles)
+	secure.GET("/devices/ports", handlerGroup.GetPorts)
+	secure.GET("/devices/types", handlerGroup.GetDeviceTypes)
+	secure.GET("/devices/endpoints", handlerGroup.GetEndpoints)
+	secure.GET("/devices/powerstates", handlerGroup.GetPowerStates)
+	secure.GET("/devices/microservices", handlerGroup.GetMicroservices)
+	secure.GET("/devices/roledefinitions", handlerGroup.GetDeviceRoleDefs)
 
 	secure.POST("/buildings/:building", handlerGroup.AddBuilding)
 	secure.POST("/buildings/:building/rooms/:room", handlerGroup.AddRoom)
@@ -76,10 +71,10 @@ func main() {
 	secure.POST("/microservices/:microservice", handlerGroup.AddMicroservice)
 	secure.POST("/deviceroledefinitions/:deviceroledefinition", handlerGroup.AddDeviceRoleDef)
 
-	secure.POST("/devicecommands/:id", handlerGroup.AddDeviceCommand)
-	secure.POST("/devicepowerstates/:id", handlerGroup.AddDevicePowerState)
-	secure.POST("/portconfigurations/:id", handlerGroup.AddPortConfiguration)
-	secure.POST("/deviceroles/:id", handlerGroup.AddDeviceRole)
+	secure.POST("/buildings/:building/rooms/:room/devices/:device/commands/:id", handlerGroup.AddDeviceCommand)
+	secure.POST("/buildings/:building/rooms/:room/devices/:device/powerstates/:id", handlerGroup.AddDevicePowerState)
+	secure.POST("/buildings/:building/rooms/:room/devices/:device/portconfiguration/:id", handlerGroup.AddPortConfiguration)
+	secure.POST("/buildings/:building/rooms/:room/devices/:device/roles/:id", handlerGroup.AddDeviceRole)
 
 	server := http.Server{
 		Addr:           port,
