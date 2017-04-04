@@ -12,7 +12,7 @@ type PortConfiguration struct {
 	SourceDevice      Device `json:"source-device"`
 }
 
-func (accessorGroup *AccessorGroup) GetPortConfigurations() ([]PortConfiguration, error) {
+func (accessorGroup *AccessorGroup) GetPortConfiguration(building string, room string, device string) ([]PortConfiguration, error) {
 	rows, err := accessorGroup.Database.Query("SELECT * FROM PortConfiguration")
 	if err != nil {
 		return []PortConfiguration{}, err
