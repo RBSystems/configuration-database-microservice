@@ -34,9 +34,8 @@ func main() {
 	router.GET("/health", echo.WrapHandler(http.HandlerFunc(health.Check)))
 
 	secure.GET("/buildings", handlerGroup.GetAllBuildings)
-	secure.GET("/buildings/id/:id", handlerGroup.GetBuildingByID)
+	secure.GET("/buildings/:id", handlerGroup.GetBuildingByID)
 	secure.GET("/buildings/:shortname", handlerGroup.GetBuildingByShortname)
-	secure.GET("/buildings/shortname/:shortname", handlerGroup.GetBuildingByShortname)
 	secure.GET("/buildings/:building/rooms/:room", handlerGroup.GetRoomByBuildingAndName)
 	secure.GET("/buildings/:building/rooms", handlerGroup.GetRoomsByBuilding)
 	secure.GET("/buildings/:building/rooms/:room/devices", handlerGroup.GetDevicesByBuildingAndRoom)
