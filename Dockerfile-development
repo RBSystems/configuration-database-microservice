@@ -9,6 +9,6 @@ WORKDIR /go/src/github.com/byuoitav/configuration-database-microservice
 RUN go get -d -v
 RUN go install -v
 
-CMD ["/go/bin/configurataion-database-microservice"]
+CMD ["/go/bin/configuration-database-microservice"]
 
 EXPOSE 8006
