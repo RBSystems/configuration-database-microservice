@@ -34,9 +34,8 @@ func main() {
 	router.GET("/health", echo.WrapHandler(http.HandlerFunc(health.Check)))
 
 	secure.GET("/buildings", handlerGroup.GetAllBuildings)
-	secure.GET("/buildings/id/:id", handlerGroup.GetBuildingByID)
+	secure.GET("/buildings/:id", handlerGroup.GetBuildingByID)
 	secure.GET("/buildings/:shortname", handlerGroup.GetBuildingByShortname)
-	secure.GET("/buildings/shortname/:shortname", handlerGroup.GetBuildingByShortname)
 	secure.GET("/buildings/:building/rooms/:room", handlerGroup.GetRoomByBuildingAndName)
 	secure.GET("/buildings/:building/rooms", handlerGroup.GetRoomsByBuilding)
 	secure.GET("/buildings/:building/rooms/:room/devices", handlerGroup.GetDevicesByBuildingAndRoom)
@@ -56,8 +55,26 @@ func main() {
 	secure.GET("/buildings/:building/rooms/:room/configuration", handlerGroup.GetConfigurationByRoomAndBuilding)
 	secure.GET("/configurations/:configuration", handlerGroup.GetConfigurationByName)
 
+	secure.GET("/devices/ports", handlerGroup.GetPorts)
+	secure.GET("/devices/types", handlerGroup.GetDeviceTypes)
+	secure.GET("/devices/endpoints", handlerGroup.GetEndpoints)
+	secure.GET("/devices/powerstates", handlerGroup.GetPowerStates)
+	secure.GET("/devices/microservices", handlerGroup.GetMicroservices)
+	secure.GET("/devices/roledefinitions", handlerGroup.GetDeviceRoleDefs)
+
 	secure.POST("/buildings/:building", handlerGroup.AddBuilding)
 	secure.POST("/buildings/:building/rooms/:room", handlerGroup.AddRoom)
+	secure.POST("/devices/ports/:port", handlerGroup.AddPort)
+	secure.POST("/devices/types/:devicetype", handlerGroup.AddDeviceType)
+	secure.POST("/devices/endpoints/:endpoint", handlerGroup.AddEndpoint)
+	secure.POST("/devices/powerstates/:powerstate", handlerGroup.AddPowerState)
+	secure.POST("/devices/microservices/:microservice", handlerGroup.AddMicroservice)
+	secure.POST("/devices/roledefinitions/:deviceroledefinition", handlerGroup.AddDeviceRoleDef)
+
+	//	secure.POST("/buildings/:building/rooms/:room/devices/:device/commands/:id", handlerGroup.AddDeviceCommand)
+	//	secure.POST("/buildings/:building/rooms/:room/devices/:device/powerstates/:id", handlerGroup.AddDevicePowerState)
+	//	secure.POST("/buildings/:building/rooms/:room/devices/:device/portconfiguration/:id", handlerGroup.AddPortConfiguration)
+	//	secure.POST("/buildings/:building/rooms/:room/devices/:device/roles/:id", handlerGroup.AddDeviceRole)
 
 	server := http.Server{
 		Addr:           port,

@@ -23,8 +23,24 @@ func (accessorGroup *AccessorGroup) GetDeviceTypes() ([]DeviceType, error) {
 	if err != nil {
 		return []DeviceType{}, err
 	}
+	defer rows.Close()
 
 	return DeviceTypes, nil
+}
+
+func (accessorGroup *AccessorGroup) AddDeviceType(deviceType DeviceType) (DeviceType, error) {
+	result, err := accessorGroup.Database.Exec("Insert into DeviceTypes (deviceTypeID, name, description) VALUES(?,?,?)", deviceType.ID, deviceType.Name, deviceType.Description)
+	if err != nil {
+		return DeviceType{}, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return DeviceType{}, err
+	}
+
+	deviceType.ID = int(id)
+	return deviceType, nil
 }
 
 func extractDeviceTypeData(rows *sql.Rows) ([]DeviceType, error) {
