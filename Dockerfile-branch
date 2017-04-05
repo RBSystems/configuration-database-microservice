@@ -13,6 +13,6 @@ RUN gvt fetch -branch ${GITHUB_BRANCH} github.com/byuoitav/av-api
 RUN go get -d -v
 RUN go install -v
 
-CMD ["/go/bin/av-api"]
+CMD ["/go/bin/configuration-database-microservice"]
 
 EXPOSE 8006
