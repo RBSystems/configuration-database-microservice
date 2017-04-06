@@ -44,8 +44,10 @@ type Port struct {
 
 //Endpoint represents a path on a microservice.
 type Endpoint struct {
-	Name string `json:"name"`
-	Path string `json:"path"`
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Path        string `json:"path"`
+	Description string `json:"description"`
 }
 
 /*
@@ -229,7 +231,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoom(buildingShortnam
 	log.Printf("Getting devices in room %s and building %s", roomName, buildingShortname)
 
 	devices, err := accessorGroup.GetDevicesByQuery(
-		`WHERE Rooms.name=? AND Buildings.shortName=? AND Rooms.roomDesignation = 'production'`, roomName, buildingShortname)
+		`WHERE Rooms.name=? AND Buildings.shortName=?`, roomName, buildingShortname)
 
 	if err != nil {
 		return []Device{}, err
