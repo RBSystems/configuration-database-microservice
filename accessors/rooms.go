@@ -156,7 +156,7 @@ func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname s
 func (accessorGroup *AccessorGroup) AddRoom(buildingShortName string, roomToAdd Room) (Room, error) {
 	log.Printf("Adding room %v to building %v...", roomToAdd.Name, buildingShortName)
 
-	result, err := accessorGroup.Database.Exec("INSERT into Rooms (name, buildingID, description, configurationID, production) VALUES (?,?,?,?,?)",
+	result, err := accessorGroup.Database.Exec("INSERT into Rooms (name, buildingID, description, configurationID, roomDesignation) VALUES (?,?,?,?,?)",
 		roomToAdd.Name, roomToAdd.Building.ID, roomToAdd.Description, roomToAdd.ConfigurationID, roomToAdd.RoomDesignation)
 	if err != nil {
 		return Room{}, err

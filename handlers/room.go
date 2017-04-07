@@ -90,8 +90,13 @@ func (handlerGroup *HandlerGroup) AddRoom(context echo.Context) error {
 	var roomToAdd accessors.Room
 	err := context.Bind(&roomToAdd)
 
-	if roomName != roomToAdd.Name && len(roomToAdd.Name) > 0 {
+	if roomName != roomToAdd.Name {
 		return context.JSON(http.StatusBadRequest, "Parameter and room name must match!")
+	}
+
+	checkbuilding, _ := handlerGroup.Accessors.GetBuildingByShortname(building)
+	if checkbuilding.ID != roomToAdd.Building.ID {
+		return context.JSON(http.StatusBadRequest, "Building shortname and Building ID must match the same building!")
 	}
 
 	roomToAdd.Name = roomName
