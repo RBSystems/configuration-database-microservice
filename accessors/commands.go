@@ -102,3 +102,18 @@ func ExtractRawCommands(rows *sql.Rows) (allCommands []RawCommand, err error) {
 
 	return
 }
+
+func (accessorGroup *AccessorGroup) AddRawCommand(rc RawCommand) (RawCommand, error) {
+	result, err := accessorGroup.Database.Exec("Insert into Commands (commandID, name, description, priority) VALUES(?,?,?,?)", rc.ID, rc.Name, rc.Description, rc.Priority)
+	if err != nil {
+		return RawCommand{}, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return RawCommand{}, err
+	}
+
+	rc.ID = int(id)
+	return rc, nil
+}
