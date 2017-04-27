@@ -70,6 +70,16 @@ func (handlerGroup *HandlerGroup) GetConfigurationByName(context echo.Context) e
 	return context.JSON(http.StatusOK, response)
 }
 
+//
+func (handlerGroup *HandlerGroup) GetConfigurations(context echo.Context) error {
+	response, err := handlerGroup.Accessors.GetConfigurations()
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
 //GetConfigurationByRoomAndBuilding gets the configuration by room and building
 func (handlerGroup *HandlerGroup) GetConfigurationByRoomAndBuilding(context echo.Context) error {
 	building := context.Param("building")
