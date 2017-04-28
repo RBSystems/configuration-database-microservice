@@ -2,6 +2,7 @@ package accessors
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -410,6 +411,50 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 		}
 
 	}
+
+	// insert the ports into the PortConfiguration table
+	for _, port := range d.Ports {
+		// get portID
+		pt, err := accessorGroup.GetPortTypeByName(port.Name)
+		if err != nil {
+			return Device{}, err
+		}
+
+		// get sourceDeviceID
+		sd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Source)
+		if err != nil {
+			return Device{}, fmt.Errorf("source device %v does not exist in this room", port.Source)
+		}
+
+		// get destinationDeviceID
+		dd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Destination)
+		if err != nil {
+			return Device{}, fmt.Errorf("destination device %v does not exist in this room", port.Destination)
+		}
+
+		// get hostDeviceID
+		// will this always be d.ID? (the current devices id?)
+		hd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Host)
+		if err != nil {
+			return Device{}, fmt.Errorf("host device %v does not exist in this room", port.Host)
+		}
+
+		var p PortConfiguration
+		p.PortID = pt.ID
+		p.SourceDeviceID = sd.ID
+		p.DestinationDeviceID = dd.ID
+		p.HostDeviceID = hd.ID
+
+		_, err = accessorGroup.AddPortConfiguration(p)
+		if err != nil {
+			return Device{}, err
+		}
+
+	}
+
+	// clean up d
+	d.Room.Devices = nil
+	d.Room.Configuration.Commands = nil
 
 	return d, nil
 }
