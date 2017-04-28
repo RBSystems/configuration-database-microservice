@@ -244,7 +244,6 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoom(buildingShortnam
 //specified. Note that we assume that device names are unique within a room.
 func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]Command, error) {
 	allCommands := []Command{}
-
 	rows, err := accessorGroup.Database.Query(`SELECT Commands.name as commandName, Endpoints.name as endpointName, Endpoints.path as endpointPath, Microservices.address as microserviceAddress
     FROM Devices
     JOIN DeviceCommands on Devices.deviceID = DeviceCommands.deviceID JOIN Commands on DeviceCommands.commandID = Commands.commandID JOIN Endpoints on DeviceCommands.endpointID = Endpoints.endpointID JOIN Microservices ON DeviceCommands.microserviceID = Microservices.microserviceID
@@ -356,4 +355,35 @@ func (accessorGroup *AccessorGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding
 
 	dev, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(building, room, device)
 	return dev, err
+}
+
+func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
+	log.Printf("Adding device %v to room %v in building %v", d.Name, d.Room.ID, d.Building.ID)
+
+	// get device type string, put it into d.Type
+
+	result, err := accessorGroup.Database.Exec("Insert into Devices (name, address, input, output, buildingID, roomID, typeID) VALUES (?,?,?,?,?,?,?)", d.Name, d.Address, d.Input, d.Output, d.Building.ID, d.Room.ID, d.Type, d.Roles)
+	if err != nil {
+		return Device{}, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return Device{}, err
+	}
+
+	d.ID = int(id)
+
+	// insert the roles into the DeviceRole table
+	for role := range d.Roles {
+		r, err := accessorGroup.GetDeviceRoleByID(role)
+		if err != nil {
+			return Device{}, err
+		}
+
+		result, err = accessorGroup.Database.Exec("Insert into DeviceRole (deviceRoleId, deviceID) VALUES(?,?)", r.ID, d.ID)
+		d.Roles = append(d.Roles, r.Name)
+	}
+
+	return d, nil
 }

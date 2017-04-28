@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/byuoitav/configuration-database-microservice/accessors"
 	"github.com/labstack/echo"
 )
 
@@ -32,7 +33,6 @@ func (handlerGroup *HandlerGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding(c
 		context.Param("device"),
 		context.Param("attribute"),
 		context.Param("value"))
-
 	if err != nil {
 		return context.String(http.StatusBadRequest, err.Error())
 	}
@@ -75,4 +75,36 @@ func (handlerGroup *HandlerGroup) GetDevDevicesByRoleAndType(context echo.Contex
 
 	return context.JSON(http.StatusOK, response)
 
+}
+
+func (handlerGroup *HandlerGroup) AddDevice(context echo.Context) error {
+	buildingSN := context.Param("building")
+	roomN := context.Param("room")
+	dN := context.Param("device")
+	var d accessors.Device
+	err := context.Bind(&d)
+
+	if dN != d.Name {
+		return context.JSON(http.StatusBadRequest, "Parameter and device name must match!")
+	}
+
+	// look at these functions and see what they return
+	building, err := handlerGroup.Accessors.GetBuildingByShortname(buildingSN)
+	if err != nil {
+		return err
+	}
+	d.Building.ID = building.ID
+
+	room, err := handlerGroup.Accessors.GetRoomByBuildingAndName(buildingSN, roomN)
+	if err != nil {
+		return err
+	}
+	d.Room.ID = room.ID
+
+	response, err := handlerGroup.Accessors.AddDevice(d)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
 }
