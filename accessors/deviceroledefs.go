@@ -41,8 +41,19 @@ func (accessorGroup *AccessorGroup) AddDeviceRoleDef(deviceroledef DeviceRoleDef
 	return deviceroledef, nil
 }
 
-func (accessorGroup *AccessorGroup) GetDeviceRoleByID(id int) (DeviceRoleDef, error) {
+func (accessorGroup *AccessorGroup) GetDeviceRoleDefByID(id int) (DeviceRoleDef, error) {
 	row := accessorGroup.Database.QueryRow("SELECT * FROM DeviceRoleDefinition WHERE deviceRoleDefinitionID = ? ", id)
+
+	drd, err := extractDeviceRoleDef(row)
+	if err != nil {
+		return DeviceRoleDef{}, err
+	}
+
+	return drd, nil
+}
+
+func (accessorGroup *AccessorGroup) GetDeviceRoleDefByName(name string) (DeviceRoleDef, error) {
+	row := accessorGroup.Database.QueryRow("SELECT * FROM DeviceRoleDefinition WHERE name = ? ", name)
 
 	drd, err := extractDeviceRoleDef(row)
 	if err != nil {

@@ -113,6 +113,9 @@ func (accessorGroup *AccessorGroup) GetRoomsByBuilding(building string) ([]Room,
 func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname string, name string) (Room, error) {
 	log.Printf("Getting building info for %s - %s...", buildingShortname, name)
 	building, err := accessorGroup.GetBuildingByShortname(buildingShortname)
+	//
+	log.Printf("TEST: building.ID = %v", building.ID)
+	//
 	if err != nil {
 		return Room{}, err
 	}

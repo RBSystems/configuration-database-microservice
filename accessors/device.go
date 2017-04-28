@@ -358,11 +358,15 @@ func (accessorGroup *AccessorGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding
 }
 
 func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
-	log.Printf("Adding device %v to room %v in building %v", d.Name, d.Room.ID, d.Building.ID)
+	log.Printf("Adding device %v to room %v in building %v", d.Name, d.Room.Name, d.Building.Shortname)
 
 	// get device type string, put it into d.Type
+	dt, err := accessorGroup.GetDeviceTypeByName(d.Type)
+	if err != nil {
+		return Device{}, err
+	}
 
-	result, err := accessorGroup.Database.Exec("Insert into Devices (name, address, input, output, buildingID, roomID, typeID) VALUES (?,?,?,?,?,?,?)", d.Name, d.Address, d.Input, d.Output, d.Building.ID, d.Room.ID, d.Type, d.Roles)
+	result, err := accessorGroup.Database.Exec("Insert into Devices (name, address, input, output, buildingID, roomID, typeID) VALUES (?,?,?,?,?,?,?)", d.Name, d.Address, d.Input, d.Output, d.Building.ID, d.Room.ID, dt.ID)
 	if err != nil {
 		return Device{}, err
 	}
@@ -375,14 +379,36 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 	d.ID = int(id)
 
 	// insert the roles into the DeviceRole table
-	for role := range d.Roles {
-		r, err := accessorGroup.GetDeviceRoleByID(role)
+	for _, role := range d.Roles {
+		r, err := accessorGroup.GetDeviceRoleDefByName(role)
+		if err != nil {
+			return Device{}, err
+		}
+		var dr DeviceRole
+		dr.DeviceID = d.ID
+		dr.DeviceRoleDefinitionID = r.ID
+
+		_, err = accessorGroup.AddDeviceRole(dr)
+		if err != nil {
+			return Device{}, err
+		}
+	}
+
+	// insert the powerstates into the DevicePowerStates table
+	for _, ps := range d.PowerStates {
+		p, err := accessorGroup.GetPowerStateByName(ps)
+		if err != nil {
+			return Device{}, err
+		}
+		var dps DevicePowerState
+		dps.DeviceID = d.ID
+		dps.PowerStateID = p.ID
+
+		_, err = accessorGroup.AddDevicePowerState(dps)
 		if err != nil {
 			return Device{}, err
 		}
 
-		result, err = accessorGroup.Database.Exec("Insert into DeviceRole (deviceRoleId, deviceID) VALUES(?,?)", r.ID, d.ID)
-		d.Roles = append(d.Roles, r.Name)
 	}
 
 	return d, nil

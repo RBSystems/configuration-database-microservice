@@ -93,13 +93,13 @@ func (handlerGroup *HandlerGroup) AddDevice(context echo.Context) error {
 	if err != nil {
 		return err
 	}
-	d.Building.ID = building.ID
+	d.Building = building
 
 	room, err := handlerGroup.Accessors.GetRoomByBuildingAndName(buildingSN, roomN)
 	if err != nil {
 		return err
 	}
-	d.Room.ID = room.ID
+	d.Room = room
 
 	response, err := handlerGroup.Accessors.AddDevice(d)
 	if err != nil {
