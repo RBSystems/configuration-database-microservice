@@ -367,6 +367,7 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 		return Device{}, err
 	}
 
+	// insert into devices
 	result, err := accessorGroup.Database.Exec("Insert into Devices (name, address, input, output, buildingID, roomID, typeID) VALUES (?,?,?,?,?,?,?)", d.Name, d.Address, d.Input, d.Output, d.Building.ID, d.Room.ID, dt.ID)
 	if err != nil {
 		return Device{}, err
@@ -380,6 +381,7 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 	d.ID = int(id)
 
 	// insert the roles into the DeviceRole table
+	var deviceroles []DeviceRole
 	for _, role := range d.Roles {
 		r, err := accessorGroup.GetDeviceRoleDefByName(role)
 		if err != nil {
@@ -389,13 +391,11 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 		dr.DeviceID = d.ID
 		dr.DeviceRoleDefinitionID = r.ID
 
-		_, err = accessorGroup.AddDeviceRole(dr)
-		if err != nil {
-			return Device{}, err
-		}
+		deviceroles = append(deviceroles, dr)
 	}
 
 	// insert the powerstates into the DevicePowerStates table
+	var devicepowerstates []DevicePowerState
 	for _, ps := range d.PowerStates {
 		p, err := accessorGroup.GetPowerStateByName(ps)
 		if err != nil {
@@ -405,14 +405,11 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 		dps.DeviceID = d.ID
 		dps.PowerStateID = p.ID
 
-		_, err = accessorGroup.AddDevicePowerState(dps)
-		if err != nil {
-			return Device{}, err
-		}
-
+		devicepowerstates = append(devicepowerstates, dps)
 	}
 
 	// insert the ports into the PortConfiguration table
+	var portconfigurations []PortConfiguration
 	for _, port := range d.Ports {
 		// get portID
 		pt, err := accessorGroup.GetPortTypeByName(port.Name)
@@ -445,14 +442,11 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 		p.DestinationDeviceID = dd.ID
 		p.HostDeviceID = hd.ID
 
-		_, err = accessorGroup.AddPortConfiguration(p)
-		if err != nil {
-			return Device{}, err
-		}
-
+		portconfigurations = append(portconfigurations, p)
 	}
 
 	// insert the comamnds into the DeviceCommands table
+	var devicecommands []DeviceCommand
 	for index, command := range d.Commands {
 		// get commandID
 		rc, err := accessorGroup.GetRawCommandByName(command.Name)
@@ -479,14 +473,40 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 		dc.EndpointID = ep.ID
 		dc.Enabled = true // figure out where to get this from
 
-		_, err = accessorGroup.AddDeviceCommand(dc)
-		if err != nil {
-			return Device{}, err
-		}
+		devicecommands = append(devicecommands, dc)
 
 		// add the right things back into d
 		d.Commands[index].Endpoint.Name = ep.Name
 		d.Commands[index].Endpoint.Path = ep.Path
+	}
+
+	// insert everything else
+	for _, dr := range deviceroles {
+		_, err = accessorGroup.AddDeviceRole(dr)
+		if err != nil {
+			return Device{}, err
+		}
+	}
+
+	for _, ps := range devicepowerstates {
+		_, err = accessorGroup.AddDevicePowerState(ps)
+		if err != nil {
+			return Device{}, err
+		}
+	}
+
+	for _, pc := range portconfigurations {
+		_, err = accessorGroup.AddPortConfiguration(pc)
+		if err != nil {
+			return Device{}, err
+		}
+	}
+
+	for _, dc := range devicecommands {
+		_, err = accessorGroup.AddDeviceCommand(dc)
+		if err != nil {
+			return Device{}, err
+		}
 	}
 
 	// clean up d
