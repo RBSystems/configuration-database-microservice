@@ -385,7 +385,7 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 	for _, role := range d.Roles {
 		r, err := accessorGroup.GetDeviceRoleDefByName(role)
 		if err != nil {
-			return Device{}, err
+			return Device{}, fmt.Errorf("device role definition: %v does not exist", role)
 		}
 		var dr DeviceRole
 		dr.DeviceID = d.ID
@@ -399,7 +399,7 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 	for _, ps := range d.PowerStates {
 		p, err := accessorGroup.GetPowerStateByName(ps)
 		if err != nil {
-			return Device{}, err
+			return Device{}, fmt.Errorf("powerstate: %v does not exist", ps)
 		}
 		var dps DevicePowerState
 		dps.DeviceID = d.ID
@@ -414,7 +414,7 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 		// get portID
 		pt, err := accessorGroup.GetPortTypeByName(port.Name)
 		if err != nil {
-			return Device{}, err
+			return Device{}, fmt.Errorf("port type: %v does not exist", port.Name)
 		}
 
 		// get sourceDeviceID
@@ -451,19 +451,19 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 		// get commandID
 		rc, err := accessorGroup.GetRawCommandByName(command.Name)
 		if err != nil {
-			return Device{}, err
+			return Device{}, fmt.Errorf("raw command: %v does not exist", command.Name)
 		}
 
 		// get endpoint
 		ep, err := accessorGroup.GetEndpointByName(command.Name)
 		if err != nil {
-			return Device{}, err
+			return Device{}, fmt.Errorf("endpoint: %v does not exist", command.Name)
 		}
 
 		// get microserviceID
 		mc, err := accessorGroup.GetMicroserviceByAddress(command.Microservice)
 		if err != nil {
-			return Device{}, err
+			return Device{}, fmt.Errorf("microservice address: %v does not exist", command.Microservice)
 		}
 
 		var dc DeviceCommand
