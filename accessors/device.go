@@ -452,6 +452,43 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 
 	}
 
+	// insert the comamnds into the DeviceCommands table
+	for index, command := range d.Commands {
+		// get commandID
+		rc, err := accessorGroup.GetRawCommandByName(command.Name)
+		if err != nil {
+			return Device{}, err
+		}
+
+		// get endpoint
+		ep, err := accessorGroup.GetEndpointByName(command.Name)
+		if err != nil {
+			return Device{}, err
+		}
+
+		// get microserviceID
+		mc, err := accessorGroup.GetMicroserviceByAddress(command.Microservice)
+		if err != nil {
+			return Device{}, err
+		}
+
+		var dc DeviceCommand
+		dc.DeviceID = d.ID
+		dc.CommandID = rc.ID
+		dc.MicroserviceID = mc.ID
+		dc.EndpointID = ep.ID
+		dc.Enabled = true // figure out where to get this from
+
+		_, err = accessorGroup.AddDeviceCommand(dc)
+		if err != nil {
+			return Device{}, err
+		}
+
+		// add the right things back into d
+		d.Commands[index].Endpoint.Name = ep.Name
+		d.Commands[index].Endpoint.Path = ep.Path
+	}
+
 	// clean up d
 	d.Room.Devices = nil
 	d.Room.Configuration.Commands = nil

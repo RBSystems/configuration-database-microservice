@@ -82,6 +82,7 @@ func (handlerGroup *HandlerGroup) AddDevice(context echo.Context) error {
 	roomN := context.Param("room")
 	dN := context.Param("device")
 	var d accessors.Device
+
 	err := context.Bind(&d)
 
 	if dN != d.Name {
