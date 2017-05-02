@@ -461,9 +461,9 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 		}
 
 		// get endpoint
-		ep, err := accessorGroup.GetEndpointByName(command.Name)
+		ep, err := accessorGroup.GetEndpointByName(command.Endpoint.Name)
 		if err != nil {
-			return Device{}, fmt.Errorf("endpoint: %v does not exist", command.Name)
+			return Device{}, fmt.Errorf("endpoint: %v does not exist", command.Endpoint.Name)
 		}
 
 		// get microserviceID
