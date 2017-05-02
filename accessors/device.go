@@ -436,17 +436,17 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 		}
 
 		// get hostDeviceID
-		// will this always be d.ID? (the current devices id?)
-		hd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Host)
-		if err != nil {
-			return Device{}, fmt.Errorf("host device %v does not exist in this room", port.Host)
-		}
+		//		hd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Host)
+		//		if err != nil {
+		//			return Device{}, fmt.Errorf("host device %v does not exist in this room", port.Host)
+		//		}
 
 		var p PortConfiguration
 		p.PortID = pt.ID
 		p.SourceDeviceID = sd.ID
 		p.DestinationDeviceID = dd.ID
-		p.HostDeviceID = hd.ID
+		//		p.HostDeviceID = hd.ID
+		p.HostDeviceID = d.ID // always the current device you are adding?
 
 		portconfigurations = append(portconfigurations, p)
 	}
