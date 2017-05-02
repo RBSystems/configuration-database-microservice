@@ -95,22 +95,18 @@ func (handlerGroup *HandlerGroup) GetConfigurationByRoomAndBuilding(context echo
 }
 
 func (handlerGroup *HandlerGroup) AddRoom(context echo.Context) error {
-	building := context.Param("building")
-	roomName := context.Param("room")
+	buildingSN := context.Param("building")
+	roomN := context.Param("room")
 	var roomToAdd accessors.Room
 	err := context.Bind(&roomToAdd)
 
-	if roomName != roomToAdd.Name {
+	if roomN != roomToAdd.Name {
 		return context.JSON(http.StatusBadRequest, "Parameter and room name must match!")
 	}
 
-	checkbuilding, _ := handlerGroup.Accessors.GetBuildingByShortname(building)
-	if checkbuilding.ID != roomToAdd.Building.ID {
-		return context.JSON(http.StatusBadRequest, "Building shortname and Building ID must match the same building!")
-	}
+	roomToAdd.Name = roomN
 
-	roomToAdd.Name = roomName
-	response, err := handlerGroup.Accessors.AddRoom(building, roomToAdd)
+	response, err := handlerGroup.Accessors.AddRoom(buildingSN, roomToAdd)
 	if err != nil {
 		return context.JSON(http.StatusBadRequest, err.Error())
 	}

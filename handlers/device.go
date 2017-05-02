@@ -89,7 +89,6 @@ func (handlerGroup *HandlerGroup) AddDevice(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, "Parameter and device name must match!")
 	}
 
-	// look at these functions and see what they return
 	building, err := handlerGroup.Accessors.GetBuildingByShortname(buildingSN)
 	if err != nil {
 		return err
