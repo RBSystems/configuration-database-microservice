@@ -302,7 +302,7 @@ func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(build
 //specified. Note that we assume that device names are unique within a room.
 func (accessorGroup *AccessorGroup) GetDeviceByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) (Device, error) {
 	dev, err := accessorGroup.GetDevicesByQuery("WHERE Buildings.shortName = ? AND Rooms.name = ? AND Devices.name = ?", buildingShortname, roomName, deviceName)
-	if err != nil {
+	if err != nil || len(dev) == 0 {
 		return Device{}, err
 	}
 
@@ -365,6 +365,12 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 	dt, err := accessorGroup.GetDeviceTypeByName(d.Type)
 	if err != nil {
 		return Device{}, err
+	}
+
+	// if device already exists in database, stop
+	_, err = accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, d.Name)
+	if err != nil {
+		return Device{}, fmt.Errorf("device already exists in room, please choose a different name")
 	}
 
 	// insert into devices
