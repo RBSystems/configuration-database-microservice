@@ -1,6 +1,9 @@
 package accessors
 
-import "database/sql"
+import (
+	"database/sql"
+	"log"
+)
 
 func (accessorGroup *AccessorGroup) GetAllEndpoints() ([]Endpoint, error) {
 
@@ -41,6 +44,17 @@ func (accessorGroup *AccessorGroup) RemoveEndpointByName(name string) error {
 	return nil
 }
 
+func (accessorGroup *AccessorGroup) GetEndpointByName(name string) (Endpoint, error) {
+	row := accessorGroup.Database.QueryRow("SELECT * FROM Endpoints WHERE name = ? ", name)
+
+	e, err := extractEndpoint(row)
+	if err != nil {
+		return Endpoint{}, err
+	}
+
+	return e, nil
+}
+
 func exctractEndpointData(rows *sql.Rows) ([]Endpoint, error) {
 
 	var endpoints []Endpoint
@@ -79,4 +93,32 @@ func exctractEndpointData(rows *sql.Rows) ([]Endpoint, error) {
 	}
 
 	return endpoints, nil
+}
+
+func extractEndpoint(row *sql.Row) (Endpoint, error) {
+	var e Endpoint
+	var id *int
+	var name *string
+	var path *string
+	var description *string
+
+	err := row.Scan(&id, &name, &path, &description)
+	if err != nil {
+		log.Printf("error: %s", err.Error())
+		return Endpoint{}, err
+	}
+	if id != nil {
+		e.ID = *id
+	}
+	if name != nil {
+		e.Name = *name
+	}
+	if path != nil {
+		e.Path = *path
+	}
+	if description != nil {
+		e.Description = *description
+	}
+
+	return e, nil
 }

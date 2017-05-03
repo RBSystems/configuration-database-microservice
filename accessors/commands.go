@@ -26,7 +26,7 @@ Priority: The relative priority of the command relative to other commands. Comma
 					with a higher (closer to 1) priority will be issued to the devices first.
 */
 type RawCommand struct {
-	ID          int    `json:"ID"`
+	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Priority    int    `json:"priority"`
@@ -65,6 +65,17 @@ func (accessorGroup *AccessorGroup) GetAllCommands() (commands []RawCommand, err
 	commands, err = ExtractRawCommands(rows)
 	log.Printf("Done.")
 	return
+}
+
+func (accessorGroup *AccessorGroup) GetRawCommandByName(name string) (RawCommand, error) {
+	row := accessorGroup.Database.QueryRow("SELECT * FROM Commands WHERE name = ? ", name)
+
+	rc, err := extractRawCommand(row)
+	if err != nil {
+		return RawCommand{}, err
+	}
+
+	return rc, nil
 }
 
 //ExtractCommand pulls a command object from a set of sql.Rows
@@ -115,5 +126,33 @@ func (accessorGroup *AccessorGroup) AddRawCommand(rc RawCommand) (RawCommand, er
 	}
 
 	rc.ID = int(id)
+	return rc, nil
+}
+
+func extractRawCommand(row *sql.Row) (RawCommand, error) {
+	var rc RawCommand
+	var id *int
+	var name *string
+	var description *string
+	var priority *int
+
+	err := row.Scan(&id, &name, &description, &priority)
+	if err != nil {
+		log.Printf("error: %s", err.Error())
+		return RawCommand{}, err
+	}
+	if id != nil {
+		rc.ID = *id
+	}
+	if name != nil {
+		rc.Name = *name
+	}
+	if description != nil {
+		rc.Description = *description
+	}
+	if priority != nil {
+		rc.Priority = *priority
+	}
+
 	return rc, nil
 }

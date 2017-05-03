@@ -42,6 +42,17 @@ func (accessorGroup *AccessorGroup) AddMicroservice(microservice Microservice) (
 	return microservice, nil
 }
 
+func (accessorGroup *AccessorGroup) GetMicroserviceByAddress(address string) (Microservice, error) {
+	row := accessorGroup.Database.QueryRow("SELECT * FROM Microservices WHERE address = ? ", address)
+
+	m, err := extractMicroservice(row)
+	if err != nil {
+		return Microservice{}, err
+	}
+
+	return m, nil
+}
+
 func extractMicroservices(rows *sql.Rows) ([]Microservice, error) {
 	var microservices []Microservice
 	var microservice Microservice
@@ -72,4 +83,32 @@ func extractMicroservices(rows *sql.Rows) ([]Microservice, error) {
 		microservices = append(microservices, microservice)
 	}
 	return microservices, nil
+}
+
+func extractMicroservice(row *sql.Row) (Microservice, error) {
+	var m Microservice
+	var id *int
+	var name *string
+	var address *string
+	var description *string
+
+	err := row.Scan(&id, &name, &address, &description)
+	if err != nil {
+		log.Printf("error: %s", err.Error())
+		return Microservice{}, err
+	}
+	if id != nil {
+		m.ID = *id
+	}
+	if name != nil {
+		m.Name = *name
+	}
+	if address != nil {
+		m.Address = *address
+	}
+	if description != nil {
+		m.Description = *description
+	}
+
+	return m, nil
 }

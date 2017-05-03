@@ -1,6 +1,9 @@
 package accessors
 
-import "database/sql"
+import (
+	"database/sql"
+	"log"
+)
 
 //DeviceType corresponds to the DeviceType table in the database
 type DeviceType struct {
@@ -43,6 +46,28 @@ func (accessorGroup *AccessorGroup) AddDeviceType(deviceType DeviceType) (Device
 	return deviceType, nil
 }
 
+func (accessorGroup *AccessorGroup) GetDeviceTypeByID(id int) (DeviceType, error) {
+	row := accessorGroup.Database.QueryRow("SELECT * FROM DeviceTypes WHERE deviceTypeID = ?", id)
+
+	dt, err := extractDeviceType(row)
+	if err != nil {
+		return DeviceType{}, err
+	}
+
+	return dt, nil
+}
+
+func (accessorGroup *AccessorGroup) GetDeviceTypeByName(name string) (DeviceType, error) {
+	row := accessorGroup.Database.QueryRow("SELECT * FROM DeviceTypes WHERE name = ?", name)
+
+	dt, err := extractDeviceType(row)
+	if err != nil {
+		return DeviceType{}, err
+	}
+
+	return dt, nil
+}
+
 func extractDeviceTypeData(rows *sql.Rows) ([]DeviceType, error) {
 
 	var deviceTypes []DeviceType
@@ -72,4 +97,28 @@ func extractDeviceTypeData(rows *sql.Rows) ([]DeviceType, error) {
 	}
 
 	return deviceTypes, nil
+}
+
+func extractDeviceType(row *sql.Row) (DeviceType, error) {
+	var dt DeviceType
+	var id *int
+	var name *string
+	var description *string
+
+	err := row.Scan(&id, &name, &description)
+	if err != nil {
+		log.Printf("error: %s", err.Error())
+		return DeviceType{}, err
+	}
+	if id != nil {
+		dt.ID = *id
+	}
+	if name != nil {
+		dt.Name = *name
+	}
+	if description != nil {
+		dt.Description = *name
+	}
+
+	return dt, nil
 }
