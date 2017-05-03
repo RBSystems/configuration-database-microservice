@@ -26,7 +26,7 @@ Priority: The relative priority of the command relative to other commands. Comma
 					with a higher (closer to 1) priority will be issued to the devices first.
 */
 type RawCommand struct {
-	ID          int    `json:"ID"`
+	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Priority    int    `json:"priority"`
