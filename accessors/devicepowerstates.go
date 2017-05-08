@@ -3,9 +3,9 @@ package accessors
 import "database/sql"
 
 type DevicePowerState struct {
-	ID         int        `json:"id,omitempty"`
-	Device     Device     `json:"device"`
-	PowerState PowerState `json:"powerstate"`
+	ID           int `json:"id,omitempty"`
+	DeviceID     int `json:"device"`
+	PowerStateID int `json:"powerstate"`
 }
 
 func (accessorGroup *AccessorGroup) GetDevicePowerStates() ([]DevicePowerState, error) {
@@ -24,7 +24,7 @@ func (accessorGroup *AccessorGroup) GetDevicePowerStates() ([]DevicePowerState, 
 }
 
 func (accessorGroup *AccessorGroup) AddDevicePowerState(dps DevicePowerState) (DevicePowerState, error) {
-	response, err := accessorGroup.Database.Exec("INSERT INTO DevicePowerStates (devicePowerStateID, deviceID, powerStateID) VALUES(?,?,?)", dps.ID, dps.Device.ID, dps.PowerState.ID)
+	response, err := accessorGroup.Database.Exec("INSERT INTO DevicePowerStates (devicePowerStateID, deviceID, powerStateID) VALUES(?,?,?)", dps.ID, dps.DeviceID, dps.PowerStateID)
 	if err != nil {
 		return DevicePowerState{}, err
 	}
@@ -53,10 +53,10 @@ func exctractDevicePowerStateData(rows *sql.Rows) ([]DevicePowerState, error) {
 			devicepowerstate.ID = *id
 		}
 		if dID != nil {
-			devicepowerstate.Device.ID = *dID
+			devicepowerstate.DeviceID = *dID
 		}
 		if pID != nil {
-			devicepowerstate.PowerState.ID = *pID
+			devicepowerstate.PowerStateID = *pID
 		}
 
 		devicepowerstates = append(devicepowerstates, devicepowerstate)

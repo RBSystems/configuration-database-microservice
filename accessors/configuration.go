@@ -97,6 +97,55 @@ func (accessorGroup *AccessorGroup) GetEvaluatorsForConfigurationByID(configurat
 	return
 }
 
+func (accessorGroup *AccessorGroup) GetConfigurations() ([]RoomConfiguration, error) {
+	rows, err := accessorGroup.Database.Query("SELECT * FROM RoomConfiguration")
+	if err != nil {
+		return []RoomConfiguration{}, err
+	}
+
+	rcs, err := extractRoomConfigurations(rows)
+	if err != nil {
+		return []RoomConfiguration{}, err
+	}
+	defer rows.Close()
+
+	return rcs, nil
+}
+
+func extractRoomConfigurations(rows *sql.Rows) ([]RoomConfiguration, error) {
+	var rcs []RoomConfiguration
+	var rc RoomConfiguration
+	var id *int
+	var name *string
+	var roomkey *string
+	var description *string
+	var roominitkey *string
+
+	for rows.Next() {
+		err := rows.Scan(&id, &name, &roomkey, &description, &roominitkey)
+		if err != nil {
+			log.Printf("error: %s", err.Error())
+		}
+		if id != nil {
+			rc.ID = *id
+		}
+		if name != nil {
+			rc.Name = *name
+		}
+		if roomkey != nil {
+			rc.RoomKey = *roomkey
+		}
+		if description != nil {
+			rc.Description = *description
+		}
+		if roominitkey != nil {
+			rc.RoomInitKey = *roominitkey
+		}
+		rcs = append(rcs, rc)
+	}
+	return rcs, nil
+}
+
 //ExtractRoomConfiguration pulls the items from the row to fill the config item.
 func (accessorGroup *AccessorGroup) ExtractRoomConfiguration(rows *sql.Rows) (config RoomConfiguration, err error) {
 	rows.Next()

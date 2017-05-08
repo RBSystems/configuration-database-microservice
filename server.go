@@ -54,6 +54,7 @@ func main() {
 
 	secure.GET("/buildings/:building/rooms/:room/configuration", handlerGroup.GetConfigurationByRoomAndBuilding)
 	secure.GET("/configurations/:configuration", handlerGroup.GetConfigurationByName)
+	secure.GET("/configurations", handlerGroup.GetConfigurations)
 
 	secure.GET("/devices/ports", handlerGroup.GetPorts)
 	secure.GET("/devices/types", handlerGroup.GetDeviceTypes)
@@ -65,6 +66,8 @@ func main() {
 
 	secure.POST("/buildings/:building", handlerGroup.AddBuilding)
 	secure.POST("/buildings/:building/rooms/:room", handlerGroup.AddRoom)
+	secure.POST("/buildings/:building/rooms/:room/devices/:device", handlerGroup.AddDevice)
+
 	secure.POST("/devices/ports/:port", handlerGroup.AddPort)
 	secure.POST("/devices/types/:devicetype", handlerGroup.AddDeviceType)
 	secure.POST("/devices/endpoints/:endpoint", handlerGroup.AddEndpoint)
