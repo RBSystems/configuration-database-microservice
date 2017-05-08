@@ -8,19 +8,19 @@ import (
 //RoomConfiguration reflects a defined room configuration with the commands and
 //command keys incldued therein.
 type RoomConfiguration struct {
-	ID          int                    `json:"id"`
-	Name        string                 `json:"name"`
-	RoomKey     string                 `json:"roomKey"`
-	Description string                 `json:"description"`
-	RoomInitKey string                 `json:"roomInitKey"`
-	Commands    []ConfigurationCommand `json:"commands"`
+	ID          int                      `json:"id"`
+	Name        string                   `json:"name"`
+	RoomKey     string                   `json:"roomKey"`
+	Description string                   `json:"description"`
+	RoomInitKey string                   `json:"roomInitKey"`
+	Evaluators  []ConfigurationEvaluator `json:"evaluators"`
 }
 
-//ConfigurationCommand commands is the command information correlated with the
+//ConfigurationEvaluator commands is the command information correlated with the
 //specifics for the configuration (key and priority)
-type ConfigurationCommand struct {
-	Priority   int    `json:"priority"`
-	CommandKey string `json:"commandKey"`
+type ConfigurationEvaluator struct {
+	Priority     int    `json:"priority"`
+	EvaluatorKey string `json:"evaluatorKey"`
 }
 
 //GetConfigurationByRoomAndBuilding will get the configuration information tied to a given room.
@@ -42,7 +42,7 @@ func (accessorGroup *AccessorGroup) GetConfigurationByConfigurationName(name str
 }
 
 //GetConfigurationByConfigurationID gets a room configuration by it's ID, and fills the commands
-//struct with the relevant ConfigurationCommands
+//struct with the relevant ConfigurationEvaluators
 func (accessorGroup *AccessorGroup) GetConfigurationByConfigurationID(configurationID int) (config RoomConfiguration, err error) {
 	config, err = accessorGroup.GetConfigurationByQuery(`WHERE roomConfigurationID = ?`, configurationID)
 	return
@@ -73,16 +73,16 @@ func (accessorGroup *AccessorGroup) GetConfigurationByQuery(queryAddition string
 		return
 	}
 
-	config.Commands, err = accessorGroup.GetCommandsForConfigurationByID(config.ID)
+	config.Evaluators, err = accessorGroup.GetEvaluatorsForConfigurationByID(config.ID)
 
 	return
 }
 
-//GetCommandsForConfigurationByID gets the elements form the vConfiguraitonMapping table for a given configurationID
-func (accessorGroup *AccessorGroup) GetCommandsForConfigurationByID(configurationID int) (allCommands []ConfigurationCommand, err error) {
+//GetEvaluatorsForConfigurationByID gets the elements form the vConfiguraitonMapping table for a given configurationID
+func (accessorGroup *AccessorGroup) GetEvaluatorsForConfigurationByID(configurationID int) (allEvaluators []ConfigurationEvaluator, err error) {
 	//Get configuration commands
 	query := `
-	Select CodeKey, Priority
+	Select EvaluatorKey, Priority
 	FROM vConfigurationMapping
 	WHERE ConfigurationID = ?`
 
@@ -92,7 +92,7 @@ func (accessorGroup *AccessorGroup) GetCommandsForConfigurationByID(configuratio
 	}
 	defer rows.Close()
 
-	allCommands, err = accessorGroup.ExtractConfigurationCommand(rows)
+	allEvaluators, err = accessorGroup.ExtractConfigurationEvaluator(rows)
 
 	return
 }
@@ -106,19 +106,19 @@ func (accessorGroup *AccessorGroup) ExtractRoomConfiguration(rows *sql.Rows) (co
 	return
 }
 
-//ExtractConfigurationCommand pulls a set ConfigurationCommand of objects from a set of sql.Rows
-func (accessorGroup *AccessorGroup) ExtractConfigurationCommand(rows *sql.Rows) (allCommands []ConfigurationCommand, err error) {
+//ExtractConfigurationEvaluator pulls a set ConfigurationEvaluator of objects from a set of sql.Rows
+func (accessorGroup *AccessorGroup) ExtractConfigurationEvaluator(rows *sql.Rows) (allEvaluators []ConfigurationEvaluator, err error) {
 
 	for rows.Next() {
-		command := ConfigurationCommand{}
+		command := ConfigurationEvaluator{}
 
-		err = rows.Scan(&command.CommandKey, &command.Priority)
+		err = rows.Scan(&command.EvaluatorKey, &command.Priority)
 		if err != nil {
 			log.Printf("Error: %s", err.Error())
 			return
 		}
 
-		allCommands = append(allCommands, command)
+		allEvaluators = append(allEvaluators, command)
 	}
 
 	return
