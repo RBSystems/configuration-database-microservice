@@ -517,7 +517,7 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 
 	// clean up d
 	d.Room.Devices = nil
-	d.Room.Configuration.Commands = nil
+	d.Room.Configuration.Evaluators = nil
 
 	return d, nil
 }
