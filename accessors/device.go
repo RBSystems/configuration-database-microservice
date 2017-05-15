@@ -12,6 +12,7 @@ import (
 type Device struct {
 	ID          int       `json:"id"`
 	Name        string    `json:"name"`
+	DisplayName string    `json:"display_name,omitempty"`
 	Address     string    `json:"address"`
 	Input       bool      `json:"input"`
 	Output      bool      `json:"output"`
@@ -82,6 +83,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
   	Devices.address as deviceAddress,
   	Devices.input,
   	Devices.output,
+	Devices.displayName,
   	Rooms.roomID,
   	Rooms.name as roomName,
   	Rooms.description as roomDescription,
@@ -115,6 +117,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 			&device.Address,
 			&device.Input,
 			&device.Output,
+			&device.DisplayName,
 			&device.Room.ID,
 			&device.Room.Name,
 			&device.Room.Description,
