@@ -40,6 +40,7 @@ func (accessorGroup *AccessorGroup) GetAllRooms() ([]Room, error) {
 
 	allRooms := []Room{}
 
+	//	rows, err = accessorGroup.Database.Query("SELECT * FROM Rooms WHERE roomDesignation = 'production'")
 	rows, err = accessorGroup.Database.Query("SELECT * FROM Rooms ")
 	if err != nil {
 		return []Room{}, err
