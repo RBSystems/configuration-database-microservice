@@ -40,7 +40,8 @@ func (accessorGroup *AccessorGroup) GetAllRooms() ([]Room, error) {
 
 	allRooms := []Room{}
 
-	rows, err = accessorGroup.Database.Query("SELECT * FROM Rooms WHERE roomDesignation = 'production'")
+	//	rows, err = accessorGroup.Database.Query("SELECT * FROM Rooms WHERE roomDesignation = 'production'")
+	rows, err = accessorGroup.Database.Query("SELECT * FROM Rooms ")
 	if err != nil {
 		return []Room{}, err
 	}
@@ -93,9 +94,12 @@ func (accessorGroup *AccessorGroup) ExtractRoomData(rows *sql.Rows) (rooms []Roo
 // GetRoomsByBuilding returns a room from the database by building
 func (accessorGroup *AccessorGroup) GetRoomsByBuilding(building string) ([]Room, error) {
 
+	//rows, err := accessorGroup.Database.Query(`SELECT Rooms.roomID,
+	//Rooms.name, Rooms.buildingID, Rooms.description, Rooms.configurationID, Rooms.roomDesignation FROM Rooms
+	//JOIN Buildings ON Rooms.buildingID = Buildings.buildingID WHERE Buildings.shortName=? AND Rooms.roomDesignation = 'production'`, building)
 	rows, err := accessorGroup.Database.Query(`SELECT Rooms.roomID,
 	Rooms.name, Rooms.buildingID, Rooms.description, Rooms.configurationID, Rooms.roomDesignation FROM Rooms
-	JOIN Buildings ON Rooms.buildingID = Buildings.buildingID WHERE Buildings.shortName=? AND Rooms.roomDesignation = 'production'`, building)
+	JOIN Buildings ON Rooms.buildingID = Buildings.buildingID WHERE Buildings.shortName=?`, building)
 	if err != nil {
 		return []Room{}, err
 	}
