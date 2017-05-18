@@ -3,9 +3,9 @@ package accessors
 import "database/sql"
 
 type DeviceRole struct {
-	ID     int           `json:"id,omitempty"`
-	Device Device        `json:"device"`
-	Role   DeviceRoleDef `json:"role"`
+	ID                     int `json:"id,omitempty"`
+	DeviceID               int `json:"device"`
+	DeviceRoleDefinitionID int `json:"role"`
 }
 
 func (accessorGroup *AccessorGroup) GetDeviceRoles() ([]DeviceRole, error) {
@@ -24,7 +24,7 @@ func (accessorGroup *AccessorGroup) GetDeviceRoles() ([]DeviceRole, error) {
 }
 
 func (accessorGroup *AccessorGroup) AddDeviceRole(dr DeviceRole) (DeviceRole, error) {
-	response, err := accessorGroup.Database.Exec("INSERT INTO DeviceRole (deviceRoleID, deviceID, deviceRoleDefinitionID) VALUES(?,?,?)", dr.ID, dr.Device.ID, dr.Role.ID)
+	response, err := accessorGroup.Database.Exec("INSERT INTO DeviceRole (deviceRoleID, deviceID, deviceRoleDefinitionID) VALUES(?,?,?)", dr.ID, dr.DeviceID, dr.DeviceRoleDefinitionID)
 	if err != nil {
 		return DeviceRole{}, err
 	}
@@ -52,10 +52,10 @@ func exctractDeviceRoleData(rows *sql.Rows) ([]DeviceRole, error) {
 			devicerole.ID = *id
 		}
 		if dID != nil {
-			devicerole.Device.ID = *dID
+			devicerole.DeviceID = *dID
 		}
 		if rID != nil {
-			devicerole.Role.ID = *rID
+			devicerole.DeviceRoleDefinitionID = *rID
 		}
 		deviceroles = append(deviceroles, devicerole)
 	}

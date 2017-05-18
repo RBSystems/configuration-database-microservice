@@ -54,19 +54,24 @@ func main() {
 
 	secure.GET("/buildings/:building/rooms/:room/configuration", handlerGroup.GetConfigurationByRoomAndBuilding)
 	secure.GET("/configurations/:configuration", handlerGroup.GetConfigurationByName)
+	secure.GET("/configurations", handlerGroup.GetConfigurations)
 
 	secure.GET("/devices/ports", handlerGroup.GetPorts)
 	secure.GET("/devices/types", handlerGroup.GetDeviceTypes)
 	secure.GET("/devices/endpoints", handlerGroup.GetEndpoints)
+	secure.GET("/devices/commands", handlerGroup.GetAllCommands)
 	secure.GET("/devices/powerstates", handlerGroup.GetPowerStates)
 	secure.GET("/devices/microservices", handlerGroup.GetMicroservices)
 	secure.GET("/devices/roledefinitions", handlerGroup.GetDeviceRoleDefs)
 
 	secure.POST("/buildings/:building", handlerGroup.AddBuilding)
 	secure.POST("/buildings/:building/rooms/:room", handlerGroup.AddRoom)
+	secure.POST("/buildings/:building/rooms/:room/devices/:device", handlerGroup.AddDevice)
+
 	secure.POST("/devices/ports/:port", handlerGroup.AddPort)
 	secure.POST("/devices/types/:devicetype", handlerGroup.AddDeviceType)
 	secure.POST("/devices/endpoints/:endpoint", handlerGroup.AddEndpoint)
+	secure.POST("/devices/commands/:command", handlerGroup.AddCommand)
 	secure.POST("/devices/powerstates/:powerstate", handlerGroup.AddPowerState)
 	secure.POST("/devices/microservices/:microservice", handlerGroup.AddMicroservice)
 	secure.POST("/devices/roledefinitions/:deviceroledefinition", handlerGroup.AddDeviceRoleDef)

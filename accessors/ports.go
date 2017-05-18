@@ -1,6 +1,9 @@
 package accessors
 
-import "database/sql"
+import (
+	"database/sql"
+	"log"
+)
 
 //PortType corresponds to the Ports table in the Database and really should be called Port
 //TODO:Change struct name to "Port"
@@ -42,6 +45,17 @@ func (accessorGroup *AccessorGroup) AddPort(portToAdd PortType) (PortType, error
 	return portToAdd, nil
 }
 
+func (accessorGroup *AccessorGroup) GetPortTypeByName(name string) (PortType, error) {
+	row := accessorGroup.Database.QueryRow("SELECT * FROM Ports  WHERE name = ? ", name)
+
+	p, err := extractPortType(row)
+	if err != nil {
+		return PortType{}, err
+	}
+
+	return p, nil
+}
+
 func extractPortData(rows *sql.Rows) ([]PortType, error) {
 
 	var allPorts []PortType
@@ -75,4 +89,28 @@ func extractPortData(rows *sql.Rows) ([]PortType, error) {
 	}
 
 	return allPorts, nil
+}
+
+func extractPortType(row *sql.Row) (PortType, error) {
+	var p PortType
+	var id *int
+	var name *string
+	var description *string
+
+	err := row.Scan(&id, &name, &description)
+	if err != nil {
+		log.Printf("error: %s", err.Error())
+		return PortType{}, err
+	}
+	if id != nil {
+		p.ID = *id
+	}
+	if name != nil {
+		p.Name = *name
+	}
+	if description != nil {
+		p.Description = *description
+	}
+
+	return p, nil
 }
