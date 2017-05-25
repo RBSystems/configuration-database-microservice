@@ -7,12 +7,14 @@ import (
 	"github.com/byuoitav/authmiddleware"
 	"github.com/byuoitav/configuration-database-microservice/accessors"
 	"github.com/byuoitav/configuration-database-microservice/handlers"
-	"github.com/jessemillar/health"
+	"github.com/byuoitav/configuration-database-microservice/health"
+	jh "github.com/jessemillar/health"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
 
 func main() {
+	//NOTE: If you change this go change it in the health package
 	database := os.Getenv("CONFIGURATION_DATABASE_USERNAME") + ":" + os.Getenv("CONFIGURATION_DATABASE_PASSWORD") + "@tcp(" + os.Getenv("CONFIGURATION_DATABASE_HOST") + ":" + os.Getenv("CONFIGURATION_DATABASE_PORT") + ")/" + os.Getenv("CONFIGURATION_DATABASE_NAME")
 
 	// Constructs a new accessor group and connects it to the database
@@ -31,9 +33,9 @@ func main() {
 	// Use the `secure` routing group to require authentication
 	secure := router.Group("", echo.WrapMiddleware(authmiddleware.Authenticate))
 
-	router.GET("/health", echo.WrapHandler(http.HandlerFunc(health.Check)))
-	router.GET("/status", handlerGroup.Status)
-	router.GET("/version", handlerGroup.Version)
+	router.GET("/health", echo.WrapHandler(http.HandlerFunc(jh.Check)))
+	router.GET("/status", health.Status)
+	router.GET("/version", health.Version)
 
 	secure.GET("/buildings", handlerGroup.GetAllBuildings)
 	secure.GET("/buildings/:id", handlerGroup.GetBuildingByID)
@@ -88,7 +90,7 @@ func main() {
 		MaxHeaderBytes: 1024 * 10,
 	}
 
-	go handlerGroup.SendSuccessfulStartup()
+	go health.StartupCheckAndReport()
 
 	router.StartServer(&server)
 }
