@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/labstack/echo"
 )
@@ -61,7 +62,8 @@ func (hg *HandlerGroup) GetHealth() map[string]string {
 }
 
 func (hg *HandlerGroup) SendSuccessfulStartup() error {
-
+	log.Printf("[HealthCheck] will report success in 10 seconds, waiting for listening services to be up")
+	time.Sleep(10 * time.Second)
 	log.Printf("[HealthCheck] Reporting microsrevice startup complete")
 
 	log.Printf("[HealthCheck] Checking Health...")
