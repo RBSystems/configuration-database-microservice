@@ -32,6 +32,8 @@ func main() {
 	secure := router.Group("", echo.WrapMiddleware(authmiddleware.Authenticate))
 
 	router.GET("/health", echo.WrapHandler(http.HandlerFunc(health.Check)))
+	router.GET("/status", handlerGroup.Status)
+	router.GET("/version", handlerGroup.Version)
 
 	secure.GET("/buildings", handlerGroup.GetAllBuildings)
 	secure.GET("/buildings/:id", handlerGroup.GetBuildingByID)
@@ -85,6 +87,8 @@ func main() {
 		Addr:           port,
 		MaxHeaderBytes: 1024 * 10,
 	}
+
+	go handlerGroup.SendSuccessfulStartup()
 
 	router.StartServer(&server)
 }
