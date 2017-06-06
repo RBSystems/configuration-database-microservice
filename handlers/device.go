@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/byuoitav/configuration-database-microservice/accessors"
@@ -68,6 +69,7 @@ func (handlerGroup *HandlerGroup) GetStageDevicesByRoleAndType(context echo.Cont
 }
 
 func (handlerGroup *HandlerGroup) GetDevDevicesByRoleAndType(context echo.Context) error {
+	log.Printf("Getting development devices.")
 	response, err := handlerGroup.Accessors.GetDevicesByRoleAndType(context.Param("role"), context.Param("type"), "development")
 	if err != nil {
 		return context.String(http.StatusBadRequest, err.Error())
