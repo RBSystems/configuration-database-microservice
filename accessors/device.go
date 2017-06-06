@@ -101,10 +101,13 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 
 	allDevices := []Device{}
 
+	log.Printf("Making query for devices")
 	rows, err := accessorGroup.Database.Query(baseQuery+" "+query, parameters...)
 	if err != nil {
+		log.Printf("Problem executing query: %v", err.Error())
 		return []Device{}, err
 	}
+	log.Printf("Query executed, evaluating responses")
 
 	defer rows.Close()
 
