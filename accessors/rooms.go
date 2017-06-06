@@ -40,7 +40,8 @@ func (accessorGroup *AccessorGroup) GetAllRooms() ([]Room, error) {
 
 	allRooms := []Room{}
 
-	rows, err = accessorGroup.Database.Query("SELECT * FROM Rooms WHERE roomDesignation = 'production'")
+	//	rows, err = accessorGroup.Database.Query("SELECT * FROM Rooms WHERE roomDesignation = 'production'")
+	rows, err = accessorGroup.Database.Query("SELECT * FROM Rooms ")
 	if err != nil {
 		return []Room{}, err
 	}
@@ -93,14 +94,15 @@ func (accessorGroup *AccessorGroup) ExtractRoomData(rows *sql.Rows) (rooms []Roo
 // GetRoomsByBuilding returns a room from the database by building
 func (accessorGroup *AccessorGroup) GetRoomsByBuilding(building string) ([]Room, error) {
 
-	log.Printf("making query")
+	//rows, err := accessorGroup.Database.Query(`SELECT Rooms.roomID,
+	//Rooms.name, Rooms.buildingID, Rooms.description, Rooms.configurationID, Rooms.roomDesignation FROM Rooms
+	//JOIN Buildings ON Rooms.buildingID = Buildings.buildingID WHERE Buildings.shortName=? AND Rooms.roomDesignation = 'production'`, building)
 	rows, err := accessorGroup.Database.Query(`SELECT Rooms.roomID,
-		Rooms.name, Rooms.buildingID, Rooms.description, Rooms.configurationID FROM Rooms
-		JOIN Buildings ON Rooms.buildingID = Buildings.buildingID WHERE Buildings.shortName=? AND Rooms.roomDesignation = 'production'`, building)
+	Rooms.name, Rooms.buildingID, Rooms.description, Rooms.configurationID, Rooms.roomDesignation FROM Rooms
+	JOIN Buildings ON Rooms.buildingID = Buildings.buildingID WHERE Buildings.shortName=?`, building)
 	if err != nil {
 		return []Room{}, err
 	}
-	log.Printf("I survived")
 
 	defer rows.Close()
 
@@ -115,6 +117,9 @@ func (accessorGroup *AccessorGroup) GetRoomsByBuilding(building string) ([]Room,
 func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname string, name string) (Room, error) {
 	log.Printf("Getting building info for %s - %s...", buildingShortname, name)
 	building, err := accessorGroup.GetBuildingByShortname(buildingShortname)
+	//
+	log.Printf("TEST: building.ID = %v", building.ID)
+	//
 	if err != nil {
 		return Room{}, err
 	}
@@ -158,8 +163,13 @@ func (accessorGroup *AccessorGroup) GetRoomByBuildingAndName(buildingShortname s
 func (accessorGroup *AccessorGroup) AddRoom(buildingShortName string, roomToAdd Room) (Room, error) {
 	log.Printf("Adding room %v to building %v...", roomToAdd.Name, buildingShortName)
 
-	result, err := accessorGroup.Database.Exec("INSERT into Rooms (name, buildingID, description, configurationID, production) VALUES (?,?,?,?,?)",
-		roomToAdd.Name, roomToAdd.Building.ID, roomToAdd.Description, roomToAdd.ConfigurationID, roomToAdd.RoomDesignation)
+	building, err := accessorGroup.GetBuildingByShortname(buildingShortName)
+	if err != nil {
+		return Room{}, err
+	}
+
+	result, err := accessorGroup.Database.Exec("INSERT into Rooms (name, buildingID, description, configurationID, roomDesignation) VALUES (?,?,?,?,?)",
+		roomToAdd.Name, building.ID, roomToAdd.Description, roomToAdd.ConfigurationID, roomToAdd.RoomDesignation)
 	if err != nil {
 		return Room{}, err
 	}
@@ -170,6 +180,7 @@ func (accessorGroup *AccessorGroup) AddRoom(buildingShortName string, roomToAdd 
 	}
 
 	roomToAdd.ID = int(id) // cast id into an int
+	roomToAdd.Building = building
 
 	return roomToAdd, nil
 }

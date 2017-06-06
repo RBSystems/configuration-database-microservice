@@ -70,6 +70,16 @@ func (handlerGroup *HandlerGroup) GetConfigurationByName(context echo.Context) e
 	return context.JSON(http.StatusOK, response)
 }
 
+//
+func (handlerGroup *HandlerGroup) GetConfigurations(context echo.Context) error {
+	response, err := handlerGroup.Accessors.GetConfigurations()
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
 //GetConfigurationByRoomAndBuilding gets the configuration by room and building
 func (handlerGroup *HandlerGroup) GetConfigurationByRoomAndBuilding(context echo.Context) error {
 	building := context.Param("building")
@@ -85,17 +95,18 @@ func (handlerGroup *HandlerGroup) GetConfigurationByRoomAndBuilding(context echo
 }
 
 func (handlerGroup *HandlerGroup) AddRoom(context echo.Context) error {
-	building := context.Param("building")
-	roomName := context.Param("room")
+	buildingSN := context.Param("building")
+	roomN := context.Param("room")
 	var roomToAdd accessors.Room
 	err := context.Bind(&roomToAdd)
 
-	if roomName != roomToAdd.Name && len(roomToAdd.Name) > 0 {
+	if roomN != roomToAdd.Name {
 		return context.JSON(http.StatusBadRequest, "Parameter and room name must match!")
 	}
 
-	roomToAdd.Name = roomName
-	response, err := handlerGroup.Accessors.AddRoom(building, roomToAdd)
+	roomToAdd.Name = roomN
+
+	response, err := handlerGroup.Accessors.AddRoom(buildingSN, roomToAdd)
 	if err != nil {
 		return context.JSON(http.StatusBadRequest, err.Error())
 	}
