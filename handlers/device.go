@@ -68,9 +68,10 @@ func (handlerGroup *HandlerGroup) GetStageDevicesByRoleAndType(context echo.Cont
 	return context.JSON(http.StatusOK, response)
 }
 
-func (handlerGroup *HandlerGroup) GetDevDevicesByRoleAndType(context echo.Context) error {
-	log.Printf("Getting dev devices by role %s and type %s", context.Param("role"), context.Param("type"))
-	response, err := handlerGroup.Accessors.GetDevicesByRoleAndType(context.Param("role"), context.Param("type"), "development")
+func (handlerGroup *HandlerGroup) GetBranchDevicesByRoleAndType(context echo.Context) error {
+	branch := context.Param("branch")
+	log.Printf("Getting %v devices by role %s and type %s", branch, context.Param("role"), context.Param("type"))
+	response, err := handlerGroup.Accessors.GetDevicesByRoleAndType(context.Param("role"), context.Param("type"), branch)
 	if err != nil {
 		log.Printf("[error] %s", err.Error())
 		return context.String(http.StatusBadRequest, err.Error())
