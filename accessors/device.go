@@ -35,7 +35,7 @@ func (d *Device) GetFullName() string {
 	return (d.Building.Shortname + "-" + d.Room.Name + "-" + d.Name)
 }
 
-//Port represents a physical port on a device (HDMI, DP, Audo, etc.)
+//Port represents a physical port on a device (HDMI, DP, Audio, etc.)
 //TODO: this corresponds to the PortConfiguration table in the database!!!
 type Port struct {
 	Source      string `json:"source"`
@@ -527,4 +527,24 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 	d.Room.Configuration.Evaluators = nil
 
 	return d, nil
+}
+
+func (p *Device) HasRole(r string) bool {
+
+	var ac AccessorGroup
+	roles, err := ac.GetRolesByDeviceID(p.ID)
+	if err != nil {
+		log.Printf("Error getting roles of device %s: %s", p.Name, err.Error())
+		return false
+	}
+
+	for _, role := range roles {
+
+		if r == role {
+			return true
+		}
+
+	}
+
+	return false
 }
