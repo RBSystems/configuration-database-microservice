@@ -160,7 +160,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 }
 
 func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, error) {
-	log.Printf("Getting roles by device ID...")
+	log.Printf("Getting roles by device ID: %v", deviceID)
 	query := `Select DeviceRoleDefinition.Name From DeviceRoleDefinition 
 	JOIN DeviceRole dr on dr.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID 
 	WHERE dr.deviceID = ?`
