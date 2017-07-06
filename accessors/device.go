@@ -548,3 +548,21 @@ func (p *Device) HasRole(r string) bool {
 
 	return false
 }
+
+func (p *Device) GetCommandByName(commandName string) Command {
+
+	var ac AccessorGroup
+	commands, err := ac.GetDeviceCommandsByBuildingAndRoomAndName(p.Building.Name, p.Room.Name, p.Name)
+	if err != nil {
+		return Command{}
+	}
+
+	for _, command := range commands {
+		if command.Name == commandName {
+			return command
+		}
+	}
+
+	return Command{}
+
+}
