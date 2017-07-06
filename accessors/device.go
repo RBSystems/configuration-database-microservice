@@ -161,7 +161,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 
 func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, error) {
 	log.Printf("Getting roles by device ID: %v", deviceID)
-	query := `Select DeviceRoleDefinition.Name From DeviceRoleDefinition 
+	query := `Select DeviceRoleDefinition.name From DeviceRoleDefinition 
 	JOIN DeviceRole dr on dr.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID 
 	WHERE dr.deviceID = ?`
 
@@ -171,6 +171,8 @@ func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, 
 	if err != nil {
 		return []string{}, err
 	}
+
+	log.Printf("Sheriff, this is no time to panic.")
 	defer rows.Close()
 
 	for rows.Next() {
@@ -180,6 +182,9 @@ func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, 
 		if err != nil {
 			return []string{}, err
 		}
+
+		log.Printf("This is a perfect time to panic")
+		log.Printf("value: %s", value)
 		toReturn = append(toReturn, value)
 	}
 	return toReturn, nil
@@ -532,18 +537,7 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 
 func (p *Device) HasRole(r string) bool {
 
-	var ac AccessorGroup
-	roles, err := ac.GetRolesByDeviceID(p.ID)
-	if err != nil {
-		log.Printf("Error getting roles of device %s: %s", p.Name, err.Error())
-		return false
-	}
-
-	if roles == nil {
-		return false
-	}
-
-	for _, role := range roles {
+	for _, role := range p.Roles {
 
 		if r == role {
 			return true
@@ -556,13 +550,7 @@ func (p *Device) HasRole(r string) bool {
 
 func (p *Device) GetCommandByName(commandName string) Command {
 
-	var ac AccessorGroup
-	commands, err := ac.GetDeviceCommandsByBuildingAndRoomAndName(p.Building.Name, p.Room.Name, p.Name)
-	if err != nil {
-		return Command{}
-	}
-
-	for _, command := range commands {
+	for _, command := range p.Commands {
 		if command.Name == commandName {
 			return command
 		}
