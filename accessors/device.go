@@ -35,7 +35,7 @@ func (d *Device) GetFullName() string {
 	return (d.Building.Shortname + "-" + d.Room.Name + "-" + d.Name)
 }
 
-//Port represents a physical port on a device (HDMI, DP, Audo, etc.)
+//Port represents a physical port on a device (HDMI, DP, Audio, etc.)
 //TODO: this corresponds to the PortConfiguration table in the database!!!
 type Port struct {
 	Source      string `json:"source"`
@@ -160,7 +160,8 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 }
 
 func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, error) {
-	query := `Select DeviceRoleDefinition.Name From DeviceRoleDefinition 
+	log.Printf("Getting roles by device ID: %v", deviceID)
+	query := `Select DeviceRoleDefinition.name From DeviceRoleDefinition 
 	JOIN DeviceRole dr on dr.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID 
 	WHERE dr.deviceID = ?`
 
@@ -170,6 +171,8 @@ func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, 
 	if err != nil {
 		return []string{}, err
 	}
+
+	log.Printf("Sheriff, this is no time to panic.")
 	defer rows.Close()
 
 	for rows.Next() {
@@ -179,6 +182,9 @@ func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, 
 		if err != nil {
 			return []string{}, err
 		}
+
+		log.Printf("This is a perfect time to panic")
+		log.Printf("value: %s", value)
 		toReturn = append(toReturn, value)
 	}
 	return toReturn, nil
@@ -527,4 +533,29 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 	d.Room.Configuration.Evaluators = nil
 
 	return d, nil
+}
+
+func (p *Device) HasRole(r string) bool {
+
+	for _, role := range p.Roles {
+
+		if r == role {
+			return true
+		}
+
+	}
+
+	return false
+}
+
+func (p *Device) GetCommandByName(commandName string) Command {
+
+	for _, command := range p.Commands {
+		if command.Name == commandName {
+			return command
+		}
+	}
+
+	return Command{}
+
 }
