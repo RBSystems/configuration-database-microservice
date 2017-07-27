@@ -13,6 +13,16 @@ type PortType struct {
 	Description string `json:"description"`
 }
 
+type DeviceTypePort struct {
+	DeviceTypePortID        int      `json:"id"`
+	DeviceTypeID            int      `json:"type-id"`
+	DeviceTypeName          string   `json:"type-name"`
+	Port                    PortType `json:"port-info"`
+	Description             string   `json:"type-port-description"`
+	FriendlyName            string   `json:"friendlyName"`
+	SourceDesitnationMirror bool     `json:"mirror-source-dest"`
+}
+
 func (accessorGroup *AccessorGroup) GetAllPorts() ([]PortType, error) {
 	rows, err := accessorGroup.Database.Query("SELECT * FROM Ports")
 	if err != nil {
@@ -54,6 +64,95 @@ func (accessorGroup *AccessorGroup) GetPortTypeByName(name string) (PortType, er
 	}
 
 	return p, nil
+}
+
+func (accessorGroup *AccessorGroup) GetPortsByDeviceTypeName(typeName string) ([]DeviceTypePort, error) {
+
+	query :=
+		`
+	SELECT dtp.deviceTypePortID, dtp.portID, dtp.description, dtp.friendlyName, dtp.sourceDestinationMirror, p.name, dt.typeName, dt.deviceTypeID, p.description
+	FROM DeviceTypePorts dtp
+	JOIN Ports p on dtp.portID = p.portiD
+	JOIN DeviceTypes dt on dt.deviceTypeID = dtp.deviceTypeID
+	WHERE dt.typeName = ?
+	`
+
+	rows, err := accessorGroup.Database.Query(query, typeName)
+	if err != nil {
+		return []DeviceTypePort{}, err
+	}
+
+	val, err := extractDeviceTypePortData(rows)
+	return val, err
+}
+
+func extractDeviceTypePortData(rows *sql.Rows) ([]DeviceTypePort, error) {
+
+	toReturn := []DeviceTypePort{}
+	var portID *int
+	var deviceTypeID *int
+	var deviceTypePortID *int
+	var sourceDestMirror *bool
+
+	var deviceTypeName *string
+	var deviceTypePortDescription *string
+	var deviceTypePortName *string
+
+	var portName *string
+	var portDesc *string
+
+	for rows.Next() {
+		curValue := DeviceTypePort{}
+		curPort := PortType{}
+		err := rows.Scan(
+			&deviceTypePortID,
+			&portID,
+			&deviceTypePortDescription,
+			&deviceTypePortName,
+			&sourceDestMirror,
+			&portName,
+			&deviceTypeName,
+			&deviceTypeID,
+			&portDesc)
+
+		if err != nil {
+			return []DeviceTypePort{}, err
+		}
+
+		curValue.Port = curPort
+
+		if deviceTypePortID != nil {
+			curValue.DeviceTypePortID = *deviceTypePortID
+		}
+		if portID != nil {
+			curValue.Port.ID = *portID
+		}
+		if deviceTypePortDescription != nil {
+			curValue.Description = *deviceTypePortDescription
+		}
+		if deviceTypePortName != nil {
+			curValue.DeviceTypeName = *deviceTypePortName
+		}
+		if sourceDestMirror != nil {
+			curValue.SourceDesitnationMirror = *sourceDestMirror
+		}
+		if portName != nil {
+			curValue.Port.Name = *portName
+		}
+		if deviceTypeName != nil {
+			curValue.DeviceTypeName = *deviceTypeName
+		}
+		if deviceTypeID != nil {
+			curValue.DeviceTypeID = *deviceTypeID
+		}
+		if portDesc != nil {
+			curValue.Port.Description = *portDesc
+		}
+
+		toReturn = append(toReturn, curValue)
+	}
+
+	return toReturn, nil
 }
 
 func extractPortData(rows *sql.Rows) ([]PortType, error) {
