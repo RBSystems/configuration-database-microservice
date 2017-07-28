@@ -12,27 +12,27 @@ type DeviceType struct {
 	Description string `json:"description"`
 }
 
-//GetDeviceTypes returns a dump of the table in the database
-func (accessorGroup *AccessorGroup) GetDeviceTypes() ([]DeviceType, error) {
+//GetDeviceClasses returns a dump of the table in the database
+func (accessorGroup *AccessorGroup) GetDeviceClasses() ([]DeviceType, error) {
 
-	var DeviceTypes []DeviceType
+	var DeviceClasses []DeviceType
 
-	rows, err := accessorGroup.Database.Query("SELECT * FROM DeviceTypes")
+	rows, err := accessorGroup.Database.Query("SELECT * FROM DeviceClasses")
 	if err != nil {
 		return []DeviceType{}, err
 	}
 
-	DeviceTypes, err = extractDeviceTypeData(rows)
+	DeviceClasses, err = extractDeviceTypeData(rows)
 	if err != nil {
 		return []DeviceType{}, err
 	}
 	defer rows.Close()
 
-	return DeviceTypes, nil
+	return DeviceClasses, nil
 }
 
 func (accessorGroup *AccessorGroup) AddDeviceType(deviceType DeviceType) (DeviceType, error) {
-	result, err := accessorGroup.Database.Exec("Insert into DeviceTypes (deviceTypeID, name, description) VALUES(?,?,?)", deviceType.ID, deviceType.Name, deviceType.Description)
+	result, err := accessorGroup.Database.Exec("Insert into DeviceClasses (deviceClassID, name, description) VALUES(?,?,?)", deviceType.ID, deviceType.Name, deviceType.Description)
 	if err != nil {
 		return DeviceType{}, err
 	}
@@ -47,7 +47,7 @@ func (accessorGroup *AccessorGroup) AddDeviceType(deviceType DeviceType) (Device
 }
 
 func (accessorGroup *AccessorGroup) GetDeviceTypeByID(id int) (DeviceType, error) {
-	row := accessorGroup.Database.QueryRow("SELECT * FROM DeviceTypes WHERE deviceTypeID = ?", id)
+	row := accessorGroup.Database.QueryRow("SELECT * FROM DeviceClasses WHERE deviceClassID = ?", id)
 
 	dt, err := extractDeviceType(row)
 	if err != nil {
@@ -58,7 +58,7 @@ func (accessorGroup *AccessorGroup) GetDeviceTypeByID(id int) (DeviceType, error
 }
 
 func (accessorGroup *AccessorGroup) GetDeviceTypeByName(name string) (DeviceType, error) {
-	row := accessorGroup.Database.QueryRow("SELECT * FROM DeviceTypes WHERE name = ?", name)
+	row := accessorGroup.Database.QueryRow("SELECT * FROM DeviceClasses WHERE name = ?", name)
 
 	dt, err := extractDeviceType(row)
 	if err != nil {
