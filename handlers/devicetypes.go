@@ -8,7 +8,7 @@ import (
 )
 
 func (handlerGroup *HandlerGroup) GetDeviceTypes(context echo.Context) error {
-	response, err := handlerGroup.Accessors.GetDeviceTypes()
+	response, err := handlerGroup.Accessors.GetDeviceClasses()
 	if err != nil {
 		return context.String(http.StatusBadRequest, err.Error())
 	}

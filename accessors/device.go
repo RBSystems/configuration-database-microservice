@@ -91,11 +91,11 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
   	Buildings.name as buildingName,
   	Buildings.shortName as buildingShortname,
   	Buildings.description as buildingDescription,
-  	DeviceTypes.name as deviceType
+  	DeviceClasses.name as deviceType
   	FROM Devices
   	JOIN Rooms on Rooms.roomID = Devices.roomID
   	JOIN Buildings on Buildings.buildingID = Devices.buildingID
-  	JOIN DeviceTypes on Devices.typeID = DeviceTypes.deviceTypeID
+  	JOIN DeviceClasses on Devices.classID = DeviceClasses.deviceClassID
     JOIN DeviceRole on DeviceRole.deviceID = Devices.deviceID
     JOIN DeviceRoleDefinition on DeviceRole.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID`
 
@@ -257,10 +257,16 @@ func (accessorGroup *AccessorGroup) GetDevicesByBuildingAndRoom(buildingShortnam
 //GetDeviceCommandsByBuildingAndRoomAndName gets all the commands for the device
 //specified. Note that we assume that device names are unique within a room.
 func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]Command, error) {
+
+	log.Printf("Getting all the commands for %v-%v-%v", buildingShortname, roomName, deviceName)
 	allCommands := []Command{}
 	rows, err := accessorGroup.Database.Query(`SELECT Commands.name as commandName, Endpoints.name as endpointName, Endpoints.path as endpointPath, Microservices.address as microserviceAddress
     FROM Devices
-    JOIN DeviceCommands on Devices.deviceID = DeviceCommands.deviceID JOIN Commands on DeviceCommands.commandID = Commands.commandID JOIN Endpoints on DeviceCommands.endpointID = Endpoints.endpointID JOIN Microservices ON DeviceCommands.microserviceID = Microservices.microserviceID
+	JOIN DeviceTypes on DeviceTypes.deviceTypeID = Devices.typeID
+	JOIN DeviceTypeCommandMapping TypeCommands on TypeCommands.deviceTypeID = DeviceTypes.deviceTypeID
+    JOIN Commands on TypeCommands.commandID = Commands.commandID 
+	JOIN Endpoints on TypeCommands.endpointID = Endpoints.endpointID 
+	JOIN Microservices ON TypeCommands.microserviceID = Microservices.microserviceID
     JOIN Rooms ON Rooms.roomID=Devices.roomID
     JOIN Buildings ON Rooms.buildingID=Buildings.buildingID
     WHERE Rooms.name=? AND Buildings.shortName=? AND Devices.name=?`, roomName, buildingShortname, deviceName)
@@ -271,14 +277,18 @@ func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(bu
 
 	allCommands, err = ExtractCommand(rows)
 	if err != nil {
-		return allCommands, err
+		log.Printf("There was an error with the device commands: %v", err.Error())
 	}
 
-	return allCommands, nil
+	log.Printf("found %v commands", len(allCommands))
+
+	return allCommands, err
 }
 
 //GetDevicePortsByBuildingAndRoomAndName gets the ports for the device
 //specified. Note that we assume that device names are unique within a room.
+/*
+ */
 func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]Port, error) {
 	allPorts := []Port{}
 
