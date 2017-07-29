@@ -93,11 +93,12 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
   	Buildings.shortName as buildingShortname,
   	Buildings.description as buildingDescription,
   	DeviceClasses.name as deviceType,
-	DeviceType.name as deviceClass
+	DeviceTypes.typeName as deviceClass
   	FROM Devices
   	JOIN Rooms on Rooms.roomID = Devices.roomID
   	JOIN Buildings on Buildings.buildingID = Devices.buildingID
   	JOIN DeviceClasses on Devices.classID = DeviceClasses.deviceClassID
+	JOIN DeviceTypes on Devices.typeID = DeviceTypes.deviceTypeID
     JOIN DeviceRole on DeviceRole.deviceID = Devices.deviceID
     JOIN DeviceRoleDefinition on DeviceRole.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID`
 
@@ -117,7 +118,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 
 		device := Device{}
 
-		var deviceclass *string
+
 
 		err := rows.Scan(&device.ID,
 			&device.Name,
@@ -133,13 +134,10 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 			&device.Building.Shortname,
 			&device.Building.Description,
 			&device.Type,
-			deviceclass,
+			&device.Class,
 			)
 		if err != nil {
 			return []Device{}, err
-		}
-		if deviceclass != nil {
-			device.Class = *deviceclass
 		}
 
 		device.Commands, err = accessorGroup.GetDeviceCommandsByBuildingAndRoomAndName(device.Building.Shortname, device.Room.Name, device.Name)
