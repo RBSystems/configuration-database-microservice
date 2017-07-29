@@ -19,6 +19,7 @@ type Device struct {
 	Building    Building  `json:"building"`
 	Room        Room      `json:"room"`
 	Type        string    `json:"type"`
+	Class		string    `json:"class,omitempty"`
 	Power       string    `json:"power"`
 	Roles       []string  `json:"roles,omitempty"`
 	Blanked     *bool     `json:"blanked,omitempty"`
@@ -91,7 +92,8 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
   	Buildings.name as buildingName,
   	Buildings.shortName as buildingShortname,
   	Buildings.description as buildingDescription,
-  	DeviceClasses.name as deviceType
+  	DeviceClasses.name as deviceType,
+	DeviceType.name as deviceClass
   	FROM Devices
   	JOIN Rooms on Rooms.roomID = Devices.roomID
   	JOIN Buildings on Buildings.buildingID = Devices.buildingID
@@ -115,6 +117,8 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 
 		device := Device{}
 
+		var deviceclass *string
+
 		err := rows.Scan(&device.ID,
 			&device.Name,
 			&device.Address,
@@ -128,9 +132,14 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 			&device.Building.Name,
 			&device.Building.Shortname,
 			&device.Building.Description,
-			&device.Type)
+			&device.Type,
+			deviceclass,
+			)
 		if err != nil {
 			return []Device{}, err
+		}
+		if deviceclass != nil {
+			device.Class = *deviceclass
 		}
 
 		device.Commands, err = accessorGroup.GetDeviceCommandsByBuildingAndRoomAndName(device.Building.Shortname, device.Room.Name, device.Name)
