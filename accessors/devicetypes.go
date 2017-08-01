@@ -27,7 +27,7 @@ func (accessorGroup *AccessorGroup) GetDeviceTypes() ([]DeviceClass, error) {
 }
 
 func (accessorGroup *AccessorGroup) SetDeviceTypeByName(name string, device Device) error {
-
+	return nil
 }
 
 func extractDeviceClassData(rows *sql.Rows) ([]DeviceClass, error) {
