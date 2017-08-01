@@ -16,7 +16,7 @@ type DeviceClass struct {
 func (accessorGroup *AccessorGroup) GetDeviceTypes() ([]DeviceClass, error) {
 
 	var toReturn []DeviceClass
-	rows, err := accessorGroup.Database.Query("Select typeName, typeDescription, typeDisplayName From Device Types")
+	rows, err := accessorGroup.Database.Query("Select deviceTypeID, typeName, typeDescription, typeDisplayName From DeviceTypes")
 	if err != nil {
 		return toReturn, err
 	}
@@ -41,7 +41,7 @@ func extractDeviceClassData(rows *sql.Rows) ([]DeviceClass, error) {
 	for rows.Next() {
 		curVal := DeviceClass{}
 
-		err := rows.Scan(&id, &name, &displayName, &description)
+		err := rows.Scan(&id, &name, &description, &displayName)
 		if err != nil {
 			return toReturn, err
 		}
