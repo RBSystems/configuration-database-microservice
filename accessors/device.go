@@ -19,7 +19,7 @@ type Device struct {
 	Building    Building  `json:"building"`
 	Room        Room      `json:"room"`
 	Type        string    `json:"type"`
-	Class		string    `json:"class,omitempty"`
+	Class       string    `json:"class,omitempty"`
 	Power       string    `json:"power"`
 	Roles       []string  `json:"roles,omitempty"`
 	Blanked     *bool     `json:"blanked,omitempty"`
@@ -118,8 +118,6 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 
 		device := Device{}
 
-
-
 		err := rows.Scan(&device.ID,
 			&device.Name,
 			&device.Address,
@@ -135,7 +133,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 			&device.Building.Description,
 			&device.Type,
 			&device.Class,
-			)
+		)
 		if err != nil {
 			return []Device{}, err
 		}
