@@ -1,6 +1,7 @@
 package accessors
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -51,6 +52,90 @@ type Endpoint struct {
 	Name        string `json:"name"`
 	Path        string `json:"path"`
 	Description string `json:"description"`
+}
+
+//this is a stopgap to set the attribute
+//TODO: rework this
+type DeviceAttributeInfo struct {
+	DeviceID       int    `json:"deviceID"`
+	AttributeName  string `json:"attributeName"`
+	AttributeValue string `json:"attributeValue"`
+	AttributeType  string `json:"attributeType"`
+}
+
+//SetDeviceAttribute is used to set a field on the DEVICES TABLE.
+func (accessorGroup *AccessorGroup) SetDeviceAttribute(info DeviceAttributeInfo) (Device, error) {
+
+	acceptableColumnNames := make(map[string]string)
+
+	acceptableColumnNames["address"] = "string"
+	acceptableColumnNames["input"] = "bool"
+	acceptableColumnNames["output"] = "bool"
+	acceptableColumnNames["buildingID"] = "int"
+	acceptableColumnNames["roomID"] = "int"
+	acceptableColumnNames["classID"] = "int"
+	acceptableColumnNames["displayName"] = "string"
+	acceptableColumnNames["typeID"] = "int"
+
+	if _, ok := acceptableColumnNames[info.AttributeName]; !ok {
+		return Device{}, errors.New("invalid column name")
+	}
+
+	query := fmt.Sprintf("UPDATE Devices SET %v = ? WHERE deviceID = ?", info.AttributeName)
+
+	var err error
+	var res sql.Result
+
+	log.Printf("info: %v", info)
+
+	val := acceptableColumnNames[info.AttributeName]
+
+	if val == "string" {
+		fmt.Sprintf("Setting a string value")
+		res, err = accessorGroup.Database.Exec(query, info.AttributeValue, info.DeviceID)
+		if err != nil {
+			return Device{}, err
+		}
+	} else if val == "int" {
+		fmt.Sprintf("Setting a int value")
+		var value int
+		value, err = strconv.Atoi(info.AttributeValue)
+		if err != nil {
+			return Device{}, err
+		}
+		res, err = accessorGroup.Database.Exec(query, value, info.DeviceID)
+		if err != nil {
+			return Device{}, err
+		}
+	} else if val == "bool" {
+		fmt.Sprintf("Setting a bool value")
+		var value bool
+		if info.AttributeValue == "false" {
+			value = false
+		} else if info.AttributeValue == "true" {
+			value = true
+		} else {
+			return Device{}, errors.New("Invalid value for a boolean column")
+		}
+		res, err = accessorGroup.Database.Exec(query, value, info.DeviceID)
+		if err != nil {
+			return Device{}, err
+		}
+	}
+
+	if num, err := res.RowsAffected(); num != 1 || err != nil {
+		if err != nil {
+			return Device{}, err
+		}
+
+		err = errors.New(fmt.Sprintf("There was a problem updating the device type: incorrect number of rows affected: %v. ", num))
+		return Device{}, err
+	}
+
+	log.Printf("Done.")
+
+	log.Printf("Getting the device to return")
+	return accessorGroup.GetDeviceByID(info.DeviceID)
 }
 
 /*
@@ -162,6 +247,20 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 	}
 
 	return allDevices, nil
+}
+
+func (AccessorGroup *AccessorGroup) GetDeviceByID(deviceID int) (Device, error) {
+	log.Printf("Getting device with deviceID %v", deviceID)
+
+	devices, err := AccessorGroup.GetDevicesByQuery(" WHERE Devices.DeviceID = ?", deviceID)
+	if err != nil {
+		return Device{}, err
+	}
+	if len(devices) < 1 {
+		return Device{}, errors.New(fmt.Sprintf("No devices found for ID %v", deviceID))
+	}
+
+	return devices[0], nil
 }
 
 func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, error) {

@@ -2,6 +2,9 @@ package accessors
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
+	"log"
 )
 
 //DeviceType corresponds to the DeviceType table in the database
@@ -26,7 +29,26 @@ func (accessorGroup *AccessorGroup) GetDeviceTypes() ([]DeviceClass, error) {
 	return toReturn, err
 }
 
-func (accessorGroup *AccessorGroup) SetDeviceTypeByName(name string, device Device) error {
+func (accessorGroup *AccessorGroup) SetDeviceTypeByID(id int, deviceID int) error {
+	log.Printf("Updating type id of device %v to %v", deviceID, id)
+
+	query := "UPDATE devices SET typeID = ? WHERE deviceID = ?"
+
+	res, err := accessorGroup.Database.Exec(query, id, deviceID)
+	if err != nil {
+		return err
+	}
+
+	if num, err := res.RowsAffected(); num != 1 || err != nil {
+		if err != nil {
+			return err
+		}
+
+		err = errors.New(fmt.Sprintf("There was a problem updating the device type: incorrect number of rows affected: %v. ", res.RowsAffected))
+		return err
+	}
+
+	log.Printf("Done.")
 	return nil
 }
 

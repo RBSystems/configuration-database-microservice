@@ -64,6 +64,9 @@ func main() {
 	secure.GET("/devices/microservices", handlerGroup.GetMicroservices)
 	secure.GET("/devices/roledefinitions", handlerGroup.GetDeviceRoleDefs)
 
+	secure.PUT("/devices/id/:deviceID/typeid", handlerGroup.SetDeviceTypeByID)
+	secure.PUT("/devices/attribute", handlerGroup.SetDeviceAttribute)
+
 	secure.POST("/buildings/:building", handlerGroup.AddBuilding)
 	secure.POST("/buildings/:building/rooms/:room", handlerGroup.AddRoom)
 	secure.POST("/buildings/:building/rooms/:room/devices/:device", handlerGroup.AddDevice)
