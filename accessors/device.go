@@ -123,7 +123,7 @@ func (accessorGroup *AccessorGroup) SetDeviceAttribute(info DeviceAttributeInfo)
 		}
 	}
 
-	if num, err := res.RowsAffected(); num != 1 || err != nil {
+	if num, err := res.RowsAffected(); num > 1 || err != nil {
 		if err != nil {
 			return Device{}, err
 		}
