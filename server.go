@@ -58,12 +58,13 @@ func main() {
 	secure.GET("/devices/ports", handlerGroup.GetPorts)
 	secure.GET("/devices/types", handlerGroup.GetDeviceTypes)
 	secure.GET("/devices/classes", handlerGroup.GetDeviceClasses)
-	secure.GET("/devices/classes/:class/ports", handlerGroup.GetPortsByDeviceType)
 	secure.GET("/devices/endpoints", handlerGroup.GetEndpoints)
 	secure.GET("/devices/commands", handlerGroup.GetAllCommands)
 	secure.GET("/devices/powerstates", handlerGroup.GetPowerStates)
 	secure.GET("/devices/microservices", handlerGroup.GetMicroservices)
 	secure.GET("/devices/roledefinitions", handlerGroup.GetDeviceRoleDefs)
+
+	secure.GET("/classes/:class/ports", handlerGroup.GetPortsByDeviceType)
 
 	secure.PUT("/devices/id/:deviceID/typeid", handlerGroup.SetDeviceTypeByID)
 	secure.PUT("/devices/attribute", handlerGroup.SetDeviceAttribute)

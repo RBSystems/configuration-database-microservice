@@ -67,6 +67,7 @@ func (accessorGroup *AccessorGroup) GetPortTypeByName(name string) (PortType, er
 }
 
 func (accessorGroup *AccessorGroup) GetPortsByDeviceTypeName(typeName string) ([]DeviceTypePort, error) {
+	log.Printf("Getting ports for class %v", typeName)
 
 	query :=
 		`
@@ -79,10 +80,14 @@ func (accessorGroup *AccessorGroup) GetPortsByDeviceTypeName(typeName string) ([
 
 	rows, err := accessorGroup.Database.Query(query, typeName)
 	if err != nil {
+		log.Printf("error: %v", err.Error())
 		return []DeviceTypePort{}, err
 	}
 
+	log.Printf("Query executed successfully")
+
 	val, err := extractDeviceTypePortData(rows)
+	log.Printf("Found %v ports", len(val))
 	return val, err
 }
 
@@ -131,7 +136,7 @@ func extractDeviceTypePortData(rows *sql.Rows) ([]DeviceTypePort, error) {
 			curValue.Description = *deviceTypePortDescription
 		}
 		if deviceTypePortName != nil {
-			curValue.DeviceTypeName = *deviceTypePortName
+			curValue.FriendlyName = *deviceTypePortName
 		}
 		if sourceDestMirror != nil {
 			curValue.SourceDesitnationMirror = *sourceDestMirror
