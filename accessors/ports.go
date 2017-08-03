@@ -14,13 +14,13 @@ type PortType struct {
 }
 
 type DeviceTypePort struct {
-	DeviceTypePortID        int      `json:"id"`
-	DeviceTypeID            int      `json:"type-id"`
-	DeviceTypeName          string   `json:"type-name"`
-	Port                    PortType `json:"port-info"`
-	Description             string   `json:"type-port-description"`
-	FriendlyName            string   `json:"friendlyName"`
-	SourceDesitnationMirror bool     `json:"mirror-source-dest"`
+	DeviceTypePortID     int      `json:"id"`
+	DeviceTypeID         int      `json:"type-id"`
+	DeviceTypeName       string   `json:"type-name"`
+	Port                 PortType `json:"port-info"`
+	Description          string   `json:"type-port-description"`
+	FriendlyName         string   `json:"friendlyName"`
+	HostDestintionMirror bool     `json:"mirror-host-dest"`
 }
 
 func (accessorGroup *AccessorGroup) GetAllPorts() ([]PortType, error) {
@@ -97,7 +97,7 @@ func extractDeviceTypePortData(rows *sql.Rows) ([]DeviceTypePort, error) {
 	var portID *int
 	var deviceTypeID *int
 	var deviceTypePortID *int
-	var sourceDestMirror *bool
+	var hostDestMirror *bool
 
 	var deviceTypeName *string
 	var deviceTypePortDescription *string
@@ -114,7 +114,7 @@ func extractDeviceTypePortData(rows *sql.Rows) ([]DeviceTypePort, error) {
 			&portID,
 			&deviceTypePortDescription,
 			&deviceTypePortName,
-			&sourceDestMirror,
+			&hostDestMirror,
 			&portName,
 			&deviceTypeName,
 			&deviceTypeID,
@@ -138,8 +138,8 @@ func extractDeviceTypePortData(rows *sql.Rows) ([]DeviceTypePort, error) {
 		if deviceTypePortName != nil {
 			curValue.FriendlyName = *deviceTypePortName
 		}
-		if sourceDestMirror != nil {
-			curValue.SourceDesitnationMirror = *sourceDestMirror
+		if hostDestMirror != nil {
+			curValue.HostDestintionMirror = *hostDestMirror
 		}
 		if portName != nil {
 			curValue.Port.Name = *portName
