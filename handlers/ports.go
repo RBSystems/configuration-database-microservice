@@ -34,3 +34,12 @@ func (handlerGroup *HandlerGroup) GetPorts(context echo.Context) error {
 	}
 	return context.JSON(http.StatusOK, response)
 }
+
+func (handlerGroup *HandlerGroup) GetPortsByDeviceType(context echo.Context) error {
+
+	response, err := handlerGroup.Accessors.GetPortsByDeviceTypeName(context.Param("class"))
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return context.JSON(http.StatusOK, response)
+}
