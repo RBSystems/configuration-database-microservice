@@ -71,7 +71,7 @@ func (accessorGroup *AccessorGroup) GetPortsByDeviceTypeName(typeName string) ([
 
 	query :=
 		`
-	SELECT dtp.deviceTypePortID, dtp.portID, dtp.description, dtp.friendlyName, dtp.sourceDestinationMirror, p.name, dt.typeName, dt.deviceTypeID, p.description
+	SELECT dtp.deviceTypePortID, dtp.portID, dtp.description, dtp.friendlyName, dtp.hostDestinationMirror, p.name, dt.typeName, dt.deviceTypeID, p.description
 	FROM DeviceTypePorts dtp
 	JOIN Ports p on dtp.portID = p.portiD
 	JOIN DeviceTypes dt on dt.deviceTypeID = dtp.deviceTypeID
