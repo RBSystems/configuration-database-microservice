@@ -90,3 +90,15 @@ func extractDeviceClassData(rows *sql.Rows) ([]DeviceClass, error) {
 
 	return toReturn, nil
 }
+
+func (accessorGroup *AccessorGroup) GetDeviceClassByName(name string) (DeviceClass, error) {
+	row := accessorGroup.Database.Query("SELECT * FROM DeviceType WHERE name = ?", name)
+	defer row.Close()
+
+	dt, err := extractDeviceClass(&row)
+	if err != nil {
+		return DeviceType{}, err
+	}
+
+	return dt, nil
+}

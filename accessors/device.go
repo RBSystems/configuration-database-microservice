@@ -494,6 +494,11 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 		return Device{}, err
 	}
 
+	dc, err := accessorGroup.GetDeviceClassByName(d.Class)
+	if err != nil {
+		return Device{}, err
+	}
+
 	// if device already exists in database, stop
 	_, err = accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, d.Name)
 	if err != nil {
@@ -501,7 +506,7 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 	}
 
 	// insert into devices
-	result, err := accessorGroup.Database.Exec("Insert into Devices (name, address, input, output, buildingID, roomID, typeID) VALUES (?,?,?,?,?,?,?)", d.Name, d.Address, d.Input, d.Output, d.Building.ID, d.Room.ID, dt.ID)
+	result, err := accessorGroup.Database.Exec("Insert into Devices (name, address, input, output, buildingID, roomID, classID, typeID) VALUES (?,?,?,?,?,?,?)", d.Name, d.Address, d.Input, d.Output, d.Building.ID, d.Room.ID, dt.ID, dc.ID)
 	if err != nil {
 		return Device{}, err
 	}
