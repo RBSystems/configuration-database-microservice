@@ -7,6 +7,7 @@ import (
 	"github.com/byuoitav/authmiddleware"
 	"github.com/byuoitav/configuration-database-microservice/accessors"
 	"github.com/byuoitav/configuration-database-microservice/handlers"
+	"github.com/byuoitav/device-monitoring-microservice/microservicestatus"
 	"github.com/jessemillar/health"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -32,6 +33,7 @@ func main() {
 	secure := router.Group("", echo.WrapMiddleware(authmiddleware.Authenticate))
 
 	router.GET("/health", echo.WrapHandler(http.HandlerFunc(health.Check)))
+	router.GET("/status", GetStatus)
 
 	secure.GET("/buildings", handlerGroup.GetAllBuildings)
 	secure.GET("/buildings/:id", handlerGroup.GetBuildingByID)
@@ -92,4 +94,14 @@ func main() {
 	}
 
 	router.StartServer(&server)
+}
+
+func GetStatus(context echo.Context) error {
+	var s microservicestatus.Status
+	s.Version = "0.0"
+
+	s.Status = microservicestatus.StatusOK
+	s.StatusInfo = ""
+
+	return context.JSON(http.StatusOK, s)
 }
