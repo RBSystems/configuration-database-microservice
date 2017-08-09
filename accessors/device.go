@@ -494,14 +494,19 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 		return Device{}, err
 	}
 
-	// if device already exists in database, stop
-	_, err = accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, d.Name)
+	dc, err := accessorGroup.GetDeviceClassByName(d.Class)
 	if err != nil {
+		return Device{}, err
+	}
+
+	// if device already exists in database, stop
+	exists, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, d.Name)
+	if err != nil || exists.ID != 0 {
 		return Device{}, fmt.Errorf("device already exists in room, please choose a different name")
 	}
 
 	// insert into devices
-	result, err := accessorGroup.Database.Exec("Insert into Devices (name, address, input, output, buildingID, roomID, typeID) VALUES (?,?,?,?,?,?,?)", d.Name, d.Address, d.Input, d.Output, d.Building.ID, d.Room.ID, dt.ID)
+	result, err := accessorGroup.Database.Exec("Insert into Devices (name, address, input, output, buildingID, roomID, classID, typeID) VALUES (?,?,?,?,?,?,?,?)", d.Name, d.Address, d.Input, d.Output, d.Building.ID, d.Room.ID, dt.ID, dc.ID)
 	if err != nil {
 		return Device{}, err
 	}
@@ -556,24 +561,36 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 			return Device{}, fmt.Errorf("source device %v does not exist in this room", port.Source)
 		}
 
-		// get destinationDeviceID
-		dd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Destination)
-		if err != nil {
-			return Device{}, fmt.Errorf("destination device %v does not exist in this room", port.Destination)
+		var p PortConfiguration
+
+		if port.Host == port.Destination {
+			p.DestinationDeviceID = d.ID
+		} else {
+
+			log.Printf("source: %v", sd)
+			log.Printf("%+v", port.Destination)
+
+			// get destinationDeviceID
+			dd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Destination)
+			if err != nil {
+				return Device{}, fmt.Errorf("destination device %v does not exist in this room", port.Destination)
+			}
+			log.Printf("Dest: %v", dd)
+
+			// get hostDeviceID
+			//		hd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Host)
+			//		if err != nil {
+			//			return Device{}, fmt.Errorf("host device %v does not exist in this room", port.Host)
+			//		}
+			p.DestinationDeviceID = dd.ID
+
 		}
 
-		// get hostDeviceID
-		//		hd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Host)
-		//		if err != nil {
-		//			return Device{}, fmt.Errorf("host device %v does not exist in this room", port.Host)
-		//		}
-
-		var p PortConfiguration
 		p.PortID = pt.ID
 		p.SourceDeviceID = sd.ID
-		p.DestinationDeviceID = dd.ID
 		//		p.HostDeviceID = hd.ID
 		p.HostDeviceID = d.ID // always the current device you are adding?
+		log.Printf("%+v", p)
 
 		portconfigurations = append(portconfigurations, p)
 	}
