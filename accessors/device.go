@@ -1,6 +1,7 @@
 package accessors
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -19,6 +20,7 @@ type Device struct {
 	Building    Building  `json:"building"`
 	Room        Room      `json:"room"`
 	Type        string    `json:"type"`
+	Class       string    `json:"class,omitempty"`
 	Power       string    `json:"power"`
 	Roles       []string  `json:"roles,omitempty"`
 	Blanked     *bool     `json:"blanked,omitempty"`
@@ -50,6 +52,90 @@ type Endpoint struct {
 	Name        string `json:"name"`
 	Path        string `json:"path"`
 	Description string `json:"description"`
+}
+
+//this is a stopgap to set the attribute
+//TODO: rework this
+type DeviceAttributeInfo struct {
+	DeviceID       int    `json:"deviceID"`
+	AttributeName  string `json:"attributeName"`
+	AttributeValue string `json:"attributeValue"`
+	AttributeType  string `json:"attributeType"`
+}
+
+//SetDeviceAttribute is used to set a field on the DEVICES TABLE.
+func (accessorGroup *AccessorGroup) SetDeviceAttribute(info DeviceAttributeInfo) (Device, error) {
+
+	acceptableColumnNames := make(map[string]string)
+
+	acceptableColumnNames["address"] = "string"
+	acceptableColumnNames["input"] = "bool"
+	acceptableColumnNames["output"] = "bool"
+	acceptableColumnNames["buildingID"] = "int"
+	acceptableColumnNames["roomID"] = "int"
+	acceptableColumnNames["classID"] = "int"
+	acceptableColumnNames["displayName"] = "string"
+	acceptableColumnNames["typeID"] = "int"
+
+	if _, ok := acceptableColumnNames[info.AttributeName]; !ok {
+		return Device{}, errors.New("invalid column name")
+	}
+
+	query := fmt.Sprintf("UPDATE Devices SET %v = ? WHERE deviceID = ?", info.AttributeName)
+
+	var err error
+	var res sql.Result
+
+	log.Printf("info: %v", info)
+
+	val := acceptableColumnNames[info.AttributeName]
+
+	if val == "string" {
+		fmt.Sprintf("Setting a string value")
+		res, err = accessorGroup.Database.Exec(query, info.AttributeValue, info.DeviceID)
+		if err != nil {
+			return Device{}, err
+		}
+	} else if val == "int" {
+		fmt.Sprintf("Setting a int value")
+		var value int
+		value, err = strconv.Atoi(info.AttributeValue)
+		if err != nil {
+			return Device{}, err
+		}
+		res, err = accessorGroup.Database.Exec(query, value, info.DeviceID)
+		if err != nil {
+			return Device{}, err
+		}
+	} else if val == "bool" {
+		fmt.Sprintf("Setting a bool value")
+		var value bool
+		if info.AttributeValue == "false" {
+			value = false
+		} else if info.AttributeValue == "true" {
+			value = true
+		} else {
+			return Device{}, errors.New("Invalid value for a boolean column")
+		}
+		res, err = accessorGroup.Database.Exec(query, value, info.DeviceID)
+		if err != nil {
+			return Device{}, err
+		}
+	}
+
+	if num, err := res.RowsAffected(); num > 1 || err != nil {
+		if err != nil {
+			return Device{}, err
+		}
+
+		err = errors.New(fmt.Sprintf("There was a problem updating the device type: incorrect number of rows affected: %v. ", num))
+		return Device{}, err
+	}
+
+	log.Printf("Done.")
+
+	log.Printf("Getting the device to return")
+	return accessorGroup.GetDeviceByID(info.DeviceID)
 }
 
 /*
@@ -91,11 +177,13 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
   	Buildings.name as buildingName,
   	Buildings.shortName as buildingShortname,
   	Buildings.description as buildingDescription,
-  	DeviceClasses.name as deviceType
+  	DeviceClasses.name as deviceType,
+	DeviceTypes.typeName as deviceClass
   	FROM Devices
   	JOIN Rooms on Rooms.roomID = Devices.roomID
   	JOIN Buildings on Buildings.buildingID = Devices.buildingID
   	JOIN DeviceClasses on Devices.classID = DeviceClasses.deviceClassID
+	JOIN DeviceTypes on Devices.typeID = DeviceTypes.deviceTypeID
     JOIN DeviceRole on DeviceRole.deviceID = Devices.deviceID
     JOIN DeviceRoleDefinition on DeviceRole.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID`
 
@@ -128,7 +216,9 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 			&device.Building.Name,
 			&device.Building.Shortname,
 			&device.Building.Description,
-			&device.Type)
+			&device.Type,
+			&device.Class,
+		)
 		if err != nil {
 			return []Device{}, err
 		}
@@ -157,6 +247,20 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 	}
 
 	return allDevices, nil
+}
+
+func (AccessorGroup *AccessorGroup) GetDeviceByID(deviceID int) (Device, error) {
+	log.Printf("Getting device with deviceID %v", deviceID)
+
+	devices, err := AccessorGroup.GetDevicesByQuery(" WHERE Devices.DeviceID = ?", deviceID)
+	if err != nil {
+		return Device{}, err
+	}
+	if len(devices) < 1 {
+		return Device{}, errors.New(fmt.Sprintf("No devices found for ID %v", deviceID))
+	}
+
+	return devices[0], nil
 }
 
 func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, error) {
@@ -390,14 +494,19 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 		return Device{}, err
 	}
 
-	// if device already exists in database, stop
-	_, err = accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, d.Name)
+	dc, err := accessorGroup.GetDeviceClassByName(d.Class)
 	if err != nil {
+		return Device{}, err
+	}
+
+	// if device already exists in database, stop
+	exists, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, d.Name)
+	if err != nil || exists.ID != 0 {
 		return Device{}, fmt.Errorf("device already exists in room, please choose a different name")
 	}
 
 	// insert into devices
-	result, err := accessorGroup.Database.Exec("Insert into Devices (name, address, input, output, buildingID, roomID, typeID) VALUES (?,?,?,?,?,?,?)", d.Name, d.Address, d.Input, d.Output, d.Building.ID, d.Room.ID, dt.ID)
+	result, err := accessorGroup.Database.Exec("Insert into Devices (name, address, input, output, buildingID, roomID, classID, typeID) VALUES (?,?,?,?,?,?,?,?)", d.Name, d.Address, d.Input, d.Output, d.Building.ID, d.Room.ID, dt.ID, dc.ID)
 	if err != nil {
 		return Device{}, err
 	}
@@ -452,24 +561,36 @@ func (accessorGroup *AccessorGroup) AddDevice(d Device) (Device, error) {
 			return Device{}, fmt.Errorf("source device %v does not exist in this room", port.Source)
 		}
 
-		// get destinationDeviceID
-		dd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Destination)
-		if err != nil {
-			return Device{}, fmt.Errorf("destination device %v does not exist in this room", port.Destination)
+		var p PortConfiguration
+
+		if port.Host == port.Destination {
+			p.DestinationDeviceID = d.ID
+		} else {
+
+			log.Printf("source: %v", sd)
+			log.Printf("%+v", port.Destination)
+
+			// get destinationDeviceID
+			dd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Destination)
+			if err != nil {
+				return Device{}, fmt.Errorf("destination device %v does not exist in this room", port.Destination)
+			}
+			log.Printf("Dest: %v", dd)
+
+			// get hostDeviceID
+			//		hd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Host)
+			//		if err != nil {
+			//			return Device{}, fmt.Errorf("host device %v does not exist in this room", port.Host)
+			//		}
+			p.DestinationDeviceID = dd.ID
+
 		}
 
-		// get hostDeviceID
-		//		hd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Host)
-		//		if err != nil {
-		//			return Device{}, fmt.Errorf("host device %v does not exist in this room", port.Host)
-		//		}
-
-		var p PortConfiguration
 		p.PortID = pt.ID
 		p.SourceDeviceID = sd.ID
-		p.DestinationDeviceID = dd.ID
 		//		p.HostDeviceID = hd.ID
 		p.HostDeviceID = d.ID // always the current device you are adding?
+		log.Printf("%+v", p)
 
 		portconfigurations = append(portconfigurations, p)
 	}

@@ -8,6 +8,22 @@ import (
 	"github.com/labstack/echo"
 )
 
+func (handlerGroup *HandlerGroup) SetDeviceAttribute(context echo.Context) error {
+	var info accessors.DeviceAttributeInfo
+
+	err := context.Bind(&info)
+	if err != nil {
+		return err
+	}
+
+	device, err := handlerGroup.Accessors.SetDeviceAttribute(info)
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, device)
+}
+
 func (handlerGroup *HandlerGroup) GetDevicesByBuildingAndRoom(context echo.Context) error {
 
 	response, err := handlerGroup.Accessors.GetDevicesByBuildingAndRoom(context.Param("building"), context.Param("room"))
