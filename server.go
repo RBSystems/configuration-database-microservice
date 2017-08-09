@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -33,7 +34,7 @@ func main() {
 	secure := router.Group("", echo.WrapMiddleware(authmiddleware.Authenticate))
 
 	router.GET("/health", echo.WrapHandler(http.HandlerFunc(health.Check)))
-	router.GET("/status", GetStatus)
+	router.GET("/mstatus", GetStatus)
 
 	secure.GET("/buildings", handlerGroup.GetAllBuildings)
 	secure.GET("/buildings/:id", handlerGroup.GetBuildingByID)
@@ -105,8 +106,21 @@ func GetStatus(context echo.Context) error {
 		return context.JSON(http.StatusOK, "Failed to open version.txt")
 	}
 
-	s.Status = microservicestatus.StatusOK
-	s.StatusInfo = ""
+	// open new? database connection
+	database := os.Getenv("CONFIGURATION_DATABASE_USERNAME") + ":" + os.Getenv("CONFIGURATION_DATABASE_PASSWORD") + "@tcp(" + os.Getenv("CONFIGURATION_DATABASE_HOST") + ":" + os.Getenv("CONFIGURATION_DATABASE_PORT") + ")/" + os.Getenv("CONFIGURATION_DATABASE_NAME")
+	accessorGroup := new(accessors.AccessorGroup)
+	accessorGroup.Open(database)
+
+	vals, err := accessorGroup.GetAllBuildings()
+	if len(vals) < 1 || err != nil {
+		s.Status = microservicestatus.StatusDead
+		s.StatusInfo = fmt.Sprintf("Unable to access database. Error: %s", err)
+	} else {
+		s.Status = microservicestatus.StatusOK
+		s.StatusInfo = ""
+	}
+
+	accessorGroup.Database.Close()
 
 	return context.JSON(http.StatusOK, s)
 }
