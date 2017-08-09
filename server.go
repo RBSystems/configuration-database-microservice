@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/byuoitav/authmiddleware"
 	"github.com/byuoitav/configuration-database-microservice/accessors"
 	"github.com/byuoitav/configuration-database-microservice/handlers"
+	"github.com/byuoitav/device-monitoring-microservice/microservicestatus"
 	"github.com/jessemillar/health"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -32,6 +34,7 @@ func main() {
 	secure := router.Group("", echo.WrapMiddleware(authmiddleware.Authenticate))
 
 	router.GET("/health", echo.WrapHandler(http.HandlerFunc(health.Check)))
+	router.GET("/mstatus", GetStatus)
 
 	secure.GET("/buildings", handlerGroup.GetAllBuildings)
 	secure.GET("/buildings/:id", handlerGroup.GetBuildingByID)
@@ -57,11 +60,17 @@ func main() {
 
 	secure.GET("/devices/ports", handlerGroup.GetPorts)
 	secure.GET("/devices/types", handlerGroup.GetDeviceTypes)
+	secure.GET("/devices/classes", handlerGroup.GetDeviceClasses)
 	secure.GET("/devices/endpoints", handlerGroup.GetEndpoints)
 	secure.GET("/devices/commands", handlerGroup.GetAllCommands)
 	secure.GET("/devices/powerstates", handlerGroup.GetPowerStates)
 	secure.GET("/devices/microservices", handlerGroup.GetMicroservices)
 	secure.GET("/devices/roledefinitions", handlerGroup.GetDeviceRoleDefs)
+
+	secure.GET("/classes/:class/ports", handlerGroup.GetPortsByDeviceType)
+
+	secure.PUT("/devices/id/:deviceID/typeid", handlerGroup.SetDeviceTypeByID)
+	secure.PUT("/devices/attribute", handlerGroup.SetDeviceAttribute)
 
 	secure.POST("/buildings/:building", handlerGroup.AddBuilding)
 	secure.POST("/buildings/:building/rooms/:room", handlerGroup.AddRoom)
@@ -86,4 +95,32 @@ func main() {
 	}
 
 	router.StartServer(&server)
+}
+
+func GetStatus(context echo.Context) error {
+	var s microservicestatus.Status
+	var err error
+
+	s.Version, err = microservicestatus.GetVersion("version.txt")
+	if err != nil {
+		return context.JSON(http.StatusOK, "Failed to open version.txt")
+	}
+
+	// open new? database connection
+	database := os.Getenv("CONFIGURATION_DATABASE_USERNAME") + ":" + os.Getenv("CONFIGURATION_DATABASE_PASSWORD") + "@tcp(" + os.Getenv("CONFIGURATION_DATABASE_HOST") + ":" + os.Getenv("CONFIGURATION_DATABASE_PORT") + ")/" + os.Getenv("CONFIGURATION_DATABASE_NAME")
+	accessorGroup := new(accessors.AccessorGroup)
+	accessorGroup.Open(database)
+
+	vals, err := accessorGroup.GetAllBuildings()
+	if len(vals) < 1 || err != nil {
+		s.Status = microservicestatus.StatusDead
+		s.StatusInfo = fmt.Sprintf("Unable to access database. Error: %s", err)
+	} else {
+		s.Status = microservicestatus.StatusOK
+		s.StatusInfo = ""
+	}
+
+	accessorGroup.Database.Close()
+
+	return context.JSON(http.StatusOK, s)
 }
