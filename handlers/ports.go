@@ -3,13 +3,13 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/byuoitav/configuration-database-microservice/accessors"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
 
 func (handlerGroup *HandlerGroup) AddPort(context echo.Context) error {
 	portName := context.Param("port")
-	var portToAdd accessors.PortType
+	var portToAdd structs.PortType
 
 	err := context.Bind(&portToAdd)
 	if err != nil {

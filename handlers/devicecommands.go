@@ -4,14 +4,14 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/byuoitav/configuration-database-microservice/accessors"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
 
 func (handlerGroup *HandlerGroup) AddDeviceCommand(context echo.Context) error {
 	id := context.Param("id")
 
-	var dc accessors.DeviceCommand
+	var dc structs.DeviceCommand
 	err := context.Bind(&dc)
 	if err != nil {
 		return context.JSON(http.StatusBadRequest, err.Error())

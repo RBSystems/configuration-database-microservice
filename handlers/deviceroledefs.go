@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/byuoitav/configuration-database-microservice/accessors"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
 
@@ -18,7 +18,7 @@ func (handlerGroup *HandlerGroup) GetDeviceRoleDefs(context echo.Context) error 
 
 func (handlerGroup *HandlerGroup) AddDeviceRoleDef(context echo.Context) error {
 	drdName := context.Param("deviceroledefinition")
-	var drd accessors.DeviceRoleDef
+	var drd structs.DeviceRoleDef
 
 	err := context.Bind(&drd)
 	if err != nil {

@@ -3,35 +3,19 @@ package accessors
 import (
 	"database/sql"
 	"log"
+
+	"github.com/byuoitav/configuration-database-microservice/structs"
 )
 
-//PortType corresponds to the Ports table in the Database and really should be called Port
-//TODO:Change struct name to "Port"
-type PortType struct {
-	ID          int    `json:"id,omitempty"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
-
-type DeviceTypePort struct {
-	DeviceTypePortID     int      `json:"id"`
-	DeviceTypeID         int      `json:"type-id"`
-	DeviceTypeName       string   `json:"type-name"`
-	Port                 PortType `json:"port-info"`
-	Description          string   `json:"type-port-description"`
-	FriendlyName         string   `json:"friendlyName"`
-	HostDestintionMirror bool     `json:"mirror-host-dest"`
-}
-
-func (accessorGroup *AccessorGroup) GetAllPorts() ([]PortType, error) {
+func (accessorGroup *AccessorGroup) GetAllPorts() ([]structs.PortType, error) {
 	rows, err := accessorGroup.Database.Query("SELECT * FROM Ports")
 	if err != nil {
-		return []PortType{}, err
+		return []structs.PortType{}, err
 	}
 
 	allPorts, err := extractPortData(rows)
 	if err != nil {
-		return []PortType{}, err
+		return []structs.PortType{}, err
 	}
 	defer rows.Close()
 
@@ -39,34 +23,34 @@ func (accessorGroup *AccessorGroup) GetAllPorts() ([]PortType, error) {
 }
 
 //AddPort adds an entry to the Ports table in the database
-func (accessorGroup *AccessorGroup) AddPort(portToAdd PortType) (PortType, error) {
+func (accessorGroup *AccessorGroup) AddPort(portToAdd structs.PortType) (structs.PortType, error) {
 
 	result, err := accessorGroup.Database.Exec("INSERT into Ports (portID, name, description) VALUES(?,?,?)", portToAdd.ID, portToAdd.Name, portToAdd.Description)
 	if err != nil {
-		return PortType{}, err
+		return structs.PortType{}, err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return PortType{}, err
+		return structs.PortType{}, err
 	}
 
 	portToAdd.ID = int(id)
 	return portToAdd, nil
 }
 
-func (accessorGroup *AccessorGroup) GetPortTypeByName(name string) (PortType, error) {
+func (accessorGroup *AccessorGroup) GetPortTypeByName(name string) (structs.PortType, error) {
 	row := accessorGroup.Database.QueryRow("SELECT * FROM Ports  WHERE name = ? ", name)
 
 	p, err := extractPortType(row)
 	if err != nil {
-		return PortType{}, err
+		return structs.PortType{}, err
 	}
 
 	return p, nil
 }
 
-func (accessorGroup *AccessorGroup) GetPortsByDeviceTypeName(typeName string) ([]DeviceTypePort, error) {
+func (accessorGroup *AccessorGroup) GetPortsByDeviceTypeName(typeName string) ([]structs.DeviceTypePort, error) {
 	log.Printf("Getting ports for class %v", typeName)
 
 	query :=
@@ -81,7 +65,7 @@ func (accessorGroup *AccessorGroup) GetPortsByDeviceTypeName(typeName string) ([
 	rows, err := accessorGroup.Database.Query(query, typeName)
 	if err != nil {
 		log.Printf("error: %v", err.Error())
-		return []DeviceTypePort{}, err
+		return []structs.DeviceTypePort{}, err
 	}
 
 	log.Printf("Query executed successfully")
@@ -91,9 +75,9 @@ func (accessorGroup *AccessorGroup) GetPortsByDeviceTypeName(typeName string) ([
 	return val, err
 }
 
-func extractDeviceTypePortData(rows *sql.Rows) ([]DeviceTypePort, error) {
+func extractDeviceTypePortData(rows *sql.Rows) ([]structs.DeviceTypePort, error) {
 
-	toReturn := []DeviceTypePort{}
+	toReturn := []structs.DeviceTypePort{}
 	var portID *int
 	var deviceTypeID *int
 	var deviceTypePortID *int
@@ -107,8 +91,8 @@ func extractDeviceTypePortData(rows *sql.Rows) ([]DeviceTypePort, error) {
 	var portDesc *string
 
 	for rows.Next() {
-		curValue := DeviceTypePort{}
-		curPort := PortType{}
+		curValue := structs.DeviceTypePort{}
+		curPort := structs.PortType{}
 		err := rows.Scan(
 			&deviceTypePortID,
 			&portID,
@@ -121,7 +105,7 @@ func extractDeviceTypePortData(rows *sql.Rows) ([]DeviceTypePort, error) {
 			&portDesc)
 
 		if err != nil {
-			return []DeviceTypePort{}, err
+			return []structs.DeviceTypePort{}, err
 		}
 
 		curValue.Port = curPort
@@ -160,10 +144,10 @@ func extractDeviceTypePortData(rows *sql.Rows) ([]DeviceTypePort, error) {
 	return toReturn, nil
 }
 
-func extractPortData(rows *sql.Rows) ([]PortType, error) {
+func extractPortData(rows *sql.Rows) ([]structs.PortType, error) {
 
-	var allPorts []PortType
-	var port PortType
+	var allPorts []structs.PortType
+	var port structs.PortType
 	var id *int
 	var name *string
 	var description *string
@@ -171,7 +155,7 @@ func extractPortData(rows *sql.Rows) ([]PortType, error) {
 	for rows.Next() {
 		err := rows.Scan(&id, &name, &description)
 		if err != nil {
-			return []PortType{}, err
+			return []structs.PortType{}, err
 		}
 
 		if id != nil {
@@ -189,14 +173,14 @@ func extractPortData(rows *sql.Rows) ([]PortType, error) {
 
 	err := rows.Err()
 	if err != nil {
-		return []PortType{}, err
+		return []structs.PortType{}, err
 	}
 
 	return allPorts, nil
 }
 
-func extractPortType(row *sql.Row) (PortType, error) {
-	var p PortType
+func extractPortType(row *sql.Row) (structs.PortType, error) {
+	var p structs.PortType
 	var id *int
 	var name *string
 	var description *string
@@ -204,7 +188,7 @@ func extractPortType(row *sql.Row) (PortType, error) {
 	err := row.Scan(&id, &name, &description)
 	if err != nil {
 		log.Printf("error: %s", err.Error())
-		return PortType{}, err
+		return structs.PortType{}, err
 	}
 	if id != nil {
 		p.ID = *id

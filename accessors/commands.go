@@ -3,57 +3,12 @@ package accessors
 import (
 	"database/sql"
 	"log"
+
+	"github.com/byuoitav/configuration-database-microservice/structs"
 )
 
-/*Command represents all the information needed to issue a particular command to a device.
-Name: Command name
-Endpoint: the endpoint within the microservice
-Microservice: the location of the microservice to call to communicate with the device.
-Priority: The relative priority of the command relative to other commands. Commands
-					with a higher (closer to 1) priority will be issued to the devices first.
-*/
-type Command struct {
-	Name         string   `json:"name"`
-	Endpoint     Endpoint `json:"endpoint"`
-	Microservice string   `json:"microservice"`
-	Priority     int      `json:"priority"`
-}
-
-/*RawCommand represents all the information needed to issue a particular command to a device.
-Name: Command name
-Description: command description
-Priority: The relative priority of the command relative to other commands. Commands
-					with a higher (closer to 1) priority will be issued to the devices first.
-*/
-type RawCommand struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Priority    int    `json:"priority"`
-}
-
-//CommandSorterByPriority sorts commands by priority and implements sort.Interface
-type CommandSorterByPriority struct {
-	Commands []RawCommand
-}
-
-//Len is part of sort.Interface
-func (c *CommandSorterByPriority) Len() int {
-	return len(c.Commands)
-}
-
-//Swap is part of sort.Interface
-func (c *CommandSorterByPriority) Swap(i, j int) {
-	c.Commands[i], c.Commands[j] = c.Commands[j], c.Commands[i]
-}
-
-//Less is part of sort.Interface
-func (c *CommandSorterByPriority) Less(i, j int) bool {
-	return c.Commands[i].Priority < c.Commands[j].Priority
-}
-
 //GetAllCommands simply dumps the commands table
-func (accessorGroup *AccessorGroup) GetAllCommands() (commands []RawCommand, err error) {
+func (accessorGroup *AccessorGroup) GetAllCommands() (commands []structs.RawCommand, err error) {
 	log.Printf("Getting all commands...")
 	rows, err := accessorGroup.Database.Query("Select * FROM Commands")
 	if err != nil {
@@ -67,22 +22,22 @@ func (accessorGroup *AccessorGroup) GetAllCommands() (commands []RawCommand, err
 	return
 }
 
-func (accessorGroup *AccessorGroup) GetRawCommandByName(name string) (RawCommand, error) {
+func (accessorGroup *AccessorGroup) GetRawCommandByName(name string) (structs.RawCommand, error) {
 	row := accessorGroup.Database.QueryRow("SELECT * FROM Commands WHERE name = ? ", name)
 
 	rc, err := extractRawCommand(row)
 	if err != nil {
-		return RawCommand{}, err
+		return structs.RawCommand{}, err
 	}
 
 	return rc, nil
 }
 
 //ExtractCommand pulls a command object from a set of sql.Rows
-func ExtractCommand(rows *sql.Rows) (allCommands []Command, err error) {
+func ExtractCommand(rows *sql.Rows) (allCommands []structs.Command, err error) {
 
 	for rows.Next() {
-		command := Command{}
+		command := structs.Command{}
 
 		err = rows.Scan(&command.Name, &command.Endpoint.Name, &command.Endpoint.Path, &command.Microservice)
 		if err != nil {
@@ -97,10 +52,10 @@ func ExtractCommand(rows *sql.Rows) (allCommands []Command, err error) {
 }
 
 //ExtractRawCommands pulls a RawCommand object from a set of sql.Rows
-func ExtractRawCommands(rows *sql.Rows) (allCommands []RawCommand, err error) {
+func ExtractRawCommands(rows *sql.Rows) (allCommands []structs.RawCommand, err error) {
 
 	for rows.Next() {
-		command := RawCommand{}
+		command := structs.RawCommand{}
 
 		err = rows.Scan(&command.ID, &command.Name, &command.Description, &command.Priority)
 		if err != nil {
@@ -114,23 +69,23 @@ func ExtractRawCommands(rows *sql.Rows) (allCommands []RawCommand, err error) {
 	return
 }
 
-func (accessorGroup *AccessorGroup) AddRawCommand(rc RawCommand) (RawCommand, error) {
+func (accessorGroup *AccessorGroup) AddRawCommand(rc structs.RawCommand) (structs.RawCommand, error) {
 	result, err := accessorGroup.Database.Exec("Insert into Commands (commandID, name, description, priority) VALUES(?,?,?,?)", rc.ID, rc.Name, rc.Description, rc.Priority)
 	if err != nil {
-		return RawCommand{}, err
+		return structs.RawCommand{}, err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return RawCommand{}, err
+		return structs.RawCommand{}, err
 	}
 
 	rc.ID = int(id)
 	return rc, nil
 }
 
-func extractRawCommand(row *sql.Row) (RawCommand, error) {
-	var rc RawCommand
+func extractRawCommand(row *sql.Row) (structs.RawCommand, error) {
+	var rc structs.RawCommand
 	var id *int
 	var name *string
 	var description *string
@@ -139,7 +94,7 @@ func extractRawCommand(row *sql.Row) (RawCommand, error) {
 	err := row.Scan(&id, &name, &description, &priority)
 	if err != nil {
 		log.Printf("error: %s", err.Error())
-		return RawCommand{}, err
+		return structs.RawCommand{}, err
 	}
 	if id != nil {
 		rc.ID = *id
