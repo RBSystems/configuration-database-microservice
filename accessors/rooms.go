@@ -56,6 +56,23 @@ func (accessorGroup *AccessorGroup) GetAllRooms() ([]Room, error) {
 	return allRooms, nil
 }
 
+func (accessorGroup *AccessorGroup) GetAllRoomDesignations() ([]string, error) {
+	toReturn := []string{}
+
+	rows, err := accessorGroup.Database.Query("SELECT DISTINCT roomDesignation FROM Rooms")
+	if err != nil {
+		return toReturn, err
+	}
+
+	for rows.Next() {
+		var curStr string
+		err = rows.Scan(&curStr)
+		toReturn = append(toReturn, curStr)
+	}
+
+	return toReturn, nil
+}
+
 // GetRoomByID returns a room from the database by ID
 func (accessorGroup *AccessorGroup) GetRoomByID(id int) (Room, error) {
 	room := &Room{}

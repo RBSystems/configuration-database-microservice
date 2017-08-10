@@ -45,6 +45,7 @@ func main() {
 	secure.PUT("/buildings/:building/rooms/:room/devices/:device/attributes/:attribute/:value", handlerGroup.PutDeviceAttributeByDeviceAndRoomAndBuilding)
 
 	secure.GET("/rooms", handlerGroup.GetAllRooms)
+	secure.GET("/rooms/designations", handlerGroup.GetAllRoomDesignations)
 	secure.GET("/rooms/id/:id", handlerGroup.GetRoomByID)
 	secure.GET("/rooms/buildings/:building", handlerGroup.GetRoomsByBuilding)
 
