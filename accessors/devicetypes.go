@@ -5,20 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"log"
+
+	"github.com/byuoitav/configuration-database-microservice/structs"
 )
 
-//DeviceType corresponds to the DeviceType table in the database
-type DeviceClass struct {
-	ID          int    `json:"id,omitempty"`
-	Name        string `json:"name"`
-	DisplayName string `json:"display-name"`
-	Description string `json:"description"`
-}
-
 //GetDeviceClasses returns a dump of the table in the database
-func (accessorGroup *AccessorGroup) GetDeviceTypes() ([]DeviceClass, error) {
+func (accessorGroup *AccessorGroup) GetDeviceTypes() ([]structs.DeviceClass, error) {
 
-	var toReturn []DeviceClass
+	var toReturn []structs.DeviceClass
 	rows, err := accessorGroup.Database.Query("Select deviceTypeID, typeName, typeDescription, typeDisplayName From DeviceTypes")
 	if err != nil {
 		return toReturn, err
@@ -52,16 +46,16 @@ func (accessorGroup *AccessorGroup) SetDeviceTypeByID(id int, deviceID int) erro
 	return nil
 }
 
-func extractDeviceClassData(rows *sql.Rows) ([]DeviceClass, error) {
+func extractDeviceClassData(rows *sql.Rows) ([]structs.DeviceClass, error) {
 
-	toReturn := []DeviceClass{}
+	toReturn := []structs.DeviceClass{}
 	var id *int
 	var name *string
 	var displayName *string
 	var description *string
 
 	for rows.Next() {
-		curVal := DeviceClass{}
+		curVal := structs.DeviceClass{}
 
 		err := rows.Scan(&id, &name, &description, &displayName)
 		if err != nil {
@@ -91,19 +85,19 @@ func extractDeviceClassData(rows *sql.Rows) ([]DeviceClass, error) {
 	return toReturn, nil
 }
 
-func (accessorGroup *AccessorGroup) GetDeviceClassByName(name string) (DeviceClass, error) {
+func (accessorGroup *AccessorGroup) GetDeviceClassByName(name string) (structs.DeviceClass, error) {
 	row, err := accessorGroup.Database.Query("Select deviceTypeID, typeName, typeDescription, typeDisplayName From DeviceTypes WHERE typeName = ?", name)
 	if err != nil {
-		return DeviceClass{}, err
+		return structs.DeviceClass{}, err
 	}
 	defer row.Close()
 
 	dt, err := extractDeviceClassData(row)
 	if err != nil || len(dt) < 1 {
 		if len(dt) < 1 {
-			return DeviceClass{}, errors.New("No device types found")
+			return structs.DeviceClass{}, errors.New("No device types found")
 		}
-		return DeviceClass{}, err
+		return structs.DeviceClass{}, err
 	}
 
 	return dt[0], nil

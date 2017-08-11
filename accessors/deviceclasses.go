@@ -3,75 +3,70 @@ package accessors
 import (
 	"database/sql"
 	"log"
+
+	"github.com/byuoitav/configuration-database-microservice/structs"
 )
 
-//DeviceType corresponds to the DeviceType table in the database
-type DeviceType struct {
-	ID          int    `json:"id,omitempty"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
-
 //GetDeviceClasses returns a dump of the table in the database
-func (accessorGroup *AccessorGroup) GetDeviceClasses() ([]DeviceType, error) {
+func (accessorGroup *AccessorGroup) GetDeviceClasses() ([]structs.DeviceType, error) {
 
-	var DeviceClasses []DeviceType
+	var DeviceClasses []structs.DeviceType
 
 	rows, err := accessorGroup.Database.Query("SELECT * FROM DeviceClasses")
 	if err != nil {
-		return []DeviceType{}, err
+		return []structs.DeviceType{}, err
 	}
 
 	DeviceClasses, err = extractDeviceTypeData(rows)
 	if err != nil {
-		return []DeviceType{}, err
+		return []structs.DeviceType{}, err
 	}
 	defer rows.Close()
 
 	return DeviceClasses, nil
 }
 
-func (accessorGroup *AccessorGroup) AddDeviceType(deviceType DeviceType) (DeviceType, error) {
+func (accessorGroup *AccessorGroup) AddDeviceType(deviceType structs.DeviceType) (structs.DeviceType, error) {
 	result, err := accessorGroup.Database.Exec("Insert into DeviceClasses (deviceClassID, name, description) VALUES(?,?,?)", deviceType.ID, deviceType.Name, deviceType.Description)
 	if err != nil {
-		return DeviceType{}, err
+		return structs.DeviceType{}, err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return DeviceType{}, err
+		return structs.DeviceType{}, err
 	}
 
 	deviceType.ID = int(id)
 	return deviceType, nil
 }
 
-func (accessorGroup *AccessorGroup) GetDeviceTypeByID(id int) (DeviceType, error) {
+func (accessorGroup *AccessorGroup) GetDeviceTypeByID(id int) (structs.DeviceType, error) {
 	row := accessorGroup.Database.QueryRow("SELECT * FROM DeviceClasses WHERE deviceClassID = ?", id)
 
 	dt, err := extractDeviceType(row)
 	if err != nil {
-		return DeviceType{}, err
+		return structs.DeviceType{}, err
 	}
 
 	return dt, nil
 }
 
-func (accessorGroup *AccessorGroup) GetDeviceTypeByName(name string) (DeviceType, error) {
+func (accessorGroup *AccessorGroup) GetDeviceTypeByName(name string) (structs.DeviceType, error) {
 	row := accessorGroup.Database.QueryRow("SELECT * FROM DeviceClasses WHERE name = ?", name)
 
 	dt, err := extractDeviceType(row)
 	if err != nil {
-		return DeviceType{}, err
+		return structs.DeviceType{}, err
 	}
 
 	return dt, nil
 }
 
-func extractDeviceTypeData(rows *sql.Rows) ([]DeviceType, error) {
+func extractDeviceTypeData(rows *sql.Rows) ([]structs.DeviceType, error) {
 
-	var deviceTypes []DeviceType
-	var deviceType DeviceType
+	var deviceTypes []structs.DeviceType
+	var deviceType structs.DeviceType
 	var id *int
 	var name *string
 	var description *string
@@ -80,7 +75,7 @@ func extractDeviceTypeData(rows *sql.Rows) ([]DeviceType, error) {
 
 		err := rows.Scan(&id, &name, &description)
 		if err != nil {
-			return []DeviceType{}, err
+			return []structs.DeviceType{}, err
 		}
 
 		if id != nil {
@@ -99,8 +94,8 @@ func extractDeviceTypeData(rows *sql.Rows) ([]DeviceType, error) {
 	return deviceTypes, nil
 }
 
-func extractDeviceType(row *sql.Row) (DeviceType, error) {
-	var dt DeviceType
+func extractDeviceType(row *sql.Row) (structs.DeviceType, error) {
+	var dt structs.DeviceType
 	var id *int
 	var name *string
 	var description *string
@@ -108,7 +103,7 @@ func extractDeviceType(row *sql.Row) (DeviceType, error) {
 	err := row.Scan(&id, &name, &description)
 	if err != nil {
 		log.Printf("error: %s", err.Error())
-		return DeviceType{}, err
+		return structs.DeviceType{}, err
 	}
 	if id != nil {
 		dt.ID = *id

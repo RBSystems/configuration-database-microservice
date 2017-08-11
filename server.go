@@ -8,7 +8,7 @@ import (
 	"github.com/byuoitav/authmiddleware"
 	"github.com/byuoitav/configuration-database-microservice/accessors"
 	"github.com/byuoitav/configuration-database-microservice/handlers"
-	"github.com/byuoitav/device-monitoring-microservice/microservicestatus"
+	"github.com/byuoitav/device-monitoring-microservice/statusinfrastructure"
 	"github.com/jessemillar/health"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -98,10 +98,10 @@ func main() {
 }
 
 func GetStatus(context echo.Context) error {
-	var s microservicestatus.Status
+	var s statusinfrastructure.Status
 	var err error
 
-	s.Version, err = microservicestatus.GetVersion("version.txt")
+	s.Version, err = statusinfrastructure.GetVersion("version.txt")
 	if err != nil {
 		return context.JSON(http.StatusOK, "Failed to open version.txt")
 	}
@@ -113,10 +113,10 @@ func GetStatus(context echo.Context) error {
 
 	vals, err := accessorGroup.GetAllBuildings()
 	if len(vals) < 1 || err != nil {
-		s.Status = microservicestatus.StatusDead
+		s.Status = statusinfrastructure.StatusDead
 		s.StatusInfo = fmt.Sprintf("Unable to access database. Error: %s", err)
 	} else {
-		s.Status = microservicestatus.StatusOK
+		s.Status = statusinfrastructure.StatusOK
 		s.StatusInfo = ""
 	}
 
