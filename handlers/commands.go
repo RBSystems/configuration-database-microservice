@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/byuoitav/configuration-database-microservice/accessors"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
 
@@ -20,7 +20,7 @@ func (handlerGroup *HandlerGroup) GetAllCommands(context echo.Context) error {
 
 func (handlerGroup *HandlerGroup) AddCommand(context echo.Context) error {
 	cmdName := context.Param("command")
-	var cmd accessors.RawCommand
+	var cmd structs.RawCommand
 
 	err := context.Bind(&cmd)
 	if err != nil {

@@ -1,29 +1,24 @@
 package accessors
 
-type Building struct {
-	ID          int    `json:"id,omitempty"`
-	Name        string `json:"name,omitempty"`
-	Shortname   string `json:"shortname,omitempty"`
-	Description string `json:"description,omitempty"`
-}
+import "github.com/byuoitav/configuration-database-microservice/structs"
 
 // GetAllBuildings returns a list of buildings from the database
-func (accessorGroup *AccessorGroup) GetAllBuildings() ([]Building, error) {
-	allBuildings := []Building{}
+func (accessorGroup *AccessorGroup) GetAllBuildings() ([]structs.Building, error) {
+	allBuildings := []structs.Building{}
 
 	rows, err := accessorGroup.Database.Query("SELECT * FROM Buildings")
 	if err != nil {
-		return []Building{}, err
+		return []structs.Building{}, err
 	}
 
 	defer rows.Close()
 
 	for rows.Next() {
-		building := Building{}
+		building := structs.Building{}
 
 		err = rows.Scan(&building.ID, &building.Name, &building.Shortname, &building.Description)
 		if err != nil {
-			return []Building{}, err
+			return []structs.Building{}, err
 		}
 
 		allBuildings = append(allBuildings, building)
@@ -31,29 +26,29 @@ func (accessorGroup *AccessorGroup) GetAllBuildings() ([]Building, error) {
 
 	err = rows.Err()
 	if err != nil {
-		return []Building{}, err
+		return []structs.Building{}, err
 	}
 
 	return allBuildings, nil
 }
 
 // GetBuildingByID returns a building from the database by ID
-func (accessorGroup *AccessorGroup) GetBuildingByID(id int) (Building, error) {
-	building := &Building{}
+func (accessorGroup *AccessorGroup) GetBuildingByID(id int) (structs.Building, error) {
+	building := &structs.Building{}
 	err := accessorGroup.Database.QueryRow("SELECT * FROM Buildings WHERE buildingID=?", id).Scan(&building.ID, &building.Name, &building.Shortname, &building.Description)
 	if err != nil {
-		return Building{}, err
+		return structs.Building{}, err
 	}
 
 	return *building, nil
 }
 
 // GetBuildingByShortname returns a building from the database by shortname
-func (accessorGroup *AccessorGroup) GetBuildingByShortname(shortname string) (Building, error) {
-	building := &Building{}
+func (accessorGroup *AccessorGroup) GetBuildingByShortname(shortname string) (structs.Building, error) {
+	building := &structs.Building{}
 	err := accessorGroup.Database.QueryRow("SELECT * FROM Buildings WHERE shortname=?", shortname).Scan(&building.ID, &building.Name, &building.Shortname, &building.Description)
 	if err != nil {
-		return Building{}, err
+		return structs.Building{}, err
 	}
 
 	return *building, nil
@@ -61,19 +56,19 @@ func (accessorGroup *AccessorGroup) GetBuildingByShortname(shortname string) (Bu
 
 //AddBuilding adds a building
 
-func (accessorGroup *AccessorGroup) AddBuilding(name string, shortname string, description string) (Building, error) {
+func (accessorGroup *AccessorGroup) AddBuilding(name string, shortname string, description string) (structs.Building, error) {
 
 	result, err := accessorGroup.Database.Exec(`INSERT into Buildings (name, shortname, description) VALUES (?,?,?)`, name, shortname, description)
 	if err != nil {
-		return Building{}, err
+		return structs.Building{}, err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return Building{}, err
+		return structs.Building{}, err
 	}
 
-	building := Building{
+	building := structs.Building{
 		Name:        name,
 		Shortname:   shortname,
 		Description: description,

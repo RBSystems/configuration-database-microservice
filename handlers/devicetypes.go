@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/byuoitav/configuration-database-microservice/accessors"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
 
@@ -18,7 +18,7 @@ func (handlerGroup *HandlerGroup) GetDeviceTypes(context echo.Context) error {
 
 func (handlerGroup *HandlerGroup) AddDeviceType(context echo.Context) error {
 	deviceTypeName := context.Param("devicetype")
-	var deviceType accessors.DeviceType
+	var deviceType structs.DeviceType
 
 	err := context.Bind(&deviceType)
 	if err != nil {

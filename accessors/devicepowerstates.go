@@ -1,32 +1,30 @@
 package accessors
 
-import "database/sql"
+import (
+	"database/sql"
 
-type DevicePowerState struct {
-	ID           int `json:"id,omitempty"`
-	DeviceID     int `json:"device"`
-	PowerStateID int `json:"powerstate"`
-}
+	"github.com/byuoitav/configuration-database-microservice/structs"
+)
 
-func (accessorGroup *AccessorGroup) GetDevicePowerStates() ([]DevicePowerState, error) {
+func (accessorGroup *AccessorGroup) GetDevicePowerStates() ([]structs.DevicePowerState, error) {
 	rows, err := accessorGroup.Database.Query("SELECT * FROM DevicePowerStates")
 	if err != nil {
-		return []DevicePowerState{}, err
+		return []structs.DevicePowerState{}, err
 	}
 
 	devicepowerstates, err := exctractDevicePowerStateData(rows)
 	if err != nil {
-		return []DevicePowerState{}, err
+		return []structs.DevicePowerState{}, err
 	}
 	defer rows.Close()
 
 	return devicepowerstates, nil
 }
 
-func (accessorGroup *AccessorGroup) AddDevicePowerState(dps DevicePowerState) (DevicePowerState, error) {
+func (accessorGroup *AccessorGroup) AddDevicePowerState(dps structs.DevicePowerState) (structs.DevicePowerState, error) {
 	response, err := accessorGroup.Database.Exec("INSERT INTO DevicePowerStates (devicePowerStateID, deviceID, powerStateID) VALUES(?,?,?)", dps.ID, dps.DeviceID, dps.PowerStateID)
 	if err != nil {
-		return DevicePowerState{}, err
+		return structs.DevicePowerState{}, err
 	}
 
 	id, err := response.LastInsertId()
@@ -35,10 +33,10 @@ func (accessorGroup *AccessorGroup) AddDevicePowerState(dps DevicePowerState) (D
 	return dps, nil
 }
 
-func exctractDevicePowerStateData(rows *sql.Rows) ([]DevicePowerState, error) {
+func exctractDevicePowerStateData(rows *sql.Rows) ([]structs.DevicePowerState, error) {
 
-	var devicepowerstates []DevicePowerState
-	var devicepowerstate DevicePowerState
+	var devicepowerstates []structs.DevicePowerState
+	var devicepowerstate structs.DevicePowerState
 	var id *int
 	var dID *int
 	var pID *int
@@ -46,7 +44,7 @@ func exctractDevicePowerStateData(rows *sql.Rows) ([]DevicePowerState, error) {
 	for rows.Next() {
 		err := rows.Scan(&id, &dID, &pID)
 		if err != nil {
-			return []DevicePowerState{}, err
+			return []structs.DevicePowerState{}, err
 		}
 
 		if id != nil {
@@ -64,7 +62,7 @@ func exctractDevicePowerStateData(rows *sql.Rows) ([]DevicePowerState, error) {
 
 	err := rows.Err()
 	if err != nil {
-		return []DevicePowerState{}, err
+		return []structs.DevicePowerState{}, err
 	}
 
 	return devicepowerstates, nil
