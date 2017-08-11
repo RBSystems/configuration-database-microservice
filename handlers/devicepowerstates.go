@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/byuoitav/configuration-database-microservice/accessors"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
 
 func (handlerGroup *HandlerGroup) AddDevicePowerState(context echo.Context) error {
 	dpsID := context.Param("id")
-	var dps accessors.DevicePowerState
+	var dps structs.DevicePowerState
 
 	err := context.Bind(&dps)
 	if err != nil {

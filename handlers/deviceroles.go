@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/byuoitav/configuration-database-microservice/accessors"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
 
 func (handlerGroup *HandlerGroup) AddDeviceRole(context echo.Context) error {
 	drID := context.Param("id")
-	var dr accessors.DeviceRole
+	var dr structs.DeviceRole
 
 	err := context.Bind(&dr)
 	if err != nil {

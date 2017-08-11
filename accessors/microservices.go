@@ -3,59 +3,54 @@ package accessors
 import (
 	"database/sql"
 	"log"
+
+	"github.com/byuoitav/configuration-database-microservice/structs"
 )
 
-type Microservice struct {
-	ID          int    `json:"id,omitempty"`
-	Name        string `json:"name"`
-	Address     string `json:"address"`
-	Description string `json:"description"`
-}
-
-func (accessorGroup *AccessorGroup) GetMicroservices() ([]Microservice, error) {
+func (accessorGroup *AccessorGroup) GetMicroservices() ([]structs.Microservice, error) {
 	rows, err := accessorGroup.Database.Query("SELECT * FROM Microservices")
 	if err != nil {
-		return []Microservice{}, err
+		return []structs.Microservice{}, err
 	}
 
 	microservices, err := extractMicroservices(rows)
 	if err != nil {
-		return []Microservice{}, err
+		return []structs.Microservice{}, err
 	}
 	defer rows.Close()
 
 	return microservices, nil
 }
 
-func (accessorGroup *AccessorGroup) AddMicroservice(microservice Microservice) (Microservice, error) {
+func (accessorGroup *AccessorGroup) AddMicroservice(microservice structs.Microservice) (structs.Microservice, error) {
 	result, err := accessorGroup.Database.Exec("Insert into Microservices (microserviceID, name, address, description) VALUES(?,?,?,?)", microservice.ID, microservice.Name, microservice.Address, microservice.Description)
 	if err != nil {
-		return Microservice{}, err
+		return structs.Microservice{}, err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return Microservice{}, err
+		return structs.Microservice{}, err
 	}
 
 	microservice.ID = int(id)
 	return microservice, nil
 }
 
-func (accessorGroup *AccessorGroup) GetMicroserviceByAddress(address string) (Microservice, error) {
+func (accessorGroup *AccessorGroup) GetMicroserviceByAddress(address string) (structs.Microservice, error) {
 	row := accessorGroup.Database.QueryRow("SELECT * FROM Microservices WHERE address = ? ", address)
 
 	m, err := extractMicroservice(row)
 	if err != nil {
-		return Microservice{}, err
+		return structs.Microservice{}, err
 	}
 
 	return m, nil
 }
 
-func extractMicroservices(rows *sql.Rows) ([]Microservice, error) {
-	var microservices []Microservice
-	var microservice Microservice
+func extractMicroservices(rows *sql.Rows) ([]structs.Microservice, error) {
+	var microservices []structs.Microservice
+	var microservice structs.Microservice
 	var id *int
 	var name *string
 	var address *string
@@ -65,7 +60,7 @@ func extractMicroservices(rows *sql.Rows) ([]Microservice, error) {
 		err := rows.Scan(&id, &name, &address, &description)
 		if err != nil {
 			log.Printf("error: %s", err.Error())
-			return []Microservice{}, err
+			return []structs.Microservice{}, err
 		}
 		if id != nil {
 			microservice.ID = *id
@@ -85,8 +80,8 @@ func extractMicroservices(rows *sql.Rows) ([]Microservice, error) {
 	return microservices, nil
 }
 
-func extractMicroservice(row *sql.Row) (Microservice, error) {
-	var m Microservice
+func extractMicroservice(row *sql.Row) (structs.Microservice, error) {
+	var m structs.Microservice
 	var id *int
 	var name *string
 	var address *string
@@ -95,7 +90,7 @@ func extractMicroservice(row *sql.Row) (Microservice, error) {
 	err := row.Scan(&id, &name, &address, &description)
 	if err != nil {
 		log.Printf("error: %s", err.Error())
-		return Microservice{}, err
+		return structs.Microservice{}, err
 	}
 	if id != nil {
 		m.ID = *id
