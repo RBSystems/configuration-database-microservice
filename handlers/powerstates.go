@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/byuoitav/configuration-database-microservice/accessors"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
 
@@ -18,7 +18,7 @@ func (handlerGroup *HandlerGroup) GetPowerStates(context echo.Context) error {
 
 func (handlerGroup *HandlerGroup) AddPowerState(context echo.Context) error {
 	psName := context.Param("powerstate")
-	var ps accessors.PowerState
+	var ps structs.PowerState
 
 	err := context.Bind(&ps)
 	if err != nil {

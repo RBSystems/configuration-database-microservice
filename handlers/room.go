@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/byuoitav/configuration-database-microservice/accessors"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
 
@@ -97,7 +97,7 @@ func (handlerGroup *HandlerGroup) GetConfigurationByRoomAndBuilding(context echo
 func (handlerGroup *HandlerGroup) AddRoom(context echo.Context) error {
 	buildingSN := context.Param("building")
 	roomN := context.Param("room")
-	var roomToAdd accessors.Room
+	var roomToAdd structs.Room
 	err := context.Bind(&roomToAdd)
 
 	if roomN != roomToAdd.Name {

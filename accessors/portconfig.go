@@ -2,35 +2,29 @@ package accessors
 
 import (
 	"database/sql"
+
+	"github.com/byuoitav/configuration-database-microservice/structs"
 )
 
-type PortConfiguration struct {
-	ID                  int `json:"id,omitempty"`
-	DestinationDeviceID int `json:"destination-device"`
-	PortID              int `json:"port"`
-	SourceDeviceID      int `json:"source-device"`
-	HostDeviceID        int `json:"host-device"`
-}
-
-func (accessorGroup *AccessorGroup) GetPortConfiguration(building string, room string, device string) ([]PortConfiguration, error) {
+func (accessorGroup *AccessorGroup) GetPortConfiguration(building string, room string, device string) ([]structs.PortConfiguration, error) {
 	rows, err := accessorGroup.Database.Query("SELECT * FROM PortConfiguration")
 	if err != nil {
-		return []PortConfiguration{}, err
+		return []structs.PortConfiguration{}, err
 	}
 
 	portconfigurations, err := exctractPortConfigurationData(rows)
 	if err != nil {
-		return []PortConfiguration{}, err
+		return []structs.PortConfiguration{}, err
 	}
 	defer rows.Close()
 
 	return portconfigurations, nil
 }
 
-func (accessorGroup *AccessorGroup) AddPortConfiguration(pc PortConfiguration) (PortConfiguration, error) {
+func (accessorGroup *AccessorGroup) AddPortConfiguration(pc structs.PortConfiguration) (structs.PortConfiguration, error) {
 	response, err := accessorGroup.Database.Exec("INSERT INTO PortConfiguration (portConfigurationID, destinationDeviceID, portID, sourceDeviceID, hostDeviceID) VALUES(?,?,?,?,?)", pc.ID, pc.DestinationDeviceID, pc.PortID, pc.SourceDeviceID, pc.HostDeviceID)
 	if err != nil {
-		return PortConfiguration{}, err
+		return structs.PortConfiguration{}, err
 	}
 
 	id, err := response.LastInsertId()
@@ -39,9 +33,9 @@ func (accessorGroup *AccessorGroup) AddPortConfiguration(pc PortConfiguration) (
 	return pc, nil
 }
 
-func exctractPortConfigurationData(rows *sql.Rows) ([]PortConfiguration, error) {
-	var portconfigurations []PortConfiguration
-	var portconfiguration PortConfiguration
+func exctractPortConfigurationData(rows *sql.Rows) ([]structs.PortConfiguration, error) {
+	var portconfigurations []structs.PortConfiguration
+	var portconfiguration structs.PortConfiguration
 	var id *int
 	var ddID *int
 	var pID *int
@@ -51,7 +45,7 @@ func exctractPortConfigurationData(rows *sql.Rows) ([]PortConfiguration, error) 
 	for rows.Next() {
 		err := rows.Scan(&id, &ddID, &pID, &sdID, &hID)
 		if err != nil {
-			return []PortConfiguration{}, err
+			return []structs.PortConfiguration{}, err
 		}
 
 		if id != nil {
@@ -75,7 +69,7 @@ func exctractPortConfigurationData(rows *sql.Rows) ([]PortConfiguration, error) 
 
 	err := rows.Err()
 	if err != nil {
-		return []PortConfiguration{}, err
+		return []structs.PortConfiguration{}, err
 	}
 
 	return portconfigurations, nil

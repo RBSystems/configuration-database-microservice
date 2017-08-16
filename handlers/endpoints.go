@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/byuoitav/configuration-database-microservice/accessors"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
 
@@ -18,7 +18,7 @@ func (handlerGroup *HandlerGroup) GetEndpoints(context echo.Context) error {
 
 func (handlerGroup *HandlerGroup) AddEndpoint(context echo.Context) error {
 	endpointName := context.Param("endpoint")
-	var endpoint accessors.Endpoint
+	var endpoint structs.Endpoint
 
 	err := context.Bind(&endpoint)
 	if endpointName != endpointName {
