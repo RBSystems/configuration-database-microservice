@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/byuoitav/configuration-database-microservice/accessors"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
 
 func (handlerGroup *HandlerGroup) AddPortConfiguration(context echo.Context) error {
 	pcID := context.Param("id")
-	var pc accessors.PortConfiguration
+	var pc structs.PortConfiguration
 
 	err := context.Bind(&pc)
 	if err != nil {

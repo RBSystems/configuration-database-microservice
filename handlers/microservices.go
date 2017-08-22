@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/byuoitav/configuration-database-microservice/accessors"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
 
@@ -18,7 +18,7 @@ func (handlerGroup *HandlerGroup) GetMicroservices(context echo.Context) error {
 
 func (handlerGroup *HandlerGroup) AddMicroservice(context echo.Context) error {
 	msName := context.Param("microservice")
-	var ms accessors.Microservice
+	var ms structs.Microservice
 
 	err := context.Bind(&ms)
 	if err != nil {

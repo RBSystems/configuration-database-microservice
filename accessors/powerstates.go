@@ -3,69 +3,65 @@ package accessors
 import (
 	"database/sql"
 	"log"
+
+	"github.com/byuoitav/configuration-database-microservice/structs"
 )
 
-type PowerState struct {
-	ID          int    `json:"id,omitempty"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
-
-func (accessorGroup *AccessorGroup) GetPowerStates() ([]PowerState, error) {
+func (accessorGroup *AccessorGroup) GetPowerStates() ([]structs.PowerState, error) {
 	rows, err := accessorGroup.Database.Query("SELECT * FROM PowerStates")
 	if err != nil {
-		return []PowerState{}, err
+		return []structs.PowerState{}, err
 	}
 
 	powerstates, err := extractPowerStates(rows)
 	if err != nil {
-		return []PowerState{}, err
+		return []structs.PowerState{}, err
 	}
 	defer rows.Close()
 
 	return powerstates, nil
 }
 
-func (accessorGroup *AccessorGroup) AddPowerState(powerstate PowerState) (PowerState, error) {
+func (accessorGroup *AccessorGroup) AddPowerState(powerstate structs.PowerState) (structs.PowerState, error) {
 	result, err := accessorGroup.Database.Exec("Insert into PowerStates (powerStateID, name, description) VALUES(?,?,?)", powerstate.ID, powerstate.Name, powerstate.Description)
 	if err != nil {
-		return PowerState{}, err
+		return structs.PowerState{}, err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return PowerState{}, err
+		return structs.PowerState{}, err
 	}
 
 	powerstate.ID = int(id)
 	return powerstate, nil
 }
 
-func (accessorGroup *AccessorGroup) GetPowerStateByID(id int) (PowerState, error) {
+func (accessorGroup *AccessorGroup) GetPowerStateByID(id int) (structs.PowerState, error) {
 	row := accessorGroup.Database.QueryRow("SELECT * FROM PowerStates WHERE powerStateID = ?", id)
 
 	ps, err := extractPowerState(row)
 	if err != nil {
-		return PowerState{}, err
+		return structs.PowerState{}, err
 	}
 
 	return ps, nil
 }
 
-func (accessorGroup *AccessorGroup) GetPowerStateByName(name string) (PowerState, error) {
+func (accessorGroup *AccessorGroup) GetPowerStateByName(name string) (structs.PowerState, error) {
 	row := accessorGroup.Database.QueryRow("SELECT * FROM PowerStates WHERE name = ?", name)
 
 	ps, err := extractPowerState(row)
 	if err != nil {
-		return PowerState{}, err
+		return structs.PowerState{}, err
 	}
 
 	return ps, nil
 }
 
-func extractPowerStates(rows *sql.Rows) ([]PowerState, error) {
-	var powerstates []PowerState
-	var ps PowerState
+func extractPowerStates(rows *sql.Rows) ([]structs.PowerState, error) {
+	var powerstates []structs.PowerState
+	var ps structs.PowerState
 	var id *int
 	var name *string
 	var description *string
@@ -74,7 +70,7 @@ func extractPowerStates(rows *sql.Rows) ([]PowerState, error) {
 		err := rows.Scan(&id, &name, &description)
 		if err != nil {
 			log.Printf("error: %s", err.Error())
-			return []PowerState{}, err
+			return []structs.PowerState{}, err
 		}
 		if id != nil {
 			ps.ID = *id
@@ -91,8 +87,8 @@ func extractPowerStates(rows *sql.Rows) ([]PowerState, error) {
 	return powerstates, nil
 }
 
-func extractPowerState(row *sql.Row) (PowerState, error) {
-	var ps PowerState
+func extractPowerState(row *sql.Row) (structs.PowerState, error) {
+	var ps structs.PowerState
 	var id *int
 	var name *string
 	var description *string
@@ -100,7 +96,7 @@ func extractPowerState(row *sql.Row) (PowerState, error) {
 	err := row.Scan(&id, &name, &description)
 	if err != nil {
 		log.Printf("error: %s", err.Error())
-		return PowerState{}, err
+		return structs.PowerState{}, err
 	}
 	if id != nil {
 		ps.ID = *id

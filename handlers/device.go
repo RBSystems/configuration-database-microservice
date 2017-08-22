@@ -4,9 +4,25 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/byuoitav/configuration-database-microservice/accessors"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
+
+func (handlerGroup *HandlerGroup) SetDeviceAttribute(context echo.Context) error {
+	var info structs.DeviceAttributeInfo
+
+	err := context.Bind(&info)
+	if err != nil {
+		return err
+	}
+
+	device, err := handlerGroup.Accessors.SetDeviceAttribute(info)
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, device)
+}
 
 func (handlerGroup *HandlerGroup) GetDevicesByBuildingAndRoom(context echo.Context) error {
 
@@ -86,7 +102,7 @@ func (handlerGroup *HandlerGroup) AddDevice(context echo.Context) error {
 	buildingSN := context.Param("building")
 	roomN := context.Param("room")
 	dN := context.Param("device")
-	var d accessors.Device
+	var d structs.Device
 
 	err := context.Bind(&d)
 

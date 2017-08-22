@@ -1,32 +1,30 @@
 package accessors
 
-import "database/sql"
+import (
+	"database/sql"
 
-type DeviceRole struct {
-	ID                     int `json:"id,omitempty"`
-	DeviceID               int `json:"device"`
-	DeviceRoleDefinitionID int `json:"role"`
-}
+	"github.com/byuoitav/configuration-database-microservice/structs"
+)
 
-func (accessorGroup *AccessorGroup) GetDeviceRoles() ([]DeviceRole, error) {
+func (accessorGroup *AccessorGroup) GetDeviceRoles() ([]structs.DeviceRole, error) {
 	rows, err := accessorGroup.Database.Query("SELECT * FROM DeviceRole")
 	if err != nil {
-		return []DeviceRole{}, err
+		return []structs.DeviceRole{}, err
 	}
 
 	deviceroles, err := exctractDeviceRoleData(rows)
 	if err != nil {
-		return []DeviceRole{}, err
+		return []structs.DeviceRole{}, err
 	}
 	defer rows.Close()
 
 	return deviceroles, nil
 }
 
-func (accessorGroup *AccessorGroup) AddDeviceRole(dr DeviceRole) (DeviceRole, error) {
+func (accessorGroup *AccessorGroup) AddDeviceRole(dr structs.DeviceRole) (structs.DeviceRole, error) {
 	response, err := accessorGroup.Database.Exec("INSERT INTO DeviceRole (deviceRoleID, deviceID, deviceRoleDefinitionID) VALUES(?,?,?)", dr.ID, dr.DeviceID, dr.DeviceRoleDefinitionID)
 	if err != nil {
-		return DeviceRole{}, err
+		return structs.DeviceRole{}, err
 	}
 
 	id, err := response.LastInsertId()
@@ -35,9 +33,9 @@ func (accessorGroup *AccessorGroup) AddDeviceRole(dr DeviceRole) (DeviceRole, er
 	return dr, nil
 }
 
-func exctractDeviceRoleData(rows *sql.Rows) ([]DeviceRole, error) {
-	var deviceroles []DeviceRole
-	var devicerole DeviceRole
+func exctractDeviceRoleData(rows *sql.Rows) ([]structs.DeviceRole, error) {
+	var deviceroles []structs.DeviceRole
+	var devicerole structs.DeviceRole
 	var id *int
 	var dID *int
 	var rID *int
@@ -45,7 +43,7 @@ func exctractDeviceRoleData(rows *sql.Rows) ([]DeviceRole, error) {
 	for rows.Next() {
 		err := rows.Scan(&id, &dID, &rID)
 		if err != nil {
-			return []DeviceRole{}, err
+			return []structs.DeviceRole{}, err
 		}
 
 		if id != nil {
@@ -62,7 +60,7 @@ func exctractDeviceRoleData(rows *sql.Rows) ([]DeviceRole, error) {
 
 	err := rows.Err()
 	if err != nil {
-		return []DeviceRole{}, err
+		return []structs.DeviceRole{}, err
 	}
 
 	return deviceroles, nil
