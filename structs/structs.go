@@ -77,25 +77,23 @@ type ConfigurationEvaluator struct {
 
 //Device represents a device object as found in the DB.
 type Device struct {
-	ID          int       `json:"id"`
-	Name        string    `json:"name"`
-	DisplayName string    `json:"display_name,omitempty"`
-	Address     string    `json:"address"`
-	Input       bool      `json:"input"`
-	Output      bool      `json:"output"`
-	Building    Building  `json:"building"`
-	Room        Room      `json:"room"`
-	Type        string    `json:"type"`
-	Class       string    `json:"class,omitempty"`
-	Power       string    `json:"power"`
-	Roles       []string  `json:"roles,omitempty"`
-	Blanked     *bool     `json:"blanked,omitempty"`
-	Volume      *int      `json:"volume,omitempty"`
-	Muted       *bool     `json:"muted,omitempty"`
-	PowerStates []string  `json:"powerstates,omitempty"`
-	Responding  bool      `json:"responding"`
-	Ports       []Port    `json:"ports,omitempty"`
-	Commands    []Command `json:"commands,omitempty"`
+	ID          int             `json:"id"`
+	Name        string          `json:"name"`
+	DisplayName string          `json:"display_name,omitempty"`
+	Address     string          `json:"address"`
+	Input       bool            `json:"input"`
+	Output      bool            `json:"output"`
+	Building    Building        `json:"building"`
+	Room        Room            `json:"room"`
+	Type        DeviceType      `json:"type"`
+	Class       DeviceClass     `json:"class,omitempty"`
+	Roles       []DeviceRoleDef `json:"roles,omitempty"`
+	PowerStates []PowerState    `json:"powerstates,omitempty"`
+	Blanked     *bool           `json:"blanked,omitempty"`
+	Volume      *int            `json:"volume,omitempty"`
+	Muted       *bool           `json:"muted,omitempty"`
+	Ports       []Port          `json:"ports,omitempty"`
+	Commands    []Command       `json:"commands,omitempty"`
 }
 
 //GetFullName reutrns the string of building + room + name
@@ -107,7 +105,7 @@ func (p *Device) HasRole(r string) bool {
 
 	for _, role := range p.Roles {
 
-		if r == role {
+		if r == role.Name {
 			return true
 		}
 
@@ -182,10 +180,13 @@ type DeviceClass struct {
 //Port represents a physical port on a device (HDMI, DP, Audio, etc.)
 //TODO: this corresponds to the PortConfiguration table in the database!!!
 type Port struct {
-	Source      string `json:"source"`
-	Name        string `json:"name"`
-	Destination string `json:"destination"`
-	Host        string `json:"host"`
+	MappingID     int    `json:"mapping-id"`
+	Source        string `json:"source"`
+	SourceID      int    `json:"source-id"`
+	Name          string `json:"name"`
+	Destination   string `json:"destination"`
+	DestinationID int    `json:"destination-id"`
+	Host          string `json:"host"`
 }
 
 type PortConfiguration struct {

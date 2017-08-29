@@ -125,13 +125,18 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
   	Buildings.name as buildingName,
   	Buildings.shortName as buildingShortname,
   	Buildings.description as buildingDescription,
-  	DeviceClasses.name as deviceType,
-	DeviceTypes.typeName as deviceClass
+	dc.deviceClassID as deviceTypeID,
+	dc.name as typeName,
+	dc.description as typeDesc,
+	dt.deviceTypeID as deviceClassID, 
+	dt.typeName as deviceClassName,
+	dt.typeDisplayName as deviceClassDisplayName,
+	dt.typeDescription as deviceClassDecsription
   	FROM Devices
   	JOIN Rooms on Rooms.roomID = Devices.roomID
   	JOIN Buildings on Buildings.buildingID = Devices.buildingID
-  	JOIN DeviceClasses on Devices.classID = DeviceClasses.deviceClassID
-	JOIN DeviceTypes on Devices.typeID = DeviceTypes.deviceTypeID
+  	JOIN DeviceClasses dc on Devices.classID = dc.deviceClassID
+	JOIN DeviceTypes dt on Devices.typeID = dt.deviceTypeID
     JOIN DeviceRole on DeviceRole.deviceID = Devices.deviceID
     JOIN DeviceRoleDefinition on DeviceRole.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID`
 
@@ -164,8 +169,13 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 			&device.Building.Name,
 			&device.Building.Shortname,
 			&device.Building.Description,
-			&device.Type,
-			&device.Class,
+			&device.Type.ID,
+			&device.Type.Name,
+			&device.Type.Description,
+			&device.Class.ID,
+			&device.Class.Name,
+			&device.Class.DisplayName,
+			&device.Class.Description,
 		)
 		if err != nil {
 			return []structs.Device{}, err
@@ -211,60 +221,64 @@ func (AccessorGroup *AccessorGroup) GetDeviceByID(deviceID int) (structs.Device,
 	return devices[0], nil
 }
 
-func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, error) {
+func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]structs.DeviceRoleDef, error) {
 	log.Printf("Getting roles by device ID: %v", deviceID)
-	query := `Select DeviceRoleDefinition.name From DeviceRoleDefinition 
-	JOIN DeviceRole dr on dr.deviceRoleDefinitionID = DeviceRoleDefinition.deviceRoleDefinitionID 
+	query := `Select drd.name, drd.deviceRoleDefinitionID, drd.description From DeviceRoleDefinition as drd
+	JOIN DeviceRole dr on dr.deviceRoleDefinitionID = drd.deviceRoleDefinitionID 
 	WHERE dr.deviceID = ?`
 
-	toReturn := []string{}
+	toReturn := []structs.DeviceRoleDef{}
 
 	rows, err := AccessorGroup.Database.Query(query, deviceID)
 	if err != nil {
-		return []string{}, err
+		return toReturn, err
 	}
 
-	log.Printf("Sheriff, this is no time to panic.")
 	defer rows.Close()
 
 	for rows.Next() {
-		var value string
+		var name string
+		var id int
+		var description string
 
-		err = rows.Scan(&value)
+		err = rows.Scan(&name, &id, &description)
 		if err != nil {
-			return []string{}, err
+			return toReturn, err
 		}
 
-		log.Printf("This is a perfect time to panic")
-		log.Printf("value: %s", value)
-		toReturn = append(toReturn, value)
+		toReturn = append(toReturn, structs.DeviceRoleDef{Name: name, ID: id, Description: description})
 	}
+	log.Printf("Done.")
 	return toReturn, nil
 }
 
 //GetPowerStatesByDeviceID gets the powerstates allowed for a given devices based on the
 //DevicePowerStates table in the DB.
-func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]string, error) {
-	query := `SELECT PowerStates.name FROM PowerStates
+func (AccessorGroup *AccessorGroup) GetPowerStatesByDeviceID(deviceID int) ([]structs.PowerState, error) {
+	log.Printf("Getting power states for device %v", deviceID)
+	query := `SELECT PowerStates.name, PowerStates.powerStateID, PowerStates.description FROM PowerStates
 	JOIN DevicePowerStates on DevicePowerStates.powerStateID = PowerStates.powerStateID
 	Where DevicePowerStates.deviceID = ?`
 
-	toReturn := []string{}
+	toReturn := []structs.PowerState{}
 	rows, err := AccessorGroup.Database.Query(query, deviceID)
 	if err != nil {
-		return []string{}, err
+		return []structs.PowerState{}, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var value string
+		var name string
+		var id int
+		var description string
 
-		err := rows.Scan(&value)
+		err := rows.Scan(&name, &id, &description)
 		if err != nil {
-			return []string{}, err
+			return toReturn, err
 		}
-		toReturn = append(toReturn, value)
+		toReturn = append(toReturn, structs.PowerState{Name: name, ID: id, Description: description})
 	}
+	log.Printf("Done.")
 	return toReturn, nil
 }
 
@@ -342,9 +356,10 @@ func (accessorGroup *AccessorGroup) GetDeviceCommandsByBuildingAndRoomAndName(bu
 /*
  */
 func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(buildingShortname string, roomName string, deviceName string) ([]structs.Port, error) {
+	log.Printf("Getting all ports for %v-%v-%v", buildingShortname, roomName, deviceName)
 	allPorts := []structs.Port{}
 
-	rows, err := accessorGroup.Database.Query(`SELECT srcDevice.Name as sourceName, Ports.name as portName, destDevice.Name as DestinationDevice, hostDevice.name as HostDevice FROM Ports
+	rows, err := accessorGroup.Database.Query(`SELECT PortConfiguration.portConfigurationID, srcDevice.Name as sourceName, srcDevice.deviceID as sourceID, Ports.name as portName, destDevice.Name as DestinationDevice, destDevice.deviceID as DestinationID, hostDevice.name as HostDevice FROM Ports
     JOIN PortConfiguration ON Ports.PortID = PortConfiguration.PortID
     JOIN Devices as srcDevice on srcDevice.DeviceID = PortConfiguration.sourceDeviceID
     JOIN Devices as destDevice on destDevice.DeviceID = PortConfiguration.destinationDeviceID
@@ -361,7 +376,7 @@ func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(build
 	for rows.Next() {
 		port := structs.Port{}
 
-		err := rows.Scan(&port.Source, &port.Name, &port.Destination, &port.Host)
+		err := rows.Scan(&port.MappingID, &port.Source, &port.SourceID, &port.Name, &port.Destination, &port.DestinationID, &port.Host)
 		if err != nil {
 			log.Print(err)
 			return []structs.Port{}, err
@@ -369,6 +384,7 @@ func (accessorGroup *AccessorGroup) GetDevicePortsByBuildingAndRoomAndName(build
 
 		allPorts = append(allPorts, port)
 	}
+	log.Printf("Done.")
 
 	return allPorts, nil
 }
@@ -436,15 +452,27 @@ func (accessorGroup *AccessorGroup) PutDeviceAttributeByDeviceAndRoomAndBuilding
 func (accessorGroup *AccessorGroup) AddDevice(d structs.Device) (structs.Device, error) {
 	log.Printf("Adding device %v to room %v in building %v", d.Name, d.Room.Name, d.Building.Shortname)
 
+	var dt structs.DeviceType
+	var dc structs.DeviceClass
+	var err error
+
 	// get device type string, put it into d.Type
-	dt, err := accessorGroup.GetDeviceTypeByName(d.Type)
-	if err != nil {
-		return structs.Device{}, err
+	if d.Type.ID == 0 {
+		dt, err = accessorGroup.GetDeviceTypeByName(d.Type.Name)
+		if err != nil {
+			return structs.Device{}, err
+		}
+	} else {
+		dt = d.Type
 	}
 
-	dc, err := accessorGroup.GetDeviceClassByName(d.Class)
-	if err != nil {
-		return structs.Device{}, err
+	if d.Class.ID == 0 {
+		dc, err = accessorGroup.GetDeviceClassByName(d.Class.Name)
+		if err != nil {
+			return structs.Device{}, err
+		}
+	} else {
+		dc = d.Class
 	}
 
 	// if device already exists in database, stop
@@ -469,10 +497,16 @@ func (accessorGroup *AccessorGroup) AddDevice(d structs.Device) (structs.Device,
 	// insert the roles into the DeviceRole table
 	var deviceroles []structs.DeviceRole
 	for _, role := range d.Roles {
-		r, err := accessorGroup.GetDeviceRoleDefByName(role)
-		if err != nil {
-			return structs.Device{}, fmt.Errorf("device role definition: %v does not exist", role)
+		var r structs.DeviceRoleDef
+		if role.ID == 0 {
+			r, err = accessorGroup.GetDeviceRoleDefByName(role.Name)
+			if err != nil {
+				return structs.Device{}, fmt.Errorf("device role definition: %v does not exist", role)
+			}
+		} else {
+			r = role
 		}
+
 		var dr structs.DeviceRole
 		dr.DeviceID = d.ID
 		dr.DeviceRoleDefinitionID = r.ID
@@ -483,10 +517,18 @@ func (accessorGroup *AccessorGroup) AddDevice(d structs.Device) (structs.Device,
 	// insert the powerstates into the DevicePowerStates table
 	var devicepowerstates []structs.DevicePowerState
 	for _, ps := range d.PowerStates {
-		p, err := accessorGroup.GetPowerStateByName(ps)
-		if err != nil {
-			return structs.Device{}, fmt.Errorf("powerstate: %v does not exist", ps)
+
+		var p structs.PowerState
+
+		if ps.ID == 0 {
+			p, err = accessorGroup.GetPowerStateByName(ps.Name)
+			if err != nil {
+				return structs.Device{}, fmt.Errorf("powerstate: %v does not exist", ps)
+			}
+		} else {
+			p = ps
 		}
+
 		var dps structs.DevicePowerState
 		dps.DeviceID = d.ID
 		dps.PowerStateID = p.ID
