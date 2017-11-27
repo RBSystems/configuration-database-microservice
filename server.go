@@ -6,8 +6,6 @@ import (
 	"os"
 
 	"github.com/byuoitav/authmiddleware"
-	"github.com/byuoitav/configuration-database-microservice/accessors"
-	"github.com/byuoitav/configuration-database-microservice/handlers"
 	"github.com/byuoitav/device-monitoring-microservice/statusinfrastructure"
 	"github.com/jessemillar/health"
 	"github.com/labstack/echo"
@@ -45,8 +43,6 @@ func main() {
 	secure.GET("/buildings/:building/rooms/:room/devices/roles/:role", handlerGroup.GetDevicesByBuildingAndRoomAndRole)
 	secure.GET("/buildings/:building/rooms/:room/devices/:device", handlerGroup.GetDeviceByBuildingAndRoomAndName)
 
-	secure.PUT("/buildings/:building/rooms/:room/devices/:device/attributes/:attribute/:value", handlerGroup.PutDeviceAttributeByDeviceAndRoomAndBuilding)
-
 	secure.GET("/rooms", handlerGroup.GetAllRooms)
 	secure.GET("/rooms/designations", handlerGroup.GetAllRoomDesignations)
 	secure.GET("/rooms/id/:id", handlerGroup.GetRoomByID)
@@ -72,6 +68,7 @@ func main() {
 
 	secure.PUT("/devices/id/:deviceID/typeid", handlerGroup.SetDeviceTypeByID)
 	secure.PUT("/devices/attribute", handlerGroup.SetDeviceAttribute)
+	secure.PUT("/buildings/:building/rooms/:room/devices/:device/attributes/:attribute/:value", handlerGroup.PutDeviceAttributeByDeviceAndRoomAndBuilding)
 
 	secure.POST("/buildings/:building", handlerGroup.AddBuilding)
 	secure.POST("/buildings/:building/rooms/:room", handlerGroup.AddRoom)
