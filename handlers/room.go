@@ -19,6 +19,15 @@ func (handlerGroup *HandlerGroup) GetAllRooms(context echo.Context) error {
 	return context.JSON(http.StatusOK, response)
 }
 
+func (handlerGroup *HandlerGroup) GetAllRoomDesignations(context echo.Context) error {
+	response, err := handlerGroup.Accessors.GetAllRoomDesignations()
+	if err != nil {
+		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
 //GetRoomByID returns the room with a given ID.
 func (handlerGroup *HandlerGroup) GetRoomByID(context echo.Context) error {
 	id, err := strconv.Atoi(context.Param("id"))
