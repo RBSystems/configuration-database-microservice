@@ -43,7 +43,7 @@ func (handlerGroup *HandlerGroup) GetBuildingByShortname(context echo.Context) e
 	return context.JSON(http.StatusOK, response)
 }
 
-// AddBuilding asdf
+// AddBuilding
 func (handlerGroup *HandlerGroup) AddBuilding(context echo.Context) error {
 	var building structs.Building
 	err := context.Bind(&building)
