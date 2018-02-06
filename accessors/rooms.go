@@ -20,7 +20,7 @@ func (accessorGroup *AccessorGroup) GetAllRooms() ([]structs.Room, error) {
 	for rows.Next() {
 		building := structs.Building{}
 
-		err = rows.Scan(&building.ID, &building.Name, &building.Shortname)
+		err = rows.Scan(&building.ID, &building.Name, &building.Shortname, &building.Description)
 		if err != nil {
 			return []structs.Room{}, err
 		}
