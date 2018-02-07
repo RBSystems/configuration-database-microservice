@@ -56,6 +56,26 @@ func (handlerGroup *HandlerGroup) GetRoomsByBuilding(context echo.Context) error
 	return context.JSON(http.StatusOK, response)
 }
 
+func (handlerGroup *HandlerGroup) GetDevicesByRoomIdAndRoleId(context echo.Context) error {
+
+	roomId, err := strconv.Atoi(context.Param("roomId"))
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, "invalid room id")
+	}
+
+	roleId, err := strconv.Atoi(context.Param("roleId"))
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, "invalid role id")
+	}
+
+	devices, err := handlerGroup.Accessors.GetDevicesByRoomIdAndRoleId(roomId, roleId)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, devices)
+}
+
 //GetRoomByBuildingAndName returns the room by building and name
 func (handlerGroup *HandlerGroup) GetRoomByBuildingAndName(context echo.Context) error {
 	response, err := handlerGroup.Accessors.GetRoomByBuildingAndName(context.Param("building"), context.Param("room"))
