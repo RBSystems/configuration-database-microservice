@@ -67,7 +67,7 @@ func (accessorGroup *AccessorGroup) GetAllRoomDesignations() ([]string, error) {
 func (accessorGroup *AccessorGroup) GetRoomByID(id int) (structs.Room, error) {
 	room := &structs.Room{}
 
-	err := accessorGroup.Database.QueryRow("SELECT * FROM rooms WHERE id=?", id).Scan(&room.ID, &room.Name, &room.Building.ID, &room.Description, &room.RoomDesignation)
+	err := accessorGroup.Database.QueryRow("SELECT * FROM Rooms WHERE roomID=?", id).Scan(&room.ID, &room.Name, &room.Building.ID, &room.Description, &room.ConfigurationID, &room.RoomDesignation)
 	if err != nil {
 		return structs.Room{}, err
 	}

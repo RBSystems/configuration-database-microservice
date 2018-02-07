@@ -221,6 +221,16 @@ func (AccessorGroup *AccessorGroup) GetDevicesByRoomIdAndRoleId(roomId, roleId i
 	return devices, nil
 }
 
+func (AccessorGroup *AccessorGroup) GetDevicesByRoomId(roomId int) ([]structs.Device, error) {
+
+	devices, err := AccessorGroup.GetDevicesByQuery("WHERE Rooms.roomID = ?", roomId)
+	if err != nil {
+		return []structs.Device{}, err
+	}
+
+	return devices, nil
+}
+
 func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, error) {
 	log.Printf("Getting roles by device ID: %v", deviceID)
 	query := `Select DeviceRoleDefinition.name From DeviceRoleDefinition 
