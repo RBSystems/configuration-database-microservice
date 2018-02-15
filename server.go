@@ -71,6 +71,7 @@ func main() {
 	secure.GET("/devices/powerstates", handlerGroup.GetPowerStates)
 	secure.GET("/devices/microservices", handlerGroup.GetMicroservices)
 	secure.GET("/devices/roledefinitions", handlerGroup.GetDeviceRoleDefs)
+	secure.GET("/devices/roledefinitions/:id", handlerGroup.GetDeviceRoleDefsById)
 
 	secure.GET("/classes/:class/ports", handlerGroup.GetPortsByDeviceType)
 
