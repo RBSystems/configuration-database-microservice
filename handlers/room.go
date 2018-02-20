@@ -35,6 +35,8 @@ func (handlerGroup *HandlerGroup) GetRoomByID(context echo.Context) error {
 		return err
 	}
 
+	log.Printf("[handlers] searching for room with ID: %s", id)
+
 	response, err := handlerGroup.Accessors.GetRoomByID(id)
 	if err != nil {
 		return context.String(http.StatusBadRequest, err.Error())
@@ -54,6 +56,41 @@ func (handlerGroup *HandlerGroup) GetRoomsByBuilding(context echo.Context) error
 	}
 
 	return context.JSON(http.StatusOK, response)
+}
+
+func (handlerGroup *HandlerGroup) GetDevicesByRoomIdAndRoleId(context echo.Context) error {
+
+	roomId, err := strconv.Atoi(context.Param("roomId"))
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, "invalid room id")
+	}
+
+	roleId, err := strconv.Atoi(context.Param("roleId"))
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, "invalid role id")
+	}
+
+	devices, err := handlerGroup.Accessors.GetDevicesByRoomIdAndRoleId(roomId, roleId)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, devices)
+}
+
+func (handlerGroup *HandlerGroup) GetDevicesByRoomId(context echo.Context) error {
+
+	roomId, err := strconv.Atoi(context.Param("roomId"))
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	devices, err := handlerGroup.Accessors.GetDevicesByRoomId(roomId)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, devices)
 }
 
 //GetRoomByBuildingAndName returns the room by building and name

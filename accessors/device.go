@@ -211,6 +211,26 @@ func (AccessorGroup *AccessorGroup) GetDeviceByID(deviceID int) (structs.Device,
 	return devices[0], nil
 }
 
+func (AccessorGroup *AccessorGroup) GetDevicesByRoomIdAndRoleId(roomId, roleId int) ([]structs.Device, error) {
+
+	devices, err := AccessorGroup.GetDevicesByQuery("WHERE Rooms.roomID = ? AND DeviceRoleDefinition.deviceRoleDefinitionID = ?", roomId, roleId)
+	if err != nil {
+		return []structs.Device{}, err
+	}
+
+	return devices, nil
+}
+
+func (AccessorGroup *AccessorGroup) GetDevicesByRoomId(roomId int) ([]structs.Device, error) {
+
+	devices, err := AccessorGroup.GetDevicesByQuery("WHERE Rooms.roomID = ?", roomId)
+	if err != nil {
+		return []structs.Device{}, err
+	}
+
+	return devices, nil
+}
+
 func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, error) {
 	log.Printf("Getting roles by device ID: %v", deviceID)
 	query := `Select DeviceRoleDefinition.name From DeviceRoleDefinition 
