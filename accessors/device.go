@@ -83,7 +83,7 @@ func (accessorGroup *AccessorGroup) SetDeviceAttribute(info structs.DeviceAttrib
 	log.Printf("Done.")
 
 	log.Printf("Getting the device to return")
-	return accessorGroup.GetDeviceByID(info.DeviceID)
+	return accessorGroup.GetDeviceById(info.DeviceID)
 }
 
 /*
@@ -197,7 +197,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 	return allDevices, nil
 }
 
-func (AccessorGroup *AccessorGroup) GetDeviceByID(deviceID int) (structs.Device, error) {
+func (AccessorGroup *AccessorGroup) GetDeviceById(deviceID int) (structs.Device, error) {
 	log.Printf("Getting device with deviceID %v", deviceID)
 
 	devices, err := AccessorGroup.GetDevicesByQuery(" WHERE Devices.DeviceID = ?", deviceID)

@@ -39,7 +39,7 @@ func (handlerGroup *HandlerGroup) SetDeviceTypeByID(context echo.Context) error 
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	device, err := handlerGroup.Accessors.GetDeviceByID(deviceID)
+	device, err := handlerGroup.Accessors.GetDeviceById(deviceID)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
