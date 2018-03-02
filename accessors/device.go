@@ -121,6 +121,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
   	Rooms.roomID,
   	Rooms.name as roomName,
   	Rooms.description as roomDescription,
+	Rooms.roomDesignation as roomDesignation,
   	Buildings.buildingID,
   	Buildings.name as buildingName,
   	Buildings.shortName as buildingShortname,
@@ -160,6 +161,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 			&device.Room.ID,
 			&device.Room.Name,
 			&device.Room.Description,
+			&device.Room.RoomDesignation,
 			&device.Building.ID,
 			&device.Building.Name,
 			&device.Building.Shortname,
@@ -205,7 +207,7 @@ func (AccessorGroup *AccessorGroup) GetDeviceById(deviceID int) (structs.Device,
 		return structs.Device{}, err
 	}
 	if len(devices) < 1 {
-		return structs.Device{}, errors.New(fmt.Sprintf("No devices found for ID %v", deviceID))
+		return structs.Device{}, errors.New(fmt.Sprintf("No devices found for ID %d", deviceID))
 	}
 
 	return devices[0], nil
