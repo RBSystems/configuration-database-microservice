@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/byuoitav/configuration-database-microservice/structs"
+	"github.com/fatih/color"
 )
 
 //SetDeviceAttribute is used to set a field on the DEVICES TABLE.
@@ -454,7 +455,7 @@ func (accessorGroup *AccessorGroup) AddDevice(d structs.Device) (structs.Device,
 	}
 
 	// insert into devices
-	result, err := accessorGroup.Database.Exec("Insert into Devices (name, address, input, output, buildingID, roomID, classID, typeID) VALUES (?,?,?,?,?,?,?,?)", d.Name, d.Address, d.Input, d.Output, d.Building.ID, d.Room.ID, dt.ID, dc.ID)
+	result, err := accessorGroup.Database.Exec("Insert into Devices (name, address, input, output, buildingID, roomID, classID, typeID, displayName) VALUES (?,?,?,?,?,?,?,?,?)", d.Name, d.Address, d.Input, d.Output, d.Building.ID, d.Room.ID, dt.ID, dc.ID, dc.DisplayName)
 	if err != nil {
 		return structs.Device{}, err
 	}
@@ -465,6 +466,7 @@ func (accessorGroup *AccessorGroup) AddDevice(d structs.Device) (structs.Device,
 	}
 
 	d.ID = int(id)
+	log.Printf(color.HiGreenString("NewID: %v", d.ID))
 
 	// insert the roles into the DeviceRole table
 	var deviceroles []structs.DeviceRole
@@ -494,90 +496,6 @@ func (accessorGroup *AccessorGroup) AddDevice(d structs.Device) (structs.Device,
 		devicepowerstates = append(devicepowerstates, dps)
 	}
 
-	// insert the ports into the PortConfiguration table
-	var portconfigurations []structs.PortConfiguration
-	for _, port := range d.Ports {
-		// get portID
-		pt, err := accessorGroup.GetPortTypeByName(port.Name)
-		if err != nil {
-			return structs.Device{}, fmt.Errorf("port type: %v does not exist", port.Name)
-		}
-
-		// get sourceDeviceID
-		sd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Source)
-		if err != nil {
-			return structs.Device{}, fmt.Errorf("source device %v does not exist in this room", port.Source)
-		}
-
-		var p structs.PortConfiguration
-
-		if port.Host == port.Destination {
-			p.DestinationDeviceID = d.ID
-		} else {
-
-			log.Printf("source: %v", sd)
-			log.Printf("%+v", port.Destination)
-
-			// get destinationDeviceID
-			dd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Destination)
-			if err != nil {
-				return structs.Device{}, fmt.Errorf("destination device %v does not exist in this room", port.Destination)
-			}
-			log.Printf("Dest: %v", dd)
-
-			// get hostDeviceID
-			//		hd, err := accessorGroup.GetDeviceByBuildingAndRoomAndName(d.Building.Shortname, d.Room.Name, port.Host)
-			//		if err != nil {
-			//			return Device{}, fmt.Errorf("host device %v does not exist in this room", port.Host)
-			//		}
-			p.DestinationDeviceID = dd.ID
-
-		}
-
-		p.PortID = pt.ID
-		p.SourceDeviceID = sd.ID
-		//		p.HostDeviceID = hd.ID
-		p.HostDeviceID = d.ID // always the current device you are adding?
-		log.Printf("%+v", p)
-
-		portconfigurations = append(portconfigurations, p)
-	}
-
-	// insert the comamnds into the DeviceCommands table
-	var devicecommands []structs.DeviceCommand
-	for index, command := range d.Commands {
-		// get commandID
-		rc, err := accessorGroup.GetRawCommandByName(command.Name)
-		if err != nil {
-			return structs.Device{}, fmt.Errorf("raw command: %v does not exist", command.Name)
-		}
-
-		// get endpoint
-		ep, err := accessorGroup.GetEndpointByName(command.Endpoint.Name)
-		if err != nil {
-			return structs.Device{}, fmt.Errorf("endpoint: %v does not exist", command.Endpoint.Name)
-		}
-
-		// get microserviceID
-		mc, err := accessorGroup.GetMicroserviceByAddress(command.Microservice)
-		if err != nil {
-			return structs.Device{}, fmt.Errorf("microservice address: %v does not exist", command.Microservice)
-		}
-
-		var dc structs.DeviceCommand
-		dc.DeviceID = d.ID
-		dc.CommandID = rc.ID
-		dc.MicroserviceID = mc.ID
-		dc.EndpointID = ep.ID
-		dc.Enabled = true // figure out where to get this from
-
-		devicecommands = append(devicecommands, dc)
-
-		// add the right things back into d
-		d.Commands[index].Endpoint.Name = ep.Name
-		d.Commands[index].Endpoint.Path = ep.Path
-	}
-
 	// insert everything else
 	for _, dr := range deviceroles {
 		_, err = accessorGroup.AddDeviceRole(dr)
@@ -588,20 +506,6 @@ func (accessorGroup *AccessorGroup) AddDevice(d structs.Device) (structs.Device,
 
 	for _, ps := range devicepowerstates {
 		_, err = accessorGroup.AddDevicePowerState(ps)
-		if err != nil {
-			return structs.Device{}, err
-		}
-	}
-
-	for _, pc := range portconfigurations {
-		_, err = accessorGroup.AddPortConfiguration(pc)
-		if err != nil {
-			return structs.Device{}, err
-		}
-	}
-
-	for _, dc := range devicecommands {
-		_, err = accessorGroup.AddDeviceCommand(dc)
 		if err != nil {
 			return structs.Device{}, err
 		}
