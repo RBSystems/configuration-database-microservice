@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
@@ -34,4 +35,20 @@ func (handlerGroup *HandlerGroup) AddDeviceRoleDef(context echo.Context) error {
 	}
 
 	return context.JSON(http.StatusOK, response)
+}
+
+func (handlerGroup *HandlerGroup) GetDeviceRoleDefsById(context echo.Context) error {
+
+	id, err := strconv.Atoi(context.Param("id"))
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	response, err := handlerGroup.Accessors.GetDeviceRoleDefByID(id)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+
 }

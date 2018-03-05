@@ -84,7 +84,7 @@ func (accessorGroup *AccessorGroup) SetDeviceAttribute(info structs.DeviceAttrib
 	log.Printf("Done.")
 
 	log.Printf("Getting the device to return")
-	return accessorGroup.GetDeviceByID(info.DeviceID)
+	return accessorGroup.GetDeviceById(info.DeviceID)
 }
 
 /*
@@ -122,6 +122,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
   	Rooms.roomID,
   	Rooms.name as roomName,
   	Rooms.description as roomDescription,
+	Rooms.roomDesignation as roomDesignation,
   	Buildings.buildingID,
   	Buildings.name as buildingName,
   	Buildings.shortName as buildingShortname,
@@ -161,6 +162,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 			&device.Room.ID,
 			&device.Room.Name,
 			&device.Room.Description,
+			&device.Room.RoomDesignation,
 			&device.Building.ID,
 			&device.Building.Name,
 			&device.Building.Shortname,
@@ -198,7 +200,7 @@ func (accessorGroup *AccessorGroup) GetDevicesByQuery(query string, parameters .
 	return allDevices, nil
 }
 
-func (AccessorGroup *AccessorGroup) GetDeviceByID(deviceID int) (structs.Device, error) {
+func (AccessorGroup *AccessorGroup) GetDeviceById(deviceID int) (structs.Device, error) {
 	log.Printf("Getting device with deviceID %v", deviceID)
 
 	devices, err := AccessorGroup.GetDevicesByQuery(" WHERE Devices.DeviceID = ?", deviceID)
@@ -206,10 +208,30 @@ func (AccessorGroup *AccessorGroup) GetDeviceByID(deviceID int) (structs.Device,
 		return structs.Device{}, err
 	}
 	if len(devices) < 1 {
-		return structs.Device{}, errors.New(fmt.Sprintf("No devices found for ID %v", deviceID))
+		return structs.Device{}, errors.New(fmt.Sprintf("No devices found for ID %d", deviceID))
 	}
 
 	return devices[0], nil
+}
+
+func (AccessorGroup *AccessorGroup) GetDevicesByRoomIdAndRoleId(roomId, roleId int) ([]structs.Device, error) {
+
+	devices, err := AccessorGroup.GetDevicesByQuery("WHERE Rooms.roomID = ? AND DeviceRoleDefinition.deviceRoleDefinitionID = ?", roomId, roleId)
+	if err != nil {
+		return []structs.Device{}, err
+	}
+
+	return devices, nil
+}
+
+func (AccessorGroup *AccessorGroup) GetDevicesByRoomId(roomId int) ([]structs.Device, error) {
+
+	devices, err := AccessorGroup.GetDevicesByQuery("WHERE Rooms.roomID = ?", roomId)
+	if err != nil {
+		return []structs.Device{}, err
+	}
+
+	return devices, nil
 }
 
 func (AccessorGroup *AccessorGroup) GetRolesByDeviceID(deviceID int) ([]string, error) {

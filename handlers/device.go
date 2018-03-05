@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
@@ -38,6 +40,21 @@ func (handlerGroup *HandlerGroup) GetDevicesByBuildingAndRoomAndRole(context ech
 	response, err := handlerGroup.Accessors.GetDevicesByBuildingAndRoomAndRole(context.Param("building"), context.Param("room"), context.Param("role"))
 	if err != nil {
 		return context.String(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
+func (handlerGroup *HandlerGroup) GetDeviceById(context echo.Context) error {
+
+	deviceId, err := strconv.Atoi(context.Param("id"))
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, fmt.Sprintf("invalid device ID: %s", err.Error()))
+	}
+
+	response, err := handlerGroup.Accessors.GetDeviceById(deviceId)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	return context.JSON(http.StatusOK, response)

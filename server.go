@@ -52,6 +52,10 @@ func main() {
 	secure.GET("/rooms/id/:id", handlerGroup.GetRoomByID)
 	secure.GET("/rooms/buildings/:building", handlerGroup.GetRoomsByBuilding)
 
+	//need to address these
+	secure.GET("/rooms/:roomId/roles/:roleId", handlerGroup.GetDevicesByRoomIdAndRoleId)
+	secure.GET("/rooms/:roomId/devices", handlerGroup.GetDevicesByRoomId)
+
 	secure.GET("/devices/roles/:role/types/:type", handlerGroup.GetDevicesByRoleAndType)
 	secure.GET("/deployment/devices/roles/:role/types/:type/:branch", handlerGroup.GetBranchDevicesByRoleAndType)
 
@@ -67,6 +71,8 @@ func main() {
 	secure.GET("/devices/powerstates", handlerGroup.GetPowerStates)
 	secure.GET("/devices/microservices", handlerGroup.GetMicroservices)
 	secure.GET("/devices/roledefinitions", handlerGroup.GetDeviceRoleDefs)
+	secure.GET("/devices/roledefinitions/:id", handlerGroup.GetDeviceRoleDefsById)
+	secure.GET("/devices/:id", handlerGroup.GetDeviceById)
 
 	secure.GET("/classes/:class/ports", handlerGroup.GetPortsByDeviceType)
 

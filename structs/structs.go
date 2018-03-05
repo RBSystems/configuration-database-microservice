@@ -127,6 +127,11 @@ func HasRole(d Device, r string) bool {
 	return false
 }
 
+func RoleId(device Device, roleId int) bool {
+
+	return false
+}
+
 func (p *Device) GetCommandByName(commandName string) Command {
 
 	for _, command := range p.Commands {
