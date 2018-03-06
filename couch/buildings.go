@@ -9,10 +9,10 @@ import (
 )
 
 //GetBuildingByID gets the company's building with the corresponding ID from the couch database
-func GetBuildingByID(companyID, id string) (structs.Building, error) {
+func GetBuildingByID(id string) (structs.Building, error) {
 
 	toReturn := structs.Building{}
-	err := MakeRequest("GET", fmt.Sprintf("%v_buildings/%v", companyID, id), "", nil, &toReturn)
+	err := MakeRequest("GET", fmt.Sprintf("buildings/%v", id), "", nil, &toReturn)
 
 	if err != nil {
 		msg := fmt.Sprintf("[couch] Could not get building %v. %v", id, err.Error())
@@ -23,13 +23,13 @@ func GetBuildingByID(companyID, id string) (structs.Building, error) {
 }
 
 //GetAllBuildings returns all buildings for the company specified
-func GetAllBuildings(companyID string) ([]structs.Building, error) {
+func GetAllBuildings() ([]structs.Building, error) {
 
 	toFill := structs.BuildingQueryResponse{}
 
-	err := MakeRequest("GET", fmt.Sprintf("%v_buildings/_all_docs?limit=1000&include_docs=true", companyID), "", nil, &toFill)
+	err := MakeRequest("GET", fmt.Sprintf("buildings/_all_docs?limit=1000&include_docs=true"), "", nil, &toFill)
 	if err != nil {
-		msg := fmt.Sprintf("[couch] Could not get buildings for company %v. %v", companyID, err.Error())
+		msg := fmt.Sprintf("[couch] Could not get buildings. %v", err.Error())
 		log.Printf(color.HiRedString(msg))
 	}
 

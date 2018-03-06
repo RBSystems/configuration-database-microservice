@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/byuoitav/configuration-datbase-microservice/handlers"
+	"github.com/byuoitav/configuration-database-microservice/handlers"
 	"github.com/byuoitav/device-monitoring-microservice/statusinfrastructure"
 	"github.com/labstack/echo"
 )
@@ -14,10 +14,10 @@ func main() {
 
 	router.GET("/mstatus", GetStatus)
 
-	secure.GET("/buildings", handlers.GetAllBuildings)
-	secure.GET("/buildings/:buildingid", handlers.GetBuildingByID)
-	secure.GET("/buildings/:buildingid/rooms", handlers.GetRoomsByBuilding)
-	secure.GET("/buildings/:buildingid/rooms/:roomid", handlers.GetRoomByBuildingAndName)
+	router.GET("/buildings", handlers.GetAllBuildings)
+	router.GET("/buildings/:buildingid", handlers.GetBuildingByID)
+	router.GET("/buildings/:buildingid/rooms", handlers.GetRoomsByBuilding)
+	router.GET("/buildings/:buildingid/rooms/:roomid", handlers.GetRoomByBuildingAndName)
 	router.GET("/buildings/:buildingid/rooms/:roomid/devices", handlers.GetDevicesByRoom)
 	router.GET("/buildings/:buildingid/rooms/:roomid/devices/:deviceid", handlers.GetDeviceByID)
 

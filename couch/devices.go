@@ -9,10 +9,10 @@ import (
 	"github.com/fatih/color"
 )
 
-func GetDeviceByID(companyID, ID string) (structs.Device, error) {
+func GetDeviceByID(ID string) (structs.Device, error) {
 
 	toReturn := structs.Device{}
-	err := MakeRequest("GET", fmt.Sprintf("%v_devices/%v", companyID, ID), "", nil, &toReturn)
+	err := MakeRequest("GET", fmt.Sprintf("devices/%v", ID), "", nil, &toReturn)
 
 	if err != nil {
 		msg := fmt.Sprintf("[couch] Could not get Device %v. %v", ID, err.Error())
@@ -22,7 +22,7 @@ func GetDeviceByID(companyID, ID string) (structs.Device, error) {
 	return toReturn, err
 }
 
-func GetDevicesByRoom(companyID, roomID string) ([]structs.Device, error) {
+func GetDevicesByRoom(roomID string) ([]structs.Device, error) {
 	//we query from the - to . (the character after - to get all the elements in the room
 	query := IDPrefixQuery{}
 	query.Selector.ID.GT = fmt.Sprintf("%v-", roomID)
@@ -36,7 +36,7 @@ func GetDevicesByRoom(companyID, roomID string) ([]structs.Device, error) {
 	}
 
 	toReturn := structs.DeviceQueryResponse{}
-	err = MakeRequest("POST", fmt.Sprintf("%v_devices/_find", companyID), "application/json", b, &toReturn)
+	err = MakeRequest("POST", fmt.Sprintf("devices/_find"), "application/json", b, &toReturn)
 
 	if err != nil {
 		msg := fmt.Sprintf("[couch] Could not get room %v. %v", roomID, err.Error())

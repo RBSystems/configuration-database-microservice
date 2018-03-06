@@ -9,18 +9,13 @@ import (
 )
 
 func GetDevicesByRoom(context echo.Context) error {
-	id, err := GetCompanyIDFromJWT(context)
-	if err != nil {
-		return context.JSON(http.StatusBadRequest, err.Error())
-	}
-
 	roomID := context.Param("roomid")
 	buildingID := context.Param("buildingid")
 	if len(roomID) < 1 || len(buildingID) < 1 {
 		return context.JSON(http.StatusBadRequest, "Need a roomid and buildingid")
 	}
 
-	devs, err := couch.GetDevicesByRoom(id, buildingID+"-"+roomID)
+	devs, err := couch.GetDevicesByRoom(buildingID + "-" + roomID)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -29,11 +24,6 @@ func GetDevicesByRoom(context echo.Context) error {
 }
 
 func GetDeviceByID(context echo.Context) error {
-	id, err := GetCompanyIDFromJWT(context)
-	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
-	}
-
 	room := context.Param("roomid")
 	building := context.Param("buildingid")
 	dev := context.Param("deviceid")
@@ -41,7 +31,7 @@ func GetDeviceByID(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, "Need a roomid and buildingid")
 	}
 
-	device, err := couch.GetDeviceByID(id, fmt.Sprintf("%v-%v-%v", building, room, dev))
+	device, err := couch.GetDeviceByID(fmt.Sprintf("%v-%v-%v", building, room, dev))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}

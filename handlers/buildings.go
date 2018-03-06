@@ -9,12 +9,7 @@ import (
 
 func GetAllBuildings(context echo.Context) error {
 
-	id, err := GetCompanyIDFromJWT(context)
-	if err != nil {
-		return context.JSON(http.StatusBadRequest, err)
-	}
-
-	buildings, err := couch.GetAllBuildings(id)
+	buildings, err := couch.GetAllBuildings()
 	if err != nil {
 		//there's an error
 		return context.JSON(http.StatusInternalServerError, err)
@@ -24,18 +19,12 @@ func GetAllBuildings(context echo.Context) error {
 }
 
 func GetBuildingByID(context echo.Context) error {
-
-	id, err := GetCompanyIDFromJWT(context)
-	if err != nil {
-		return context.JSON(http.StatusBadRequest, err)
-	}
-
 	buildingID := context.Param("buildingid")
 	if len(buildingID) <= 0 {
 		return context.JSON(http.StatusBadRequest, "No building ID")
 	}
 
-	building, err := couch.GetBuildingByID(id, buildingID)
+	building, err := couch.GetBuildingByID(buildingID)
 	if err != nil {
 		//there's an error
 		return context.JSON(http.StatusInternalServerError, err)

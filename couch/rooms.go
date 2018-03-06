@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/fatih/color"
-	"gitlab.com/xuther-technology/control-db-ms/structs"
 )
 
-func GetRoomByID(companyID, id string) (structs.Room, error) {
+func GetRoomByID(id string) (structs.Room, error) {
 
 	toReturn := structs.Room{}
-	err := MakeRequest("GET", fmt.Sprintf("%v_rooms/%v", companyID, id), "", nil, &toReturn)
+	err := MakeRequest("GET", fmt.Sprintf("rooms/%v", id), "", nil, &toReturn)
 
 	if err != nil {
 		msg := fmt.Sprintf("[couch] Could not get room %v. %v", id, err.Error())
@@ -25,7 +25,7 @@ func GetRoomByID(companyID, id string) (structs.Room, error) {
 	return toReturn, err
 }
 
-func GetRoomsByBuilding(companyID, buildingID string) ([]structs.Room, error) {
+func GetRoomsByBuilding(buildingID string) ([]structs.Room, error) {
 	//we query from the - to . (the character after - to get all the elements in the room
 	query := IDPrefixQuery{}
 	query.Selector.ID.GT = fmt.Sprintf("%v-", buildingID)
@@ -41,7 +41,7 @@ func GetRoomsByBuilding(companyID, buildingID string) ([]structs.Room, error) {
 	log.Printf("%s", b)
 
 	toReturn := structs.RoomQueryResponse{}
-	err = MakeRequest("POST", fmt.Sprintf("%v_rooms/_find", companyID), "application/json", b, &toReturn)
+	err = MakeRequest("POST", fmt.Sprintf("rooms/_find"), "application/json", b, &toReturn)
 
 	if err != nil {
 		msg := fmt.Sprintf("[couch] Could not get room %v. %v", buildingID, err.Error())
