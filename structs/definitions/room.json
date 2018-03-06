@@ -1,0 +1,8 @@
+{
+    "_id": "abc",
+    "name": "abc", 
+    "description": "abc",
+    "tags": ["abc", "abc"],
+    "configuration": "abc",
+    "designation": "abc"
+}

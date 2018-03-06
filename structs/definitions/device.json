@@ -1,0 +1,39 @@
+{
+	"_id": "abc",
+	"address": "abc",
+	"name": "abc",
+	"description": "abc",
+	"display-name": "abc",
+	"type": {
+        "_id": "abc"
+    },
+	"class": "abc", 
+	"roles": [
+        {
+        "_id": "abc",
+		"name": "abc",
+        "description": "abc"
+        },
+        {
+        "_id": "abc",
+		"name": "abc",
+        "description": "abc"
+        },
+        {
+        "_id": "abc",
+		"name": "abc",
+        "description": "abc"
+        }
+	],
+	"ports": [
+		{
+            "_id": "abc",
+            "friendly-name": "abc",
+			"name": "abc",
+			"source-device": "abc",
+			"destination-device": "abc",
+			"description": "abc",
+			"port-type": "abc" 
+		}
+	]
+}

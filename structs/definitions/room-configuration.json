@@ -1,0 +1,13 @@
+{
+    "_id": "abc",
+    "name": "abc",
+    "evaluators": [
+        {
+            "_id": "abc",
+            "code-key": "abc",
+            "description": "abc",
+            "priority": 0 
+        }
+    ],
+    "description": "abc"
+}

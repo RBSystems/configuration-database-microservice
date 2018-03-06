@@ -1,0 +1,43 @@
+{
+    "_id": "abc",
+    "name": "abc",
+	"class": "abc", 
+    "description": "abc",
+    "ports": [
+        {
+        "_id": "abc",
+        "friendly-name": "abc",
+        "name": "abc", 
+        "port-type": "abc",
+        "description": "abc"
+        }
+    ],
+    "power-states": [
+        {
+        "_id": "abc",
+        "name": "abc",
+        "description": "abc"
+        }
+    ],
+    "commands": [
+        {
+            "microservice": {
+                "_id": "abc",
+                "name": "abc",
+                "description": "abc",
+                "address": "abc"
+            },
+            "endpoint": {
+                "_id": "abc",
+                "name": "abc",
+                "description": "abc",
+                "path": "abc"
+            },
+            "command": {
+                "_id": "abc",
+                "name": "abc",
+                "description": "abc"
+            }
+        }
+    ]
+}
