@@ -9,9 +9,8 @@ jobs:
         steps:
             - checkout
             - setup_remote_docker
-            - run: |
-                make deps
-                make build
-                make test
-                make docker
-                ./deploy.sh $CIRCLE_PROJECT_REPONAME $CIRCLE_SHA1 $CIRCLE_BRANCH
+            - run: make deps
+            - run: make build
+            - run: make test
+            - run: make docker
+            - run: ./deploy.sh $CIRCLE_PROJECT_REPONAME $CIRCLE_SHA1 $CIRCLE_BRANCH
