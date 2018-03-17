@@ -15,7 +15,7 @@ if [ "$BRANCH"=="production" ]; then
 	# Update Elastic Beanstalk environment to new version
 	aws elasticbeanstalk update-environment --environment-name $PROJECT_NAME-env --version-label $SHA1
 
-elif [ "$BRANCH"=="stage" ]; then
+elif [ "$BRANCH"=="master" ]; then
 
 	aws elasticbeanstalk create-application-version --application-name $PROJECT_NAME-stage --version-label $SHA1 --source-bundle S3Bucket=$EB_BUCKET,S3Key=Dockerrun.aws.json
 
