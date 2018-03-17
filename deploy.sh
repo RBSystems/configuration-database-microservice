@@ -8,7 +8,7 @@ aws configure set default.region us-west-2
 aws configure set region us-west-2
 aws s3 cp Dockerrun.aws.json s3://$EB_BUCKET/Dockerrun.aws.json # Copy the Dockerrun file to the S3 bucket
 
-if [ "$BRANCH"=="master" ]; then
+if [ "$BRANCH"=="production" ]; then
 
 	aws elasticbeanstalk create-application-version --application-name $PROJECT_NAME --version-label $SHA1 --source-bundle S3Bucket=$EB_BUCKET,S3Key=Dockerrun.aws.json
 
