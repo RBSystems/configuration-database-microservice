@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	database := os.Getenv("CONFIGURATION_DATABASE_USERNAME") + ":" + os.Getenv("CONFIGURATION_DATABASE_PASSWORD") + "@tcp(" + os.Getenv("CONFIGURATION_DATABASE_HOST") + ":" + os.Getenv("CONFIGURATION_DATABASE_PORT") + ")/" + os.Getenv("CONFIGURATION_DATABASE_NAME")
+	database := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", os.Getenv("CONFIGURATION_DATABASE_USERNAME"), os.Getenv("CONFIGURATION_DATABASE_PASSWORD"), os.Getenv("CONFIGURATION_DATABASE_HOST"), os.Getenv("CONFIGURATION_DATABASE_PORT"), os.Getenv("CONFIGURATION_DATABASE_NAME"))
 
 	// Constructs a new accessor group and connects it to the database
 	accessorGroup := new(accessors.AccessorGroup)
