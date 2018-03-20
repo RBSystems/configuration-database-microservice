@@ -5,7 +5,7 @@
         "Key": ".dockercfg"
     },
     "Image": {
-        "Name": "byuoitav/configuration-database-microservice:latest",
+        "Name": "byuoitav/configuration-database-microservice:<TAG>",
         "Update": "true"
     },
     "Ports": [{
