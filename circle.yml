@@ -13,4 +13,4 @@ jobs:
             - run: make build
             - run: make test
             - run: make docker
-            - run: ./deploy.sh $CIRCLE_PROJECT_REPONAME $CIRCLE_SHA1 production
+            - run: ./deploy.sh $CIRCLE_PROJECT_REPONAME $CIRCLE_SHA1 $CIRCLE_BRANCH
