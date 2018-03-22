@@ -13,14 +13,14 @@ aws s3 cp Dockerrun.aws.json s3://$EB_BUCKET/$DOCKERRUN_FILE
 
 if [ "$BRANCH"=="production" ]; then
 
-	aws elasticbeanstalk create-application-version --application-name $PROJECT_NAME --version-label $SHA1 --source-bundle S3Bucket=$EB_BUCKET,S3Key=Dockerrun.aws.json
+	aws elasticbeanstalk create-application-version --application-name $PROJECT_NAME --version-label $SHA1 --source-bundle S3Bucket=$EB_BUCKET,S3Key=$DOCKERRUN_FILE
 
 	# Update Elastic Beanstalk environment to new version
 	aws elasticbeanstalk update-environment --environment-name $PROJECT_NAME-env --version-label $SHA1
 
 elif [ "$BRANCH"=="stage" ]; then
 
-	aws elasticbeanstalk create-application-version --application-name $PROJECT_NAME-stage --version-label $SHA1 --source-bundle S3Bucket=$EB_BUCKET,S3Key=Dockerrun.aws.json
+	aws elasticbeanstalk create-application-version --application-name $PROJECT_NAME-stage --version-label $SHA1 --source-bundle S3Bucket=$EB_BUCKET,S3Key=$DOCKERRUN_FILE
 
 	# Update Elastic Beanstalk environment to new version
 	aws elasticbeanstalk update-environment --environment-name $PROJECT_NAME-stg --version-label $SHA1
