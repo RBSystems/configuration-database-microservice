@@ -95,3 +95,159 @@ UPDATE Devices SET fullName = CONCAT(roomName, "-", name);
 ALTER TABLE Devices ADD Constraint unique_devices_name
 UNIQUE (fullName);
 
+ALTER TABLE DeviceTypes ADD COnstraint unique_type_name
+UNIQUE (typeName);
+
+ALTER TABLE Devices ADD deviceType varchar(255);
+UPDATE Devices
+JOIN DeviceTypes on Devices.typeID = DeviceTypes.typeID
+SET Devices.deviceType = DeviceTypes.typeName;
+
+ALTER TABLE Devices ADD Constraint devices_fk_device_type
+FOREIGN KEY (deviceType)
+REFERENCES DeviceTypes(typeName)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE Devices DROP FOREIGN KEY Devices_ibfk_5;
+ALTER TABLE Devices DROP COLUMN typeID;
+
+ALTER TABLE DeviceClasses ADD Constraint unique_class_name
+UNIQUE (name);
+
+
+ALTER TABLE Devices ADD deviceClass varchar(255);
+UPDATE Devices
+JOIN DeviceClasses on Devices.classID = DeviceClasses.deviceClassID
+SET Devices.deviceClass = DeviceClasses.name;
+
+ALTER TABLE Devices ADD Constraint devices_fk_device_class
+FOREIGN KEY (deviceClass)
+REFERENCES DeviceClasses(name)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE Devices DROP FOREIGN KEY Devices_ibfk_2;
+ALTER TABLE Devices DROP FOREIGN KEY Devices_ibfk_6;
+ALTER TABLE Devices DROP COLUMN classID;
+
+
+
+
+ALTER TABLE DeviceRoleDefinition ADD Constraint unique_role_name
+UNIQUE (name);
+
+/*
+ * There's a duplicate port that needs to get updated, then deleted
+ */
+
+UPDATE PortConfiguration 
+SET portID = 6
+WHERE portID = 38;
+
+UPDATE DeviceTypePorts 
+SET portID = 6
+WHERE portID = 38;
+
+DELETE FROM PortConfiguration 
+WHERE portID = 38;
+
+/*
+ * Done with that cleanup
+ */ 
+
+ALTER TABLE Ports ADD Constraint unique_port_name
+UNIQUE (name);
+
+ALTER TABLE DeviceRole ADD roleName varchar(256);
+ALTER TABLE DeviceRole ADD device varchar(767);
+
+UPDATE DeviceRole
+JOIN Devices on Devices.deviceID = DeviceRole.deviceID
+JOIN DeviceRoleDefinition on DeviceRoleDefinition.deviceRoleDefinitionID = DeviceRole.deviceRoleDefinitionID
+SET DeviceRole.roleName = DeviceRoleDefinition.name, 
+DeviceRole.device = Devices.FullName;
+
+ALTER TABLE DeviceRole ADD Constraint device_role_fk_device_name
+FOREIGN KEY (device)
+REFERENCES Devices(fullName)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE DeviceRole ADD Constraint device_role_fk_role_name
+FOREIGN KEY (roleName)
+REFERENCES DeviceRoleDefinition(name)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE DeviceRole DROP FOREIGN KEY DeviceRole_ibfk_1;
+ALTER TABLE DeviceRole DROP FOREIGN KEY DeviceRole_ibfk_2;
+
+ALTER TABLE DeviceRole DROP COLUMN deviceID;
+ALTER TABLE DeviceRole DROP COLUMN deviceRoleDefinitionID;
+
+ALTER TABLE PortConfiguration ADD sourceDevice varchar(767);
+ALTER TABLE PortConfiguration ADD destinationDevice varchar(767);
+ALTER TABLE PortConfiguration ADD hostDevice varchar(767) NOT NULL;
+ALTER TABLE PortConfiguration ADD port varchar(767) NOT NULL;
+
+ALTER TABLE PortConfiguration ADD Constraint unique_host_port
+UNIQUE (hostDevice, port);
+
+
+ALTER TABLE PortConfiguration ADD Constraint port_config_fk_port
+FOREIGN KEY (port)
+REFERENCES Ports(name)
+ON DELETE CASCADE
+ON UPDATE CASCADE; ALTER TABLE PortConfiguration ADD Constraint port_config_fk_host
+FOREIGN KEY (hostDevice)
+REFERENCES Devices(fullName)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE PortConfiguration ADD Constraint port_config_fk_dest
+FOREIGN KEY (destinationDevice)
+REFERENCES Devices(fullName)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE PortConfiguration ADD Constraint port_config_fk_src
+FOREIGN KEY (sourceDevice)
+REFERENCES Devices(fullName)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+
+Update PortConfiguration pc 
+JOIN Devices src on src.deviceID = pc.sourceDeviceID
+SET 
+pc.sourceDevice = src.fullName;
+
+Update PortConfiguration pc 
+JOIN Devices dst on dst.deviceID = pc.destinationDeviceID
+SET 
+pc.destinationDevice = dst.fullName;
+
+Update PortConfiguration pc 
+JOIN Devices hst on hst.deviceID = pc.hostDeviceID
+SET 
+pc.hostDevice = hst.fullName;
+
+Update PortConfiguration pc 
+JOIN Ports pts on pts.portID = pc.portID
+SET
+pc.port = pts.name;
+
+
+ALTER TABLE PortConfiguration DROP FOREIGN KEY PortConfiguration_ibfk_1;
+ALTER TABLE PortConfiguration DROP FOREIGN KEY PortConfiguration_ibfk_2;
+ALTER TABLE PortConfiguration DROP FOREIGN KEY PortConfiguration_ibfk_3;
+
+ALTER TABLE PortConfiguration DROP COLUMN portID;
+ALTER TABLE PortConfiguration DROP COLUMN hostDeviceID;
+ALTER TABLE PortConfiguration DROP COLUMN destinationDeviceID;
+ALTER TABLE PortConfiguration DROP COLUMN sourceDeviceID;
+
+/*
+ * Now we just gotta do power states
+ */ 
