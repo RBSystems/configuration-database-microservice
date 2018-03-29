@@ -71,6 +71,8 @@ func checkCouchErrors(ce CouchError) error {
 	switch ce.Error {
 	case "not_found":
 		return NotFound{fmt.Sprintf("The ID requested was unknown. Message: %v.", ce.Reason)}
+	case "conflict":
+		return Confict{fmt.Sprintf("There was a conflict updating/creating the document: %v", ce.Reason)}
 	default:
 		msg := fmt.Sprintf("Unknown error type: %v. Message: %v", ce.Error, ce.Reason)
 		logger.L.Warn(msg)
@@ -88,6 +90,12 @@ type IDPrefixQuery struct {
 	Limit int `json:"limit"`
 }
 
+type CouchUpsertResponse struct {
+	OK  string `json:"ok"`
+	ID  string `json:"id"`
+	Rev string `json:"rev"`
+}
+
 type CouchError struct {
 	Error  string `json:"error"`
 	Reason string `json:"reason"`
@@ -99,4 +107,12 @@ type NotFound struct {
 
 func (n *NotFound) Error() string {
 	return n.msg
+}
+
+type Confict struct {
+	msg string
+}
+
+func (c *Confict) Error() string {
+	return c.msg
 }

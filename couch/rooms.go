@@ -67,7 +67,9 @@ CreateRoom creates a room. Required information:
 	3. The room must have a name and a shortname.
 	4. The room must have a designation
 
-	It is important to note that the function will overwrite a room with the same roomID
+	It is important to note that the function will overwrite a room with the same roomID if the Rev field is valid.
+
+	Any devices included in the room will be evaluated for adding, but the room will be evaluated for creation first. If any devices fail creation, this will NOT roll back the creation of the room, or any other devices. All devices wil  be checked for a device ID before moving to creation. If any are lacking, the no cration of ANY device will proceed.
 */
 
 func CreateRoom(room structs.Room) (structs.Room, error) {
@@ -81,7 +83,13 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 		log.L.Warn(msg)
 		return structs.Room{}, errors.New(msg)
 	}
-	log.L.Debugf("RoomID is valid, checking for valid buildingID: %v", vals[0][1])
+	//we really should check all the other information here, too
+	if len(room.Shortname) < 1 || len(room.Name) < 1|len(room.Designation) < 1 {
+		msg := "Couldn't create room. The room must include a name, shortname, and a designation."
+		log.L.Warn(msg)
+		return structs.Room{}, errors.New(msg)
+	}
+	log.L.Debugf("RoomID and other information is valid, checking for valid buildingID: %v", vals[0][1])
 
 	building, err := GetBuildingByID(vals[0][1])
 
@@ -104,6 +112,70 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 		log.L.Warn(msg)
 		return structs.Room{}, errors.New(msg)
 	}
+	//get the configuration and check to see if it's not there. If it isn't there, try to add it. If it can't be addedfor whatever reason (it doesn't meet the rquirements) error out.
+	config, err := GetRoomConfigurationByID(room.Configuration.ID)
+	if err != nil {
+		if nf, ok := err.(NotFound); ok {
+			log.L.Debugf("Room configuration not found, attempting to create.")
 
+			//this is where we try to create the configuration
+			config, err = CreateRoomConfiguration(room.Configuration)
+			if err != nil {
+
+				msg := "Trying to create a room with a non-existant room configuration and not enough information to create the configuration. Check the included configuration ID."
+				log.L.Warn(msg)
+				return config, errors.new(msg)
+			}
+			log.L.Debugf("Room configuration created.")
+		} else {
+
+			msg := fmt.Sprintf("unknown problem creating the room: %v", err.Error())
+			log.L.Warn(msg)
+			return structs.Room{}, errors.New(msg)
+		}
+	}
+
+	//the configuration should only have the ID.
+	room.Configuration = structs.RoomConfiguration{ID: config.ID}
+	log.L.Debug("Room configuration passed. Creating the room.")
+
+	//save the devices for later, if there are any, then remove the frmo the room for putting into the database
+	log.L.Debugf("There are %v devices included, saving to be added later: %v")
+	devs := copy(room.Devices)
+	room.Devices = []structs.Device{}
+
+	b, err := json.Marshal(room)
+	if err != nil {
+		msg := fmt.Sprintf("Couldn't marshal room into JSON. Error: %v", err.Error())
+		log.L.Error(msg)
+		return structs.Room{}, errors.New(msg)
+	}
+
+	err := MakeRequest("PUT", fmt.Sprintf("rooms/%v", room.ID), "", nil, &resp)
+	if err != nil {
+		if nf, ok := err.(Confict); ok {
+			msg := fmt.Sprintf("There was a conflict updating the room: %v. Make changes on an updated version of the configuration.", nf.Error())
+			log.L.Warn(msg)
+			return structs.Room{}, errors.new(msg)
+		}
+		//ther was some other problem
+		msg := fmt.Sprintf("unknown problem creating the room: %v", err.Error())
+		log.L.Warn(msg)
+		return structs.Room{}, errors.New(msg)
+	}
+
+	log.L.Debug("room created, retriving new room from database.")
+
+	//return the created room
+	room, err = GetRoomByID(room.ID)
+	if err != nil {
+		msg := fmt.Sprintf("There was a problem getting the newly created room: %v", err.Error())
+		log.L.Warn(msg)
+		return room, errors.New(msg)
+	}
+
+	log.L.Debug("Done creating room, evaluating devices for creation.")
+
+	// Do the devices.
 	return structs.Room{}, nil
 }
