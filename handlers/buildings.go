@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/byuoitav/configuration-database-microservice/couch"
+	"github.com/byuoitav/configuration-database-microservice/log"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
 
@@ -31,4 +33,16 @@ func GetBuildingByID(context echo.Context) error {
 	}
 
 	return context.JSON(http.StatusOK, building)
+}
+
+func CreateBuilding(context echo.Context) error {
+	toAdd := structs.Building{}
+
+	err := context.Bind(toAdd)
+	if err != nil {
+		msg := "Invalid building, check the structure."
+		log.L.Warn(msg)
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+	return nil
 }

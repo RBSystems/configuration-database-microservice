@@ -11,7 +11,7 @@ import (
 
 func GetRoomConfigurationByID(id string) (structs.RoomConfiguration, error) {
 
-	log.L.Debugf("Getting room configuration: %v", roomConfigurationID)
+	log.L.Debugf("Getting room configuration: %v", id)
 
 	toReturn := structs.RoomConfiguration{}
 	err := MakeRequest("GET", fmt.Sprintf("room_configurations/%v", id), "", nil, &toReturn)
@@ -80,30 +80,30 @@ func CreateRoomConfiguration(config structs.RoomConfiguration) (structs.RoomConf
 
 		msg := fmt.Sprintf("Couldn't marshal configuration into JSON. Error: %v", err.Error())
 		log.L.Error(msg) // this is a slightly bigger deal
-		return configuration, errors.New(msg)
+		return config, errors.New(msg)
 	}
 
-	err := MakeRequest("PUT", fmt.Sprintf("room_configurations/%v", config.ID), "", b, &resp)
+	err = MakeRequest("PUT", fmt.Sprintf("room_configurations/%v", config.ID), "", b, &resp)
 	if err != nil {
 		if nf, ok := err.(Confict); ok {
 			msg := fmt.Sprintf("There was a conflict updating the room: %v. Make changes on an updated version of the configuration.", nf.Error())
 			log.L.Warn(msg)
-			return configuration, errors.new(msg)
+			return config, errors.New(msg)
 		}
 		//ther was some other problem
 		msg := fmt.Sprintf("unknown problem creating the configuration: %v", err.Error())
 		log.L.Warn(msg)
-		return configuration, errors.New(msg)
+		return config, errors.New(msg)
 	}
 
 	log.L.Debug("Configuration created, retriving new configuration from database.")
 
 	//return the created config
-	config, err := GetRoomConfigurationByID(config.ID)
+	config, err = GetRoomConfigurationByID(config.ID)
 	if err != nil {
 		msg := fmt.Sprintf("There was a problem getting the newly created configuration: %v", err.Error())
 		log.L.Warn(msg)
-		return configuration, errors.New(msg)
+		return config, errors.New(msg)
 	}
 
 	log.L.Debug("Done.")

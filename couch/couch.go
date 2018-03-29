@@ -6,9 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
+
+	"github.com/byuoitav/configuration-database-microservice/log"
 )
 
 func MakeRequest(method, endpoint, contentType string, body []byte, toFill interface{}) error {
@@ -43,14 +44,14 @@ func MakeRequest(method, endpoint, contentType string, body []byte, toFill inter
 
 	if resp.StatusCode/100 != 2 {
 		msg := fmt.Sprintf("Received a non-200 response from %v. Body: %s", url, b)
-		log.Warn(msg)
+		log.L.Warn(msg)
 		return errors.New(msg)
 	}
 
 	//otherwise we unmarshal
 	err = json.Unmarshal(b, toFill)
 	if err != nil {
-		log.Infof("Couldn't umarshal response into the provided struct: %v", err.Error())
+		log.L.Infof("Couldn't umarshal response into the provided struct: %v", err.Error())
 
 		//check to see if it was a known error from couch
 		ce := CouchError{}
@@ -70,12 +71,12 @@ func MakeRequest(method, endpoint, contentType string, body []byte, toFill inter
 func checkCouchErrors(ce CouchError) error {
 	switch ce.Error {
 	case "not_found":
-		return NotFound{fmt.Sprintf("The ID requested was unknown. Message: %v.", ce.Reason)}
+		return &NotFound{fmt.Sprintf("The ID requested was unknown. Message: %v.", ce.Reason)}
 	case "conflict":
-		return Confict{fmt.Sprintf("There was a conflict updating/creating the document: %v", ce.Reason)}
+		return &Confict{fmt.Sprintf("There was a conflict updating/creating the document: %v", ce.Reason)}
 	default:
 		msg := fmt.Sprintf("Unknown error type: %v. Message: %v", ce.Error, ce.Reason)
-		logger.L.Warn(msg)
+		log.L.Warn(msg)
 		return errors.New(msg)
 	}
 }
@@ -105,7 +106,7 @@ type NotFound struct {
 	msg string
 }
 
-func (n *NotFound) Error() string {
+func (n NotFound) Error() string {
 	return n.msg
 }
 
@@ -113,6 +114,6 @@ type Confict struct {
 	msg string
 }
 
-func (c *Confict) Error() string {
+func (c Confict) Error() string {
 	return c.msg
 }

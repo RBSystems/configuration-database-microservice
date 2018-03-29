@@ -37,7 +37,7 @@ func CreateRoom(context echo.Context) error {
 	context.Bind(&toAdd)
 
 	//now we call in
-	err, room := couch.CreateRoom(toAdd)
+	room, err := couch.CreateRoom(toAdd)
 	if err != nil {
 		msg := fmt.Sprintf("Couldn't create room: %v", err.Error())
 		log.L.Warn(color.HiRedString(msg))

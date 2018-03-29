@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"regexp"
 
+	"github.com/byuoitav/configuration-database-microservice/log"
 	"github.com/byuoitav/configuration-database-microservice/structs"
-	"github.com/fatih/color"
 )
 
-var roomValidationRegex *Regexp
+var roomValidationRegex *regexp.Regexp
 
 func init() {
 	//our room validation regex
@@ -25,7 +24,7 @@ func GetRoomByID(id string) (structs.Room, error) {
 
 	if err != nil {
 		msg := fmt.Sprintf("[couch] Could not get room %v. %v", id, err.Error())
-		log.Printf(color.HiRedString(msg))
+		log.L.Warn(msg)
 	}
 
 	//we need to get the room configuration information
@@ -43,18 +42,17 @@ func GetRoomsByBuilding(buildingID string) ([]structs.Room, error) {
 
 	b, err := json.Marshal(query)
 	if err != nil {
-		log.Printf(color.HiRedString("There was a problem marshalling the query: %v", err.Error()))
+		log.L.Warnf("There was a problem marshalling the query: %v", err.Error())
 		return []structs.Room{}, err
 	}
-
-	log.Printf("%s", b)
+	log.L.Debugf("Getting all rooms for building: %v", buildingID)
 
 	toReturn := structs.RoomQueryResponse{}
 	err = MakeRequest("POST", fmt.Sprintf("rooms/_find"), "application/json", b, &toReturn)
 
 	if err != nil {
 		msg := fmt.Sprintf("[couch] Could not get room %v. %v", buildingID, err.Error())
-		log.Printf(color.HiRedString(msg))
+		log.L.Warn(msg)
 	}
 
 	return toReturn.Docs, err
@@ -76,33 +74,33 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 
 	log.L.Debug("Starting room creation for %v", room.ID)
 
-	vals := roomValidationRegex.FindAllStringSubmatcH(room.ID)
+	vals := roomValidationRegex.FindAllStringSubmatch(room.ID, 1)
 	if len(vals) == 0 {
-		msg := fmt.Spritnf("Couldn't create room. Invalid roomID format %v. Must match `(A-z,0-9]{2,}-[A-z,0-9]+`", room.ID)
+		msg := fmt.Sprintf("Couldn't create room. Invalid roomID format %v. Must match `(A-z,0-9]{2,}-[A-z,0-9]+`", room.ID)
 
 		log.L.Warn(msg)
 		return structs.Room{}, errors.New(msg)
 	}
 	//we really should check all the other information here, too
-	if len(room.Shortname) < 1 || len(room.Name) < 1|len(room.Designation) < 1 {
+	if len(room.Shortname) < 1 || len(room.Name) < 1 || len(room.Designation) < 1 {
 		msg := "Couldn't create room. The room must include a name, shortname, and a designation."
 		log.L.Warn(msg)
 		return structs.Room{}, errors.New(msg)
 	}
 	log.L.Debugf("RoomID and other information is valid, checking for valid buildingID: %v", vals[0][1])
 
-	building, err := GetBuildingByID(vals[0][1])
+	_, err := GetBuildingByID(vals[0][1])
 
 	if err != nil {
 		if nf, ok := err.(NotFound); ok {
-			msg := fmt.Sprintf("Trying to create a room in a non-existant building: %v. Create the building before adding the room.", vals[0][1])
+			msg := fmt.Sprintf("Trying to create a room in a non-existant building: %v. Create the building before adding the room. message: ", vals[0][1], nf.Error())
 			log.L.Warn(msg)
-			return structs.Room{}, errors.new(msg)
+			return structs.Room{}, errors.New(msg)
 		}
 
 		msg := fmt.Sprintf("unknown problem creating the room: %v", err.Error())
 		log.L.Warn(msg)
-		return structs.Room, errors.New(msg)
+		return structs.Room{}, errors.New(msg)
 	}
 
 	log.L.Debugf("We have a valid buildingID. Checking for a valid room configuration ID")
@@ -116,7 +114,7 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 	config, err := GetRoomConfigurationByID(room.Configuration.ID)
 	if err != nil {
 		if nf, ok := err.(NotFound); ok {
-			log.L.Debugf("Room configuration not found, attempting to create.")
+			log.L.Debugf("Room configuration not found, attempting to create. Message: %v", nf.Error())
 
 			//this is where we try to create the configuration
 			config, err = CreateRoomConfiguration(room.Configuration)
@@ -124,7 +122,7 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 
 				msg := "Trying to create a room with a non-existant room configuration and not enough information to create the configuration. Check the included configuration ID."
 				log.L.Warn(msg)
-				return config, errors.new(msg)
+				return structs.Room{}, errors.New(msg)
 			}
 			log.L.Debugf("Room configuration created.")
 		} else {
@@ -141,7 +139,9 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 
 	//save the devices for later, if there are any, then remove the frmo the room for putting into the database
 	log.L.Debugf("There are %v devices included, saving to be added later: %v")
-	devs := copy(room.Devices)
+
+	devs := []structs.Device{}
+	copy(devs, room.Devices)
 	room.Devices = []structs.Device{}
 
 	b, err := json.Marshal(room)
@@ -151,12 +151,14 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 		return structs.Room{}, errors.New(msg)
 	}
 
-	err := MakeRequest("PUT", fmt.Sprintf("rooms/%v", room.ID), "", nil, &resp)
+	resp := CouchUpsertResponse{}
+
+	err = MakeRequest("PUT", fmt.Sprintf("rooms/%v", room.ID), "", b, &resp)
 	if err != nil {
 		if nf, ok := err.(Confict); ok {
 			msg := fmt.Sprintf("There was a conflict updating the room: %v. Make changes on an updated version of the configuration.", nf.Error())
 			log.L.Warn(msg)
-			return structs.Room{}, errors.new(msg)
+			return structs.Room{}, errors.New(msg)
 		}
 		//ther was some other problem
 		msg := fmt.Sprintf("unknown problem creating the room: %v", err.Error())
