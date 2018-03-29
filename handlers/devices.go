@@ -39,3 +39,11 @@ func GetDeviceByID(context echo.Context) error {
 	return context.JSON(http.StatusOK, device)
 
 }
+
+func CreateDevice(context echo.Context) error {
+	return nil
+}
+
+func CreateDeviceType(context echo.Context) error {
+	return nil
+}

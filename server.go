@@ -21,6 +21,12 @@ func main() {
 	router.GET("/buildings/:buildingid/rooms/:roomid/devices", handlers.GetDevicesByRoom)
 	router.GET("/buildings/:buildingid/rooms/:roomid/devices/:deviceid", handlers.GetDeviceByID)
 
+	router.POST("/buildings/:buildingid", handlers.CreateBuilding)
+	router.POST("/buildings/:buildingid/rooms/:roomid", handlers.CreateRoom)
+	router.POST("/buildings/:buildingid/rooms/:roomid/devices/:deviceid", handlers.CreateDevice)
+
+	router.POST("/rooms/configurations/:configurationid", handlers.CreateRoomConfiguration)
+	router.POST("/devices/types/:typeid", handlers.CreateDeviceType)
 	/*
 		router.GET("/buildings/:building/rooms/:room/devices/roles/:role", handlers.GetDevicesByBuildingAndRoomAndRole)
 

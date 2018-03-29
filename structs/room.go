@@ -1,14 +1,14 @@
 package structs
 
 type Room struct {
-	ID            string   `json:"__id"`
-	Name          string   `json:"name"`
-	Shortname     string   `json:"shortname"`
-	Description   string   `json:"description"`
-	Tags          []string `json:"tags"`
-	Configuration string   `json:"configuration"`
-	Designation   string   `json:"designation"`
-	Devices       []Device `json:"devices"`
+	ID            string            `json:"__id"`
+	Name          string            `json:"name"`
+	Shortname     string            `json:"shortname"`
+	Description   string            `json:"description"`
+	Tags          []string          `json:"tags"`
+	Configuration RoomConfiguration `json:"configuration"`
+	Designation   string            `json:"designation"`
+	Devices       []Device          `json:"devices"`
 }
 
 type RoomConfiguration struct {
