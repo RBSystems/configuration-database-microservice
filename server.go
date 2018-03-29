@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	port := ":8006"
+	port := ":8886"
 	router := echo.New()
 
 	router.GET("/mstatus", GetStatus)

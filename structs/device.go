@@ -2,7 +2,7 @@ package structs
 
 type Device struct {
 	ID          string     `json:"_id"`
-	Rev         string     `json:"_rev, omitempty"`
+	Rev         string     `json:"_rev,omitempty"`
 	Address     string     `json:"address"`
 	Name        string     `json:"name"`
 	Description string     `json:"description"`
@@ -15,7 +15,7 @@ type Device struct {
 
 type DeviceType struct {
 	ID          string       `json:"_id"`
-	Rev         string       `json:"_rev, omitempty"`
+	Rev         string       `json:"_rev,omitempty"`
 	Name        string       `json:"name"`
 	Class       string       `json:"class"`
 	Description string       `json:"description"`

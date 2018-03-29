@@ -86,7 +86,7 @@ func CreateRoomConfiguration(config structs.RoomConfiguration) (structs.RoomConf
 	err = MakeRequest("PUT", fmt.Sprintf("room_configurations/%v", config.ID), "", b, &resp)
 	if err != nil {
 		if nf, ok := err.(Confict); ok {
-			msg := fmt.Sprintf("There was a conflict updating the room: %v. Make changes on an updated version of the configuration.", nf.Error())
+			msg := fmt.Sprintf("There was a conflict updating the configuration: %v. Make changes on an updated version of the configuration.", nf.Error())
 			log.L.Warn(msg)
 			return config, errors.New(msg)
 		}

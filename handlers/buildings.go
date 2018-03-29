@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/byuoitav/configuration-database-microservice/couch"
@@ -38,11 +39,18 @@ func GetBuildingByID(context echo.Context) error {
 func CreateBuilding(context echo.Context) error {
 	toAdd := structs.Building{}
 
-	err := context.Bind(toAdd)
+	err := context.Bind(&toAdd)
 	if err != nil {
-		msg := "Invalid building, check the structure."
+		msg := fmt.Sprintf("Invalid building, check the structure. %v", err.Error())
 		log.L.Warn(msg)
 		return context.JSON(http.StatusBadRequest, msg)
 	}
-	return nil
+
+	toAdd, err = couch.CreateBuilding(toAdd)
+	if err != nil {
+		log.L.Warn(err.Error())
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, toAdd)
 }

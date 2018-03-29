@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/byuoitav/configuration-database-microservice/log"
 )
@@ -37,15 +38,25 @@ func MakeRequest(method, endpoint, contentType string, body []byte, toFill inter
 		return err
 	}
 
+	defer resp.Body.Close()
+
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
 	if resp.StatusCode/100 != 2 {
-		msg := fmt.Sprintf("Received a non-200 response from %v. Body: %s", url, b)
-		log.L.Warn(msg)
-		return errors.New(msg)
+
+		log.L.Info("Got a non-200 response from: %v. Code: %v", endpoint, resp.StatusCode)
+
+		ce := CouchError{}
+		err = json.Unmarshal(b, &ce)
+		if err != nil {
+			msg := fmt.Sprintf("Received a non-200 response from %v. Body: %s", url, b)
+			log.L.Warn(msg)
+			return errors.New(msg)
+		}
+		return checkCouchErrors(ce)
 	}
 
 	//otherwise we unmarshal
@@ -69,11 +80,17 @@ func MakeRequest(method, endpoint, contentType string, body []byte, toFill inter
 }
 
 func checkCouchErrors(ce CouchError) error {
-	switch ce.Error {
+	log.L.Debugf("Checking for couch error type: %v", ce.Error)
+	switch strings.ToLower(ce.Error) {
 	case "not_found":
+		log.L.Debug("Error type found: Not Found.")
 		return &NotFound{fmt.Sprintf("The ID requested was unknown. Message: %v.", ce.Reason)}
 	case "conflict":
+		log.L.Debug("Error type found: Conflict.")
 		return &Confict{fmt.Sprintf("There was a conflict updating/creating the document: %v", ce.Reason)}
+	case "bad_request":
+		log.L.Debug("Error type found: Bad Request.")
+		return &BadRequest{fmt.Sprintf("The request was bad: %v", ce.Reason)}
 	default:
 		msg := fmt.Sprintf("Unknown error type: %v. Message: %v", ce.Error, ce.Reason)
 		log.L.Warn(msg)
@@ -92,7 +109,7 @@ type IDPrefixQuery struct {
 }
 
 type CouchUpsertResponse struct {
-	OK  string `json:"ok"`
+	OK  bool   `json:"ok"`
 	ID  string `json:"id"`
 	Rev string `json:"rev"`
 }
@@ -116,4 +133,12 @@ type Confict struct {
 
 func (c Confict) Error() string {
 	return c.msg
+}
+
+type BadRequest struct {
+	msg string
+}
+
+func (br BadRequest) Error() string {
+	return br.msg
 }

@@ -2,7 +2,7 @@ package structs
 
 type Room struct {
 	ID            string            `json:"_id"`
-	Rev           string            `json:"_rev, omitempty"`
+	Rev           string            `json:"_rev,omitempty"`
 	Name          string            `json:"name"`
 	Shortname     string            `json:"shortname"`
 	Description   string            `json:"description"`
