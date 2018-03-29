@@ -34,7 +34,12 @@ func GetRoomsByBuilding(context echo.Context) error {
 
 func CreateRoom(context echo.Context) error {
 	toAdd := structs.Room{}
-	context.Bind(&toAdd)
+	err := context.Bind(&toAdd)
+	if err != nil {
+		msg := fmt.Sprintf("Invalid room format. %v", err.Error())
+		log.L.Warn(msg)
+		return context.JSON(http.StatusBadRequest, msg)
+	}
 
 	//now we call in
 	room, err := couch.CreateRoom(toAdd)
@@ -48,6 +53,19 @@ func CreateRoom(context echo.Context) error {
 }
 
 func CreateRoomConfiguration(context echo.Context) error {
+	toAdd := structs.RoomConfiguration{}
+	err := context.Bind(&toAdd)
+	if err != nil {
+		msg := fmt.Sprintf("Invalid room configuration format. %v", err.Error())
+		log.L.Warn(msg)
+	}
 
-	return nil
+	config, err := couch.CreateRoomConfiguration(toAdd)
+	if err != nil {
+		msg := fmt.Sprintf("Couldn't create room configuration: %v", err.Error())
+		log.L.Warn(color.HiRedString(msg))
+		return context.JSON(http.StatusInternalServerError, msg)
+	}
+
+	return context.JSON(http.StatusOK, config)
 }
