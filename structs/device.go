@@ -19,8 +19,7 @@ type DeviceType struct {
 	Description string       `json:"description"`
 	Ports       []Port       `json:"ports"`
 	PowerStates []PowerState `json:"power-states"`
-	Commands    []struct {
-	} `json:"commands"`
+	Commands    []Command    `json:"commands"`
 }
 
 type PowerState struct {
