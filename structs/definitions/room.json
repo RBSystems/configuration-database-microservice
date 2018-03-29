@@ -3,6 +3,6 @@
     "name": "abc", 
     "description": "abc",
     "tags": ["abc", "abc"],
-    "configuration": "abc",
+    "configuration": { "_id": "abc"},
     "designation": "abc"
 }
