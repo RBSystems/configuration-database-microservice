@@ -40,3 +40,21 @@ func GetAllBuildings() ([]structs.Building, error) {
 
 	return toReturn, err
 }
+
+/*
+AddBuilding adds a building.
+The building must have at least:
+1) ID
+2) Name
+
+To be added.
+
+The function will also overwrite the existing building providing the _rev field is set properly
+*/
+func AddBuilding(toAdd structs.Building) (structs.Building, error) {
+
+	//
+
+	return toAdd, nil
+
+}
