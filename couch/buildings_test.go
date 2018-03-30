@@ -8,7 +8,10 @@ import (
 	"testing"
 
 	"github.com/byuoitav/configuration-database-microservice/structs"
+	"github.com/stretchr/testify/assert"
 )
+
+var testDir = `./test-data`
 
 func setupDatabase(t *testing.T) func(t *testing.T) {
 	t.Log("Setting up database for testing")
@@ -27,7 +30,6 @@ func setupDatabase(t *testing.T) func(t *testing.T) {
 	//now we go and set up the database
 
 	//find all of the setup files to be read in
-	testDir := `./test-data`
 
 	files, err := ioutil.ReadDir(testDir)
 	if err != nil {
@@ -119,7 +121,7 @@ func setupDatabase(t *testing.T) func(t *testing.T) {
 				t.FailNow()
 			}
 
-			_, err = CreateDevice(dt)
+			_, err = CreateRoomConfiguration(dt)
 			if err != nil {
 				t.Logf("couldn't set up database. Error creating roomconfiguration %v: %v", f.Name(), err.Error())
 				t.FailNow()
@@ -151,5 +153,76 @@ func wipeDatabases() {
 
 func TestBuilding(t *testing.T) {
 	defer setupDatabase(t)(t)
+
+	t.Run("Building Create", TestBuildingCreate)
+	t.Run("Building Create", TestBuildingCreateDuplicate)
+}
+
+func TestBuildingCreate(t *testing.T) {
+
+	building := structs.Building{}
+	//add a building
+	err := structs.UnmarshalFromFile(testDir+"/new_building.json", &building)
+	if err != nil {
+		t.Logf("Error reading in %v: %v", "new_building.json", err.Error())
+		t.Fail()
+	}
+
+	_, err = CreateBuilding(building)
+	if err != nil {
+		t.Logf("Error creating building %v: %v", "new_building.json", err.Error())
+		t.Fail()
+	}
+}
+
+func TestBuildingCreateDuplicate(t *testing.T) {
+
+	building := structs.Building{}
+	//add a building
+	err := structs.UnmarshalFromFile(testDir+"/setup_buildings_a.json", &building)
+	if err != nil {
+		t.Logf("Error reading in %v: %v", "setup_buildings_a.json", err.Error())
+		t.Fail()
+	}
+
+	_, err = CreateBuilding(building)
+	if err == nil {
+		t.Logf("Creation succeeded when should have failed.")
+		t.Fail()
+	}
+}
+
+func TestBuildingUpdate(t *testing.T) {
+
+	building, err := GetBuildingByID("BBB")
+	if err != nil {
+		t.Logf("Couldn't get building: %v", err.Error())
+		t.Fail()
+	}
+
+	currentlen := len(building.Tags)
+	building.Tags = append(building.Tags, "pootingmonsterpenguins")
+	newDescription := "No! Your great grandaughter had to be a CROSS DRESSER!"
+	building.Description = newDescription
+	rev := building.Rev
+
+	building.Rev = ""
+
+	//try to fail without rev
+	_, err = CreateBuilding(building)
+	if err == nil {
+		t.Log("Succeeded when it shouldn't have. Failed on rev being null")
+		t.Fail()
+	}
+
+	building.Rev = rev
+
+	b, err := CreateBuilding(building)
+	if err != nil {
+		t.Logf("Failed update: %v", err.Error())
+		t.Fail()
+	}
+	assert.Equal(t, b.Description, newDescription)
+	assert.Equal(t, len(building.Tags), (currentlen + 1))
 
 }
