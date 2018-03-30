@@ -141,6 +141,32 @@ func CreateDevice(toAdd structs.Device) (structs.Device, error) {
 	}
 
 	log.L.Debug("Ports are good. Checks passed. Creating device.")
+	b, err := json.Marshal(toAdd)
+	if err != nil {
+		return lde(fmt.Sprintf("Couldn't marshal device into JSON. Error: %v", err.Error()))
+	}
+
+	resp := CouchUpsertResponse{}
+
+	err = MakeRequest("PUT", fmt.Sprintf("devices/%v", toAdd.ID), "", b, &resp)
+	if err != nil {
+		if nf, ok := err.(Confict); ok {
+			return lde(fmt.Sprintf("There was a conflict updating the device: %v. Make changes on an updated version of the configuration.", nf.Error()))
+		}
+		//ther was some other problem
+		return lde(fmt.Sprintf("unknown problem creating the room: %v", err.Error()))
+	}
+
+	log.L.Debug("device created, retriving new device from database.")
+
+	//return the created room
+	toAdd, err = GetDeviceByID(toAdd.ID)
+	if err != nil {
+		lde(fmt.Sprintf("There was a problem getting the newly created room: %v", err.Error()))
+	}
+
+	log.L.Debug("Done creating device.")
+	return toAdd, nil
 }
 
 //log device error
