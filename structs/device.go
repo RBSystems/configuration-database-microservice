@@ -47,9 +47,9 @@ type Role struct {
 }
 
 type Command struct {
+	BaseInfo
 	Microservice Microservice `json:"microservice"`
 	Endpoint     Endpoint     `json:"endpoint"`
-	Command      Command      `json:"command"`
 }
 
 type DeviceQueryResponse struct {
@@ -66,10 +66,6 @@ type Microservice struct {
 type Endpoint struct {
 	BaseInfo
 	Path string `json:"path"`
-}
-
-type Command struct {
-	BaseInfo
 }
 
 type BaseInfo struct {

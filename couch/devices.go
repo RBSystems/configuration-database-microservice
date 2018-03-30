@@ -30,7 +30,7 @@ func GetDevicesByRoom(roomID string) ([]structs.Device, error) {
 
 	b, err := json.Marshal(query)
 	if err != nil {
-		msg := fmt.Spritnf("There was a problem marshalling the query: %v", err.Error())
+		msg := fmt.Sprintf("There was a problem marshalling the query: %v", err.Error())
 		log.L.Warn(msg)
 		return []structs.Device{}, errors.New(msg)
 	}

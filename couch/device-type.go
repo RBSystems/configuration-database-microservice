@@ -14,12 +14,12 @@ func GetDeviceTypeByID(deviceTypeID string) (structs.DeviceType, error) {
 
 	toReturn := structs.DeviceType{}
 
-	err := MakeRequest("GET", fmt.Sprintf("device_type/%v", ID), "", nil, &toReturn)
+	err := MakeRequest("GET", fmt.Sprintf("device_type/%v", deviceTypeID), "", nil, &toReturn)
 
 	if err != nil {
-		msg := fmt.Sprintf("Could not get deviceType %v. %v", ID, err.Error())
+		msg := fmt.Sprintf("Could not get deviceType %v. %v", deviceTypeID, err.Error())
 		log.L.Warn(msg)
-		return toReutrn, errors.New(msg)
+		return toReturn, errors.New(msg)
 	}
 
 	return toReturn, err
@@ -29,11 +29,7 @@ func GetDeviceTypeByID(deviceTypeID string) (structs.DeviceType, error) {
 CreateDeviceType - now this may come as a shock - creates a device type.
 The device type must have the following attributes to be created:
 	1. A valid ID (3 or more characters)
-	2. A valid Name (3 or more characters)
-	3. A valid class (3 or more characters)
-
-Each command and Port must be validated as well. The criterea for their creation is:
-
+	2. A valid Name (3 or more characters) 3. A valid class (3 or more characters) Each command and Port must be validated as well. The criterea for their creation is:
 Port:
 	1. Must have a valid ID (3 or more characters)
 	2. Must have a valid Name (3 or more characters)
@@ -66,9 +62,9 @@ func CreateDeviceType(toAdd structs.DeviceType) (structs.DeviceType, error) {
 
 	log.L.Debug("Passed basic checks, checking ports.")
 
-	for i := range toAdd.ports {
-		if !validatePort(toAdd.ports[i]) {
-			msg = "Port was malformed, check the name, id, and type fields"
+	for i := range toAdd.Ports {
+		if !validatePort(toAdd.Ports[i]) {
+			msg := "Port was malformed, check the name, id, and type fields"
 			log.L.Warn(msg)
 			return toAdd, errors.New(msg)
 		}
@@ -109,7 +105,7 @@ func CreateDeviceType(toAdd structs.DeviceType) (structs.DeviceType, error) {
 	log.L.Debug("Device Type created, retriving new record from database.")
 
 	//return the created device type
-	toAdd, err := GetDeviceTypeByID(toAdd.ID)
+	toAdd, err = GetDeviceTypeByID(toAdd.ID)
 	if err != nil {
 		msg := fmt.Sprintf("There was a problem getting the newly created device type: %v", err.Error())
 		log.L.Warn(msg)
@@ -127,16 +123,16 @@ func validatePort(p structs.Port) bool {
 }
 
 func validateCommand(c structs.Command) error {
+	if len(c.ID) < 3 || len(c.Name) < 3 {
+		return errors.New("Invalid base information. Check Name, and ID")
+	}
+
 	//check the microservice
 	err := checkMicroservice(c.Microservice)
 	if err != nil {
 		return err
 	}
-	err := checkEndpoint(c.Endpoint)
-	if err != nil {
-		return err
-	}
-	return checkCommand(c.Command)
+	return checkEndpoint(c.Endpoint)
 }
 
 func checkMicroservice(m structs.Microservice) error {
@@ -163,13 +159,4 @@ func checkEndpoint(e structs.Endpoint) error {
 	}
 
 	return nil
-}
-
-func checkCommands(c structs.Command) error {
-	if len(c.ID) < 3 || len(c.Name) < 3 {
-		return errors.New("Invalid Command. Check Name and ID")
-	}
-
-	return nil
-
 }
