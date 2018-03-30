@@ -21,7 +21,6 @@ func GetRoomByID(id string) (structs.Room, error) {
 
 	toReturn := structs.Room{}
 	err := MakeRequest("GET", fmt.Sprintf("rooms/%v", id), "", nil, &toReturn)
-
 	if err != nil {
 		msg := fmt.Sprintf("[couch] Could not get room %v. %v", id, err.Error())
 		log.L.Warn(msg)
@@ -178,5 +177,16 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 	log.L.Debug("Done creating room, evaluating devices for creation.")
 
 	// Do the devices.
-	return structs.Room{}, nil
+	room.Devices = []structs.Device{}
+
+	for d := range devs {
+		dev, err := CreateDevice(devs[d])
+		if err != nil {
+			log.l.Info("Error creating device %v as part of room. Error: %v.", devs[d].ID, err.Error())
+			continue
+		}
+		room.Devices = append(room.Devices, dev)
+	}
+
+	return room, nil
 }
