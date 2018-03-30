@@ -47,3 +47,26 @@ func GetDevicesByRoom(roomID string) ([]structs.Device, error) {
 
 	return toReturn.Docs, err
 }
+
+/*
+Create Device. As amazing as it may seem, this fuction creates a device in the databse.
+
+For a device to be created, it must contain the following attributes:
+
+	1. A valid ID
+		a. The room portion corresponds to an existing room
+	2. A valid name
+	3. A valid type
+		a. Either the ID corresponds to an existing Type, or all elements are available to create a new type. Note that if the type ID matches, but the current type doesn't match the existing ID, the current type with that ID in the Database will NOT be overwritten.
+	4. A valid Class
+	5. One or more roles:
+		a. A role must have a valid ID and Name
+
+Ports must pass validation - criteria are covered in the CreateDeviceType function.
+
+If a device is passed into the fuction with a valid 'rev' field, the current device with that ID will be overwritten.
+`rev` must be omitted to create a new device.
+*/
+func CreateDevice(toAdd structs.Device) (structs.Device, error) {
+
+}
