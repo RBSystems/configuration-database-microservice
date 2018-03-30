@@ -27,7 +27,7 @@ func MakeRequest(method, endpoint, contentType string, body []byte, toFill inter
 	//add auth
 	req.SetBasicAuth(os.Getenv("COUCH_USERNAME"), os.Getenv("COUCH_PASSWORD"))
 
-	if method != "GET" || method != "DELETE" {
+	if method != "GET" && method != "DELETE" {
 		req.Header.Add("content-type", contentType)
 	}
 
@@ -57,6 +57,10 @@ func MakeRequest(method, endpoint, contentType string, body []byte, toFill inter
 			return errors.New(msg)
 		}
 		return checkCouchErrors(ce)
+	}
+
+	if toFill == nil {
+		return nil
 	}
 
 	//otherwise we unmarshal

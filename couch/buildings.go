@@ -49,7 +49,7 @@ AddBuilding adds a building. The building must have at least:
 The function will also overwrite the existing building providing the _rev field is set properly
 */
 func CreateBuilding(toAdd structs.Building) (structs.Building, error) {
-	log.L.Debug("Starting adding a building: %v", toAdd.Name)
+	log.L.Debugf("Starting adding a building: %v", toAdd.Name)
 
 	if len(toAdd.ID) < 2 || len(toAdd.Name) < 2 {
 		msg := "Cannot create building, must have at least a name and an ID"

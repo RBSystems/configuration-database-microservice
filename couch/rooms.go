@@ -91,7 +91,7 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 
 	if err != nil {
 		if nf, ok := err.(NotFound); ok {
-			msg := fmt.Sprintf("Trying to create a room in a non-existant building: %v. Create the building before adding the room. message: ", vals[0][1], nf.Error())
+			msg := fmt.Sprintf("Trying to create a room in a non-existant building: %v. Create the building before adding the room. message: %v", vals[0][1], nf.Error())
 			log.L.Warn(msg)
 			return structs.Room{}, errors.New(msg)
 		}

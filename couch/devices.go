@@ -117,7 +117,7 @@ func CreateDevice(toAdd structs.Device) (structs.Device, error) {
 
 	if err != nil {
 		if nf, ok := err.(NotFound); ok {
-			return lde(fmt.Sprintf("Trying to create a device in a non-existant Room: %v. Create the room before adding the device. message: ", vals[0][1], nf.Error()))
+			return lde(fmt.Sprintf("Trying to create a device in a non-existant Room: %v. Create the room before adding the device. message: %v", vals[0][1], nf.Error()))
 		}
 
 		return lde(fmt.Sprintf("unknown problem creating the device: %v", err.Error()))
