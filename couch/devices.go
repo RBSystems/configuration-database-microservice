@@ -2,21 +2,20 @@ package couch
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
 
+	"github.com/byuoitav/configuration-database-microservice/log"
 	"github.com/byuoitav/configuration-database-microservice/structs"
-	"github.com/fatih/color"
 )
 
 func GetDeviceByID(ID string) (structs.Device, error) {
 
 	toReturn := structs.Device{}
 	err := MakeRequest("GET", fmt.Sprintf("devices/%v", ID), "", nil, &toReturn)
-
 	if err != nil {
 		msg := fmt.Sprintf("[couch] Could not get Device %v. %v", ID, err.Error())
-		log.Printf(color.HiRedString(msg))
+		log.L.Warn(msg)
 	}
 
 	return toReturn, err
@@ -31,8 +30,9 @@ func GetDevicesByRoom(roomID string) ([]structs.Device, error) {
 
 	b, err := json.Marshal(query)
 	if err != nil {
-		log.Printf(color.HiRedString("There was a problem marshalling the query: %v", err.Error()))
-		return []structs.Device{}, err
+		msg := fmt.Spritnf("There was a problem marshalling the query: %v", err.Error())
+		log.L.Warn(msg)
+		return []structs.Device{}, errors.New(msg)
 	}
 
 	toReturn := structs.DeviceQueryResponse{}
@@ -40,18 +40,10 @@ func GetDevicesByRoom(roomID string) ([]structs.Device, error) {
 
 	if err != nil {
 		msg := fmt.Sprintf("[couch] Could not get room %v. %v", roomID, err.Error())
-		log.Printf(color.HiRedString(msg))
+		log.L.Warn(msg)
 	}
 
 	//we need to go through the devices and get their type information. Hopefully caching them so we're not making a thousand requests for duplicate types.
 
 	return toReturn.Docs, err
-}
-
-func GetDeviceTypes(companyID string) ([]structs.DeviceType, error) {
-	return []structs.DeviceType{}, nil
-}
-
-func GetDeviceTypesByID(companyID, deviceTypeID string) (structs.DeviceType, error) {
-	return structs.DeviceType{}, nil
 }

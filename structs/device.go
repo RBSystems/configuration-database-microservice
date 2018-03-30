@@ -47,27 +47,33 @@ type Role struct {
 }
 
 type Command struct {
-	Microservice struct {
-		ID          string `json:"_id"`
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		Address     string `json:"address"`
-	} `json:"microservice"`
-	Endpoint struct {
-		ID          string `json:"_id"`
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		Path        string `json:"path"`
-	} `json:"endpoint"`
-	Command struct {
-		ID          string `json:"_id"`
-		Name        string `json:"name"`
-		Description string `json:"description"`
-	} `json:"command"`
+	Microservice Microservice `json:"microservice"`
+	Endpoint     Endpoint     `json:"endpoint"`
+	Command      Command      `json:"command"`
 }
 
 type DeviceQueryResponse struct {
 	Docs     []Device `json:"docs"`
 	Bookmark string   `json:"bookmark"`
 	Warning  string   `json:"warning"`
+}
+
+type Microservice struct {
+	BaseInfo
+	Address string `json:"address"`
+}
+
+type Endpoint struct {
+	BaseInfo
+	Path string `json:"path"`
+}
+
+type Command struct {
+	BaseInfo
+}
+
+type BaseInfo struct {
+	ID          string `json:"_id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
