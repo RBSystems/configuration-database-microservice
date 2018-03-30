@@ -97,3 +97,21 @@ func CreateBuilding(toAdd structs.Building) (structs.Building, error) {
 	log.L.Debug("Done.")
 	return toAdd, nil
 }
+
+func DeleteBuilding(id string) error {
+	building, err := GetBuildingByID(id)
+	if err != nil {
+		msg := fmt.Sprintf("There was a problem deleting the building: %v", err.Error())
+		log.L.Warn(msg)
+		return errors.New(msg)
+	}
+
+	err = MakeRequest("DELETE", fmt.Sprintf("buildings/%s?rev=%v", id, building.Rev), "", nil, nil)
+	if err != nil {
+		msg := fmt.Sprintf("There was a problem deleting the building: %v", err.Error())
+		log.L.Warn(msg)
+		return errors.New(msg)
+	}
+
+	return nil
+}

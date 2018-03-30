@@ -9,14 +9,14 @@ import (
 )
 
 var L *zap.SugaredLogger
-var cfg zap.Config
+var CFG zap.Config
 
 func init() {
 
-	cfg = zap.NewDevelopmentConfig()
-	cfg.OutputPaths = append(cfg.OutputPaths, os.Getenv("LOGGING_FILE_LOCATION"))
-	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	l, err := cfg.Build()
+	CFG = zap.NewDevelopmentConfig()
+	CFG.OutputPaths = append(CFG.OutputPaths, os.Getenv("LOGGING_FILE_LOCATION"))
+	CFG.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	l, err := CFG.Build()
 	if err != nil {
 		log.Printf("Couldn't build config for zap logger: %v", err.Error())
 		panic(err)

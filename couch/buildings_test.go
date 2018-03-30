@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/byuoitav/configuration-database-microservice/log"
 	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,6 +15,10 @@ import (
 var testDir = `./test-data`
 
 func setupDatabase(t *testing.T) func(t *testing.T) {
+	log.CFG.OutputPaths = []string{}
+	tmp, _ := log.CFG.Build()
+	log.L = tmp.Sugar()
+
 	t.Log("Setting up database for testing")
 
 	//set up our environment variables
@@ -154,11 +159,13 @@ func wipeDatabases() {
 func TestBuilding(t *testing.T) {
 	defer setupDatabase(t)(t)
 
-	t.Run("Building Create", TestBuildingCreate)
-	t.Run("Building Create", TestBuildingCreateDuplicate)
+	t.Run("Building Create", testBuildingCreate)
+	t.Run("Building Create Duplicate", testBuildingCreateDuplicate)
+	t.Run("Building Update", testBuildingUpdate)
+	t.Run("Building Delete", testBuildingDelete)
 }
 
-func TestBuildingCreate(t *testing.T) {
+func testBuildingCreate(t *testing.T) {
 
 	building := structs.Building{}
 	//add a building
@@ -175,7 +182,7 @@ func TestBuildingCreate(t *testing.T) {
 	}
 }
 
-func TestBuildingCreateDuplicate(t *testing.T) {
+func testBuildingCreateDuplicate(t *testing.T) {
 
 	building := structs.Building{}
 	//add a building
@@ -192,9 +199,9 @@ func TestBuildingCreateDuplicate(t *testing.T) {
 	}
 }
 
-func TestBuildingUpdate(t *testing.T) {
+func testBuildingUpdate(t *testing.T) {
 
-	building, err := GetBuildingByID("BBB")
+	building, err := GetBuildingByID("AAA")
 	if err != nil {
 		t.Logf("Couldn't get building: %v", err.Error())
 		t.Fail()
@@ -225,4 +232,12 @@ func TestBuildingUpdate(t *testing.T) {
 	assert.Equal(t, b.Description, newDescription)
 	assert.Equal(t, len(building.Tags), (currentlen + 1))
 
+}
+
+func testBuildingDelete(t *testing.T) {
+	err := DeleteBuilding("BBB")
+	assert.Nil(t, err)
+
+	err = DeleteBuilding("ZZZ")
+	assert.NotNil(t, err)
 }
