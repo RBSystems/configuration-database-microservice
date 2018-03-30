@@ -39,7 +39,6 @@ func GetRoomsByBuilding(buildingID string) ([]structs.Room, error) {
 	query.Selector.ID.GT = fmt.Sprintf("%v-", buildingID)
 	query.Selector.ID.LT = fmt.Sprintf("%v.", buildingID)
 	query.Limit = 1000 //some arbitrarily large number for now.
-
 	b, err := json.Marshal(query)
 	if err != nil {
 		log.L.Warnf("There was a problem marshalling the query: %v", err.Error())
