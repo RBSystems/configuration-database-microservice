@@ -182,7 +182,7 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 	for d := range devs {
 		dev, err := CreateDevice(devs[d])
 		if err != nil {
-			log.l.Info("Error creating device %v as part of room. Error: %v.", devs[d].ID, err.Error())
+			log.L.Info("Error creating device %v as part of room. Error: %v.", devs[d].ID, err.Error())
 			continue
 		}
 		room.Devices = append(room.Devices, dev)
