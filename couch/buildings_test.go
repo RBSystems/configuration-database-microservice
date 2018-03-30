@@ -212,7 +212,7 @@ func TestBuildingUpdate(t *testing.T) {
 	_, err = CreateBuilding(building)
 	if err == nil {
 		t.Log("Succeeded when it shouldn't have. Failed on rev being null")
-		t.Fail()
+		t.FailNow()
 	}
 
 	building.Rev = rev
@@ -220,7 +220,7 @@ func TestBuildingUpdate(t *testing.T) {
 	b, err := CreateBuilding(building)
 	if err != nil {
 		t.Logf("Failed update: %v", err.Error())
-		t.Fail()
+		t.FailNow()
 	}
 	assert.Equal(t, b.Description, newDescription)
 	assert.Equal(t, len(building.Tags), (currentlen + 1))
