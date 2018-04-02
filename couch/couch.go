@@ -47,7 +47,7 @@ func MakeRequest(method, endpoint, contentType string, body []byte, toFill inter
 
 	if resp.StatusCode/100 != 2 {
 
-		log.L.Info("Got a non-200 response from: %v. Code: %v", endpoint, resp.StatusCode)
+		log.L.Infof("Got a non-200 response from: %v. Code: %v", endpoint, resp.StatusCode)
 
 		ce := CouchError{}
 		err = json.Unmarshal(b, &ce)

@@ -99,12 +99,29 @@ func CreateBuilding(toAdd structs.Building) (structs.Building, error) {
 }
 
 func DeleteBuilding(id string) error {
+	log.L.Infof("Starting delete for building: %v", id)
 	building, err := GetBuildingByID(id)
 	if err != nil {
 		msg := fmt.Sprintf("There was a problem deleting the building: %v", err.Error())
 		log.L.Warn(msg)
 		return errors.New(msg)
 	}
+
+	log.L.Debugf("Checking for rooms in building %v", id)
+	//first we need to check if there are any rooms in the building, if there are, we don't allow a delete at this level
+	rms, err := GetRoomsByBuilding(id)
+	if err != nil {
+		msg := fmt.Sprintf("Problem checking the building for rooms: %v", err.Error())
+		log.L.Warn(msg)
+		return errors.New(msg)
+	}
+
+	if len(rms) > 0 {
+		log.L.Infof("There were %v rooms in building %v, aborting delete", len(rms), id)
+		return errors.New(fmt.Sprintf("Couldn't delete building %v, there are still rooms associated with the building. Remove all rooms from building before deleting.", id))
+	}
+
+	log.L.Debugf("No rooms found in building %v. Proceeding with deletion", id)
 
 	err = MakeRequest("DELETE", fmt.Sprintf("buildings/%s?rev=%v", id, building.Rev), "", nil, nil)
 	if err != nil {
@@ -113,5 +130,6 @@ func DeleteBuilding(id string) error {
 		return errors.New(msg)
 	}
 
+	log.L.Debugf("Building %v deleted successfully.", id)
 	return nil
 }

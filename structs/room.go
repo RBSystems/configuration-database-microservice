@@ -4,7 +4,6 @@ type Room struct {
 	ID            string            `json:"_id"`
 	Rev           string            `json:"_rev,omitempty"`
 	Name          string            `json:"name"`
-	Shortname     string            `json:"shortname"`
 	Description   string            `json:"description"`
 	Tags          []string          `json:"tags"`
 	Configuration RoomConfiguration `json:"configuration"`
@@ -14,7 +13,7 @@ type Room struct {
 
 type RoomConfiguration struct {
 	ID          string      `json:"_id"`
-	Rev         string      `json:"_rev"`
+	Rev         string      `json:"_rev,omitempty"`
 	Name        string      `json:"name"`
 	Evaluators  []Evaluator `json:"evaluators"`
 	Description string      `json:"description"`

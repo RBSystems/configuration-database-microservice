@@ -60,7 +60,7 @@ func GetRoomsByBuilding(buildingID string) ([]structs.Room, error) {
 CreateRoom creates a room. Required information:
 	1. The room must have a valid roomID, that roomID must have a valid BuildingID as a component
 	2. The configurationID of the sub configuration item must have at least a valid ID. If the ID doesn't exist currently in the database, the room configuraiton object must meet all requirements to be a valid roomConfiguration.
-	3. The room must have a name and a shortname.
+	3. The room must have a name.
 	4. The room must have a designation
 
 	It is important to note that the function will overwrite a room with the same roomID if the Rev field is valid.
@@ -80,8 +80,8 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 		return structs.Room{}, errors.New(msg)
 	}
 	//we really should check all the other information here, too
-	if len(room.Shortname) < 1 || len(room.Name) < 1 || len(room.Designation) < 1 {
-		msg := "Couldn't create room. The room must include a name, shortname, and a designation."
+	if len(room.Name) < 1 || len(room.Designation) < 1 {
+		msg := "Couldn't create room. The room must include a name and a designation."
 		log.L.Warn(msg)
 		return structs.Room{}, errors.New(msg)
 	}
@@ -111,8 +111,8 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 	//get the configuration and check to see if it's not there. If it isn't there, try to add it. If it can't be addedfor whatever reason (it doesn't meet the rquirements) error out.
 	config, err := GetRoomConfigurationByID(room.Configuration.ID)
 	if err != nil {
-		if nf, ok := err.(NotFound); ok {
-			log.L.Debugf("Room configuration not found, attempting to create. Message: %v", nf.Error())
+		if _, ok := err.(*NotFound); ok {
+			log.L.Debugf("Room configuration %v not found, attempting to create.", room.Configuration.ID)
 
 			//this is where we try to create the configuration
 			config, err = CreateRoomConfiguration(room.Configuration)
@@ -136,7 +136,7 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 	log.L.Debug("Room configuration passed. Creating the room.")
 
 	//save the devices for later, if there are any, then remove the frmo the room for putting into the database
-	log.L.Debugf("There are %v devices included, saving to be added later: %v")
+	log.L.Debugf("There are %v devices included, saving to be added later.", len(room.Devices))
 
 	devs := []structs.Device{}
 	copy(devs, room.Devices)
