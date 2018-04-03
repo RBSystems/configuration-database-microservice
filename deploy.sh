@@ -17,7 +17,7 @@ if [ "$BRANCH" == "production" ]; then
 	aws elasticbeanstalk create-application-version --application-name $PROJECT_NAME --version-label $SHA1 --source-bundle S3Bucket=$EB_BUCKET,S3Key=$DOCKERRUN_FILE
 	aws elasticbeanstalk update-environment --environment-name $PROJECT_NAME-env --version-label $SHA1 # update environment to new version
 
-elif [ "$BRANCH" == "stage" ]; then # do the same thing, to the stage environment
+elif [ "$BRANCH" == "master" ]; then # do the same thing, to the stage environment
 
 	aws s3 cp $DOCKERRUN_FILE s3://$EB_BUCKET/$DOCKERRUN_FILE # copy the file that beanstalk needs to spin up the containers into beanstalk's s3 bucket
 	aws elasticbeanstalk create-application-version --application-name $PROJECT_NAME-stage --version-label $SHA1 --source-bundle S3Bucket=$EB_BUCKET,S3Key=$DOCKERRUN_FILE
