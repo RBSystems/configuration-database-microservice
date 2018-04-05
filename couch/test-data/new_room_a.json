@@ -5,7 +5,7 @@
     "tags": ["c-a"],
     "designation": "development", 
     "configuration": {
-       "_id": "AAA", 
+       "_id": "TESTED", 
        "name": "AAA", 
        "description": "apple, Aannana, Aherry",
        "evaluators": [

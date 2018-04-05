@@ -190,3 +190,5 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 
 	return room, nil
 }
+
+//we need to be able to delete a room
