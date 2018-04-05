@@ -14,6 +14,7 @@ func main() {
 
 	router.GET("/mstatus", GetStatus)
 
+	//get core items
 	router.GET("/buildings", handlers.GetAllBuildings)
 	router.GET("/buildings/:buildingid", handlers.GetBuildingByID)
 	router.GET("/buildings/:buildingid/rooms", handlers.GetRoomsByBuilding)
@@ -21,24 +22,23 @@ func main() {
 	router.GET("/buildings/:buildingid/rooms/:roomid/devices", handlers.GetDevicesByRoom)
 	router.GET("/buildings/:buildingid/rooms/:roomid/devices/:deviceid", handlers.GetDeviceByID)
 
+	//Create core items
 	router.POST("/buildings/:buildingid", handlers.CreateBuilding)
 	router.POST("/buildings/:buildingid/rooms/:roomid", handlers.CreateRoom)
 	router.POST("/buildings/:buildingid/rooms/:roomid/devices/:deviceid", handlers.CreateDevice)
 
+	//Create ancilliary items
 	router.POST("/rooms/configurations/:configurationid", handlers.CreateRoomConfiguration)
 	router.POST("/devices/types/:typeid", handlers.CreateDeviceType)
+
+	//helper endpoints
+	router.GET("/buildings/:building/rooms/:room/devices/roles/:role", handlers.GetDevicesByBuildingAndRoomAndRole)
+	router.GET("/devices/roles/:role/types/:type", handlers.GetDevicesByRoleAndType)
+	//router.GET("/deployment/devices/roles/:role/types/:type/:designation", handlers.GetDevicesByRoleAndTypeAndDesignation)
 	/*
-		router.GET("/buildings/:building/rooms/:room/devices/roles/:role", handlers.GetDevicesByBuildingAndRoomAndRole)
 
-		router.PUT("/buildings/:building/rooms/:room/devices/:device/attributes/:attribute/:value", handlers.PutDeviceAttributeByDeviceAndRoomAndBuilding)
-
-		router.GET("/rooms", handlers.GetAllRooms)
 		router.GET("/rooms/designations", handlers.GetAllRoomDesignations)
-		router.GET("/rooms/id/:id", handlers.GetRoomByID)
-		router.GET("/rooms/buildings/:building", handlers.GetRoomsByBuilding)
 
-		router.GET("/devices/roles/:role/types/:type", handlers.GetDevicesByRoleAndType)
-		router.GET("/deployment/devices/roles/:role/types/:type/:branch", handlers.GetBranchDevicesByRoleAndType)
 
 		router.GET("/buildings/:building/rooms/:room/configuration", handlers.GetConfigurationByRoomAndBuilding)
 		router.GET("/configurations/:configuration", handlers.GetConfigurationByName)

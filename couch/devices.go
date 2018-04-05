@@ -217,3 +217,23 @@ func checkPort(p structs.Port) error {
 	//we're all good
 	return nil
 }
+
+func GetDevicesByRoomAndRole(roomID, role string) ([]structs.Device, error) {
+	toReturn := []structs.Device{}
+
+	devs, err := GetDevicesByRoom(roomID)
+	if err != nil {
+		msg := fmt.Sprintf("Couldn't get devices for filtering: %v", err.Error())
+		log.L.Warn(msg)
+		return toReturn, errors.New(msg)
+	}
+
+	//go through the devices and check if they have the role indicated
+	for _, d := range devs {
+		if structs.HasRole(d, role) {
+			toReturn = append(toReturn, d)
+		}
+	}
+
+	return toReturn, nil
+}

@@ -1,5 +1,7 @@
 package structs
 
+import "strings"
+
 type Device struct {
 	ID          string     `json:"_id"`
 	Rev         string     `json:"_rev,omitempty"`
@@ -72,4 +74,14 @@ type BaseInfo struct {
 	ID          string `json:"_id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
+}
+
+func HasRole(device Device, role string) bool {
+	role = strings.ToLower(role)
+	for i := range devices.Roles {
+		if strings.EqualFold(strings.ToLower(devices.Roles[i]), role) {
+			return true
+		}
+	}
+	return false
 }
