@@ -6,6 +6,7 @@ import (
 
 	"github.com/byuoitav/configuration-database-microservice/couch"
 	"github.com/byuoitav/configuration-database-microservice/log"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/labstack/echo"
 )
 
@@ -42,11 +43,41 @@ func GetDeviceByID(context echo.Context) error {
 }
 
 func CreateDevice(context echo.Context) error {
-	return nil
+
+	dev := structs.Device{}
+	err := context.Bind(&dev)
+	if err != nil {
+		msg := fmt.Sprintf("Invalid device. Validae that payload reflects a valid device")
+		log.L.Warn(msg)
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	device, err := couch.CreateDevice(dev)
+	if err != nil {
+		msg := fmt.Sprintf("Couldn't create device. Error: %v")
+		log.L.Warn(msg)
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+	return context.JSON(http.StatusOK, device)
 }
 
 func CreateDeviceType(context echo.Context) error {
-	return nil
+
+	ty := structs.DeviceType{}
+	err := context.Bind(&ty)
+	if err != nil {
+		msg := fmt.Sprintf("Invalid device type. Validae that payload reflects a valid device")
+		log.L.Warn(msg)
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	devtype, err := couch.CreateDeviceType(ty)
+	if err != nil {
+		msg := fmt.Sprintf("Couldn't create device type. Error: %v")
+		log.L.Warn(msg)
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+	return context.JSON(http.StatusOK, devtype)
 }
 
 func GetDevicesByBuildingAndRoomAndRole(context echo.Context) error {
