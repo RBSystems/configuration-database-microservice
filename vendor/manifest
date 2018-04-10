@@ -52,6 +52,175 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/byuoitav/authmiddleware",
+			"repository": "https://github.com/byuoitav/authmiddleware",
+			"vcs": "git",
+			"revision": "55d4b191ff73207534b101fad95d536f116cb610",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/av-api",
+			"repository": "https://github.com/byuoitav/av-api",
+			"vcs": "git",
+			"revision": "f2cdb6b6b6090132ddfe310559f147b0ed578828",
+			"branch": "testing",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/device-monitoring-microservice/statusinfrastructure",
+			"repository": "https://github.com/byuoitav/device-monitoring-microservice",
+			"vcs": "git",
+			"revision": "f5f92a15908263ac4f2292373a84182770317cc8",
+			"branch": "master",
+			"path": "/statusinfrastructure",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/base",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "base",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/eventinfrastructure",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "/eventinfrastructure",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/healthinfrastructure",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "healthinfrastructure",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/vendor/github.com/dgrijalva/jwt-go",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "vendor/github.com/dgrijalva/jwt-go",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/vendor/github.com/fatih/color",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "vendor/github.com/fatih/color",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/vendor/github.com/gorilla/websocket",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "vendor/github.com/gorilla/websocket",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/vendor/github.com/labstack/echo",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "vendor/github.com/labstack/echo",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/vendor/github.com/labstack/gommon/bytes",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "vendor/github.com/labstack/gommon/bytes",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/vendor/github.com/labstack/gommon/color",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "vendor/github.com/labstack/gommon/color",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/vendor/github.com/labstack/gommon/log",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "vendor/github.com/labstack/gommon/log",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/vendor/github.com/labstack/gommon/random",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "vendor/github.com/labstack/gommon/random",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/vendor/github.com/mattn/go-colorable",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "vendor/github.com/mattn/go-colorable",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/vendor/github.com/mattn/go-isatty",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "vendor/github.com/mattn/go-isatty",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/vendor/github.com/valyala/fasttemplate",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "vendor/github.com/valyala/fasttemplate",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/vendor/golang.org/x/crypto/acme",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "vendor/golang.org/x/crypto/acme",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/byuoitav/event-router-microservice/vendor/golang.org/x/sys/unix",
+			"repository": "https://github.com/byuoitav/event-router-microservice",
+			"vcs": "git",
+			"revision": "68f507cab81b24ecf9957721906fd1ad829f7927",
+			"branch": "master",
+			"path": "vendor/golang.org/x/sys/unix",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/daaku/go.zipexe",
 			"repository": "https://github.com/daaku/go.zipexe",
 			"vcs": "git",
@@ -73,6 +242,14 @@
 			"repository": "https://github.com/dgrijalva/jwt-go",
 			"vcs": "git",
 			"revision": "9ed569b5d1ac936e6494082958d63a6aa4fff99a",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/fatih/color",
+			"repository": "https://github.com/fatih/color",
+			"vcs": "git",
+			"revision": "507f6050b8568533fb3f5504de8e5205fa62a114",
 			"branch": "master",
 			"notests": true
 		},
@@ -232,6 +409,15 @@
 			"vcs": "git",
 			"revision": "3b874956e03f1636d171bda64b130f9135f42cff",
 			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/xuther/go-message-router/common",
+			"repository": "https://github.com/xuther/go-message-router",
+			"vcs": "git",
+			"revision": "cf7acc8d00786b34b50728f9d76d588e37fabfba",
+			"branch": "master",
+			"path": "/common",
 			"notests": true
 		},
 		{
