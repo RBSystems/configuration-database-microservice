@@ -8,6 +8,7 @@ jobs:
 
         steps:
             - checkout
+            - run: cd .. && rm -rf authmiddleware && rm -rf av-api
             - setup_remote_docker
             - run: make deps
             - run: make build
