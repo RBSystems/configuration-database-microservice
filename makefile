@@ -44,7 +44,7 @@ build-arm:
 	env GOOS=linux GOARCH=arm $(GOBUILD) -o $(NAME)-arm -v
 
 test: 
-	$(GOTEST) -v -race $(go list ./... | grep -v /vendor/) 
+	$(GOTEST) -v $(go list ./... | grep -v /vendor/) 
 
 clean: 
 	$(GOCLEAN)
