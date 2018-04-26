@@ -78,8 +78,8 @@ type BaseInfo struct {
 
 func HasRole(device Device, role string) bool {
 	role = strings.ToLower(role)
-	for i := range devices.Roles {
-		if strings.EqualFold(strings.ToLower(devices.Roles[i]), role) {
+	for i := range device.Roles {
+		if strings.EqualFold(strings.ToLower(device.Roles[i].ID), role) {
 			return true
 		}
 	}

@@ -33,7 +33,9 @@ func main() {
 
 	//helper endpoints
 	router.GET("/buildings/:building/rooms/:room/devices/roles/:role", handlers.GetDevicesByBuildingAndRoomAndRole)
-	router.GET("/devices/roles/:role/types/:type", handlers.GetDevicesByRoleAndType)
+
+	//router.GET("/devices/roles/:role/types/:type", handlers.GetDevicesByRoleAndType)
+
 	//router.GET("/deployment/devices/roles/:role/types/:type/:designation", handlers.GetDevicesByRoleAndTypeAndDesignation)
 	/*
 

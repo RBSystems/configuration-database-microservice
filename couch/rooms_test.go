@@ -1,6 +1,10 @@
 package couch
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/byuoitav/configuration-database-microservice/structs"
+)
 
 func TestRoom(t *testing.T) {
 	defer setupDatabase(t)(t)
@@ -9,11 +13,11 @@ func TestRoom(t *testing.T) {
 func testRoomCreateWithNewConfiguration(t *testing.T) {
 
 	room := structs.Room{}
-	err := structs.UnmarshallFromFile(testDir + "/new_room_a.json")
+	err := structs.UnmarshalFromFile(testDir+"/new_room_a.json", &room)
 	if err != nil {
 		t.Logf("Error reading in %v: %v", "new_room_a.json", err.Error())
 		t.Fail()
 	}
 
-	newrm, err = CreateRoom(room)
+	_, err = CreateRoom(room)
 }
