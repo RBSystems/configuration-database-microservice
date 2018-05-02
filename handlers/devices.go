@@ -84,6 +84,7 @@ func GetDevicesByBuildingAndRoomAndRole(context echo.Context) error {
 	room := context.Param("room")
 	building := context.Param("building")
 	role := context.Param("role")
+
 	if len(room) < 2 || len(building) < 2 || len(role) < 2 {
 		msg := fmt.Sprintf("Invalid parameters. Must include a valid buliding, room and role")
 		log.L.Warn(msg)
@@ -91,6 +92,20 @@ func GetDevicesByBuildingAndRoomAndRole(context echo.Context) error {
 	}
 
 	devs, err := couch.GetDevicesByRoomAndRole(fmt.Sprintf("%v-%v", building, room), role)
+	if err != nil {
+		msg := fmt.Sprintf("error: %v", err.Error())
+		log.L.Warn(msg)
+		return context.JSON(http.StatusInternalServerError, err)
+	}
+
+	return context.JSON(http.StatusOK, devs)
+}
+
+func GetDevicesByRoleAndType(context echo.Context) error {
+	role := context.Param("role")
+	deviceType := context.Param("type")
+
+	devs, err := couch.GetDevicesByRoleAndType(role, deviceType)
 	if err != nil {
 		msg := fmt.Sprintf("error: %v", err.Error())
 		log.L.Warn(msg)

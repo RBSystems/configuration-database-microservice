@@ -16,9 +16,9 @@ type Device struct {
 }
 
 type DeviceType struct {
-	ID          string       `json:"_id"`
-	Rev         string       `json:"_rev,omitempty"`
-	Name        string       `json:"name"`
+	ID  string `json:"_id"`
+	Rev string `json:"_rev,omitempty"`
+	//	Name        string       `json:"name"`
 	Class       string       `json:"class"`
 	Description string       `json:"description"`
 	Ports       []Port       `json:"ports"`
@@ -77,9 +77,8 @@ type BaseInfo struct {
 }
 
 func HasRole(device Device, role string) bool {
-	role = strings.ToLower(role)
 	for i := range device.Roles {
-		if strings.EqualFold(strings.ToLower(device.Roles[i].ID), role) {
+		if strings.EqualFold(device.Roles[i].ID, role) {
 			return true
 		}
 	}

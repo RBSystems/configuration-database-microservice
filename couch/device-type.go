@@ -54,7 +54,7 @@ func CreateDeviceType(toAdd structs.DeviceType) (structs.DeviceType, error) {
 
 	log.L.Infof("Starting creation or udpate of device type %v", toAdd.ID)
 
-	if len(toAdd.ID) < 2 || len(toAdd.Name) < 2 || len(toAdd.Class) < 2 {
+	if len(toAdd.ID) < 2 || len(toAdd.Class) < 2 {
 		msg := fmt.Sprintf("Device types must have a valid ID, name, and class.")
 		log.L.Warn(msg)
 		return toAdd, errors.New(msg)

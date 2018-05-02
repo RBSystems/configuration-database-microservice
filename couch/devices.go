@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/byuoitav/configuration-database-microservice/log"
 	"github.com/byuoitav/configuration-database-microservice/structs"
@@ -13,12 +14,44 @@ import (
 var DeviceValidationRegex *regexp.Regexp
 
 func init() {
-
 	DeviceValidationRegex = regexp.MustCompile(`([A-z,0-9]{2,}-[A-z,0-9]+)-[A-z]+[0-9]+`)
 }
 
-func GetDeviceByID(ID string) (structs.Device, error) {
+func GetAllDevices() ([]structs.Device, error) {
+	var toReturn []structs.Device
 
+	// get all devices
+	err := MakeRequest("GET", fmt.Sprintf("devices"), "", nil, &toReturn)
+	if err != nil {
+		msg := fmt.Sprintf("failed to get all devices: %v", err.Error())
+		log.L.Error(msg)
+		return toReturn, errors.New(msg)
+	}
+
+	// get all device types
+	types := []structs.DeviceType{}
+	err = MakeRequest("GET", fmt.Sprintf("device_types"), "", nil, &types)
+	if err != nil {
+		msg := fmt.Sprintf("failed to get all device types: %v", err.Error())
+		log.L.Error(msg)
+		return toReturn, errors.New(msg)
+	}
+
+	// create map of typeID -> type
+	typeMap := make(map[string]structs.DeviceType)
+	for _, t := range types {
+		typeMap[t.ID] = t
+	}
+
+	// fill types into devices
+	for _, d := range toReturn {
+		d.Type = typeMap[d.Type.ID]
+	}
+
+	return toReturn, nil
+}
+
+func GetDeviceByID(ID string) (structs.Device, error) {
 	toReturn := structs.Device{}
 	err := MakeRequest("GET", fmt.Sprintf("devices/%v", ID), "", nil, &toReturn)
 	if err != nil {
@@ -231,6 +264,25 @@ func GetDevicesByRoomAndRole(roomID, role string) ([]structs.Device, error) {
 	//go through the devices and check if they have the role indicated
 	for _, d := range devs {
 		if structs.HasRole(d, role) {
+			toReturn = append(toReturn, d)
+		}
+	}
+
+	return toReturn, nil
+}
+
+func GetDevicesByRoleAndType(role, dtype string) ([]structs.Device, error) {
+	var toReturn []structs.Device
+
+	devs, err := GetAllDevices()
+	if err != nil {
+		msg := fmt.Sprintf("unable to get device list: %v", err.Error())
+		log.L.Warn(msg)
+		return toReturn, err
+	}
+
+	for _, d := range devs {
+		if structs.HasRole(d, role) && strings.EqualFold(d.Type.ID, dtype) {
 			toReturn = append(toReturn, d)
 		}
 	}

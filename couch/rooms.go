@@ -17,6 +17,19 @@ func init() {
 	roomValidationRegex = regexp.MustCompile(`([A-z,0-9]{2,})-[A-z,0-9]+`)
 }
 
+func GetAllRooms() ([]structs.Room, error) {
+	var toReturn []structs.Room
+
+	err := MakeRequest("GET", fmt.Sprintf("rooms"), "", nil, &toReturn)
+	if err != nil {
+		msg := fmt.Sprintf("failed to get all rooms: %v", err.Error())
+		log.L.Error(msg)
+		return toReturn, errors.New(msg)
+	}
+
+	return toReturn, nil
+}
+
 func GetRoomByID(id string) (structs.Room, error) {
 
 	toReturn := structs.Room{}
