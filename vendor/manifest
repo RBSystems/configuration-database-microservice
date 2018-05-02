@@ -235,6 +235,30 @@
 			"notests": true
 		},
 		{
+			"importpath": "go.uber.org/atomic",
+			"repository": "https://github.com/uber-go/atomic",
+			"vcs": "git",
+			"revision": "1ea20fb1cbb1cc08cbd0d913a96dead89aa18289",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "go.uber.org/multierr",
+			"repository": "https://github.com/uber-go/multierr",
+			"vcs": "git",
+			"revision": "ddea229ff1dff9e6fe8a6c0344ac73b09e81fce5",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "go.uber.org/zap",
+			"repository": "https://github.com/uber-go/zap",
+			"vcs": "git",
+			"revision": "2dc8d10634f473f4dc678e48391a9dc8cf6ae6f9",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "golang.org/x/crypto/ocsp",
 			"repository": "https://go.googlesource.com/crypto",
 			"vcs": "git",
