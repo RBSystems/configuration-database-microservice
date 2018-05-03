@@ -289,3 +289,23 @@ func GetDevicesByRoleAndType(role, dtype string) ([]structs.Device, error) {
 
 	return toReturn, nil
 }
+
+func DeleteDevice(id string) error {
+	log.L.Debugf("[%s] Deleting device", id)
+
+	device, err := GetDeviceByID(id)
+	if err != nil {
+		msg := fmt.Sprintf("[%s] error looking for device to delete: %s", id, err.Error())
+		log.L.Warn(msg)
+		return errors.New(msg)
+	}
+
+	err = MakeRequest("DELETE", fmt.Sprintf("devices/%s?rev=%v", device.ID, device.Rev), "", nil, nil)
+	if err != nil {
+		msg := fmt.Sprintf("[%s] error deleting device: %s", id, err.Error())
+		log.L.Warn(msg)
+		return errors.New(msg)
+	}
+
+	return nil
+}

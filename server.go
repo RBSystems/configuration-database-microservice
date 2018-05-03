@@ -27,6 +27,8 @@ func main() {
 	router.POST("/buildings/:buildingid/rooms/:roomid", handlers.CreateRoom)
 	router.POST("/buildings/:buildingid/rooms/:roomid/devices/:deviceid", handlers.CreateDevice)
 
+	// delete core items
+
 	// create ancilliary items
 	router.POST("/rooms/configurations/:configurationid", handlers.CreateRoomConfiguration)
 	router.POST("/devices/types/:typeid", handlers.CreateDeviceType)

@@ -31,7 +31,6 @@ func GetAllRooms() ([]structs.Room, error) {
 }
 
 func GetRoomByID(id string) (structs.Room, error) {
-
 	toReturn := structs.Room{}
 	err := MakeRequest("GET", fmt.Sprintf("rooms/%v", id), "", nil, &toReturn)
 	if err != nil {
@@ -39,8 +38,8 @@ func GetRoomByID(id string) (structs.Room, error) {
 		log.L.Warn(msg)
 	}
 
-	//we need to get the room configuration information
-	//we need to get devices
+	// TODO we need to get the room configuration information
+	// TODO we need to get devices
 
 	return toReturn, err
 }
@@ -204,4 +203,38 @@ func CreateRoom(room structs.Room) (structs.Room, error) {
 	return room, nil
 }
 
-//we need to be able to delete a room
+func DeleteRoom(id string) error {
+	log.L.Infof("[%s] Deleting room", id)
+
+	// get the room
+	room, err := GetRoomByID(id)
+	if err != nil {
+		msg := fmt.Sprintf("[%s] error looking for room to delete: %s", id, err.Error())
+		log.L.Warn(msg)
+		return errors.New(msg)
+	}
+
+	// delete each of the devices from the room
+	log.L.Debugf("[%s] Deleting devices from room", id)
+	for _, d := range room.Devices {
+		log.L.Debugf("[%s] Deleting device %s", id, d.ID)
+		err = MakeRequest("DELETE", fmt.Sprintf("devices/%s?rev=%v", d.ID, d.Rev), "", nil, nil)
+		if err != nil {
+			msg := fmt.Sprintf("[%s] error deleting device %s: %s", id, d.ID, err.Error())
+			log.L.Warn(msg)
+			return errors.New(msg)
+		}
+	}
+
+	// delete the room
+	log.L.Debugf("[%s] Successfully deleted devices from room. Deleting room...", id)
+	err = MakeRequest("DELETE", fmt.Sprintf("rooms/%s?rev=%v", room.ID, room.Rev), "", nil, nil)
+	if err != nil {
+		msg := fmt.Sprintf("[%s] error deleting room: %s", id, err.Error())
+		log.L.Warn(msg)
+		return errors.New(msg)
+	}
+
+	log.L.Infof("[%s] Successfully deleted room", id)
+	return nil
+}
