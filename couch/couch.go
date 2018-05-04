@@ -11,28 +11,45 @@ import (
 	"strings"
 
 	"github.com/byuoitav/configuration-database-microservice/log"
+	"github.com/byuoitav/configuration-database-microservice/structs"
 )
 
+var COUCH_ADDRESS string
+var COUCH_USERNAME string
+var COUCH_PASSWORD string
+
+func init() {
+	COUCH_ADDRESS = os.Getenv("COUCH_ADDRESS")
+	COUCH_USERNAME = os.Getenv("COUCH_USERNAME")
+	COUCH_PASSWORD = os.Getenv("COUCH_PASSWORD")
+
+	if len(COUCH_ADDRESS) == 0 /*|| len(COUCH_USERNAME) == 0 || len(COUCH_PASSWORD) == 0*/ {
+		log.L.Fatalf("COUCH_ADDRESS is not set.")
+	}
+}
+
 func MakeRequest(method, endpoint, contentType string, body []byte, toFill interface{}) error {
+	url := fmt.Sprintf("%v/%v", COUCH_ADDRESS, endpoint)
+	log.L.Debugf("Making %s request to %v", method, url)
 
-	url := fmt.Sprintf("%v/%v", os.Getenv("COUCH_ADDRESS"), endpoint)
-
-	log.L.Debugf("Making request to %v", url)
-
+	// start building the request
 	req, err := http.NewRequest(method, url, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
 
-	//add auth
-	req.SetBasicAuth(os.Getenv("COUCH_USERNAME"), os.Getenv("COUCH_PASSWORD"))
-
-	if method != "GET" && method != "DELETE" {
-		req.Header.Add("content-type", contentType)
+	// add auth
+	if len(COUCH_USERNAME) > 0 && len(COUCH_PASSWORD) > 0 {
+		req.SetBasicAuth(COUCH_USERNAME, COUCH_PASSWORD)
 	}
 
-	client := &http.Client{}
+	// add headers
+	if len(contentType) > 0 {
+		req.Header.Add("content-type", contentType)
+	}
+	req.Header.Add("accept", "application/json")
 
+	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -79,6 +96,27 @@ func MakeRequest(method, endpoint, contentType string, body []byte, toFill inter
 		//it was an error, we can check on error types
 		return checkCouchErrors(ce)
 	}
+
+	return nil
+}
+
+func MakeBulkRequest(method, endpoint, contentType string, body []byte, convert func(docs [][]byte) error) error {
+	var resp structs.BulkResponse
+
+	err := MakeRequest(method, endpoint, contentType, body, &resp)
+	if err != nil {
+		msg := fmt.Sprintf("failed to make bulk request (%v to %v): %s", method, endpoint, &resp)
+		log.L.Warn(msg)
+		return errors.New(msg)
+	}
+
+	var docs [][]byte
+	for _, item := range resp.Rows {
+		b, _ := json.Marshal(item.Doc)
+		docs = append(docs, b)
+	}
+
+	convert(docs)
 
 	return nil
 }

@@ -11,7 +11,6 @@ func TestRoom(t *testing.T) {
 }
 
 func testRoomCreateWithNewConfiguration(t *testing.T) {
-
 	room := structs.Room{}
 	err := structs.UnmarshalFromFile(testDir+"/new_room_a.json", &room)
 	if err != nil {

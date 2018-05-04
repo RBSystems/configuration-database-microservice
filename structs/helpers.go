@@ -8,6 +8,19 @@ import (
 	"github.com/fatih/color"
 )
 
+type BulkResponse struct {
+	TotalRows int `json:"total_rows"`
+	Offset    int `json:"offset"`
+	Rows      []struct {
+		ID    string `json:"id"`
+		Key   string `json:"key"`
+		Value struct {
+			Rev string `json:"rev"`
+		} `json:"value"`
+		Doc interface{} `json:"doc"`
+	} `json:"rows"`
+}
+
 func UnmarshalFromFile(filepath string, toFill interface{}) error {
 	b, err := ioutil.ReadFile(filepath)
 	if err != nil {

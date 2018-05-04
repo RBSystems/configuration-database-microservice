@@ -1,15 +1,25 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
+	"github.com/byuoitav/configuration-database-microservice/couch"
 	"github.com/byuoitav/configuration-database-microservice/handlers"
 	"github.com/byuoitav/device-monitoring-microservice/statusinfrastructure"
 	"github.com/labstack/echo"
 )
 
 func main() {
-	port := ":8886"
+	//	port := ":8886"
+	rooms, err := couch.GetAllRooms()
+	if err != nil {
+		log.Fatalf("failed to get all rooms: %s", err)
+	}
+	for _, room := range rooms {
+		log.Printf("got room: %s", room)
+	}
+
 	router := echo.New()
 
 	router.GET("/mstatus", GetStatus)
@@ -57,12 +67,14 @@ func main() {
 		router.GET("/classes/:class/ports", handlers.GetPortsByDeviceType)
 	*/
 
-	server := http.Server{
-		Addr:           port,
-		MaxHeaderBytes: 1024 * 10,
-	}
+	/*
+		server := http.Server{
+			Addr:           port,
+			MaxHeaderBytes: 1024 * 10,
+		}
+	*/
 
-	router.StartServer(&server)
+	//	router.StartServer(&server)
 }
 
 func GetStatus(context echo.Context) error {

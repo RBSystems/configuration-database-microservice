@@ -31,3 +31,16 @@ type RoomQueryResponse struct {
 	Bookmark string `json:"bookmark"`
 	Warning  string `json:"warning"`
 }
+
+type BulkRoomResponse struct {
+	TotalRows int `json:"total_rows"`
+	Offset    int `json:"offset"`
+	Rows      []struct {
+		ID    string `json:"id"`
+		Key   string `json:"key"`
+		Value struct {
+			Rev string `json:"rev"`
+		} `json:"value"`
+		Doc Room `json:"doc"`
+	} `json:"rows"`
+}

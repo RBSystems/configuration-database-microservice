@@ -2,7 +2,6 @@ package log
 
 import (
 	"log"
-	"os"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -14,7 +13,7 @@ var CFG zap.Config
 func init() {
 
 	CFG = zap.NewDevelopmentConfig()
-	CFG.OutputPaths = append(CFG.OutputPaths, os.Getenv("LOGGING_FILE_LOCATION"))
+	//CFG.OutputPaths = append(CFG.OutputPaths, os.Getenv("LOGGING_FILE_LOCATION"))
 	CFG.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	l, err := CFG.Build()
 	if err != nil {

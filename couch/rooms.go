@@ -10,23 +10,45 @@ import (
 	"github.com/byuoitav/configuration-database-microservice/structs"
 )
 
-var roomValidationRegex *regexp.Regexp
-
-func init() {
-	//our room validation regex
-	roomValidationRegex = regexp.MustCompile(`([A-z,0-9]{2,})-[A-z,0-9]+`)
-}
+var roomValidationRegex = regexp.MustCompile(`([A-z,0-9]{2,})-[A-z,0-9]+`)
 
 func GetAllRooms() ([]structs.Room, error) {
 	var toReturn []structs.Room
+	//	var bulk structs.BulkRoomResponse
 
-	err := MakeRequest("GET", fmt.Sprintf("rooms"), "", nil, &toReturn)
+	err := MakeBulkRequest("GET", "rooms/_all_docs?include_docs=true", "", nil, func(docs [][]byte) error {
+		for _, doc := range docs {
+			var room structs.Room
+			err := json.Unmarshal(doc, &room)
+			if err != nil {
+				return err
+			}
+
+			toReturn = append(toReturn, room)
+		}
+
+		return nil
+	})
 	if err != nil {
 		msg := fmt.Sprintf("failed to get all rooms: %v", err.Error())
-		log.L.Error(msg)
+		log.L.Warn(msg)
 		return toReturn, errors.New(msg)
 	}
 
+	/* different structs way
+	err := MakeRequest("GET", "rooms/_all_docs?include_docs=true", "", nil, &bulk)
+	if err != nil {
+		msg := fmt.Sprintf("failed to get all rooms: %v", err.Error())
+		log.L.Warn(msg)
+		return toReturn, errors.New(msg)
+	}
+
+	for _, item := range bulk.Rows {
+		toReturn = append(toReturn, item.Doc)
+	}
+
+	return toReturn, nil
+	*/
 	return toReturn, nil
 }
 
