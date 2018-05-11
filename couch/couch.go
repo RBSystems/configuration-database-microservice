@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/byuoitav/configuration-database-microservice/log"
-	"github.com/byuoitav/configuration-database-microservice/structs"
 )
 
 var COUCH_ADDRESS string
@@ -96,27 +95,6 @@ func MakeRequest(method, endpoint, contentType string, body []byte, toFill inter
 		//it was an error, we can check on error types
 		return checkCouchErrors(ce)
 	}
-
-	return nil
-}
-
-func MakeBulkRequest(method, endpoint, contentType string, body []byte, convert func(docs [][]byte) error) error {
-	var resp structs.BulkResponse
-
-	err := MakeRequest(method, endpoint, contentType, body, &resp)
-	if err != nil {
-		msg := fmt.Sprintf("failed to make bulk request (%v to %v): %s", method, endpoint, &resp)
-		log.L.Warn(msg)
-		return errors.New(msg)
-	}
-
-	var docs [][]byte
-	for _, item := range resp.Rows {
-		b, _ := json.Marshal(item.Doc)
-		docs = append(docs, b)
-	}
-
-	convert(docs)
 
 	return nil
 }

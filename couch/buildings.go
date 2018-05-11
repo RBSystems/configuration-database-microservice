@@ -11,7 +11,6 @@ import (
 
 //GetBuildingByID gets the company's building with the corresponding ID from the couch database
 func GetBuildingByID(id string) (structs.Building, error) {
-
 	toReturn := structs.Building{}
 	err := MakeRequest("GET", fmt.Sprintf("buildings/%v", id), "", nil, &toReturn)
 	if err != nil {
@@ -24,17 +23,17 @@ func GetBuildingByID(id string) (structs.Building, error) {
 
 //GetAllBuildings returns all buildings for the company specified
 func GetAllBuildings() ([]structs.Building, error) {
+	var toReturn []structs.Building
+	var bulk structs.BulkBuildingResponse
 
-	toFill := structs.BuildingQueryResponse{}
-
-	err := MakeRequest("GET", fmt.Sprintf("buildings/_all_docs?limit=1000&include_docs=true"), "", nil, &toFill)
+	err := MakeRequest("GET", fmt.Sprintf("buildings/_all_docs?limit=1000&include_docs=true"), "", nil, &bulk)
 	if err != nil {
 		msg := fmt.Sprintf("[couch] Could not get buildings. %v", err.Error())
 		log.L.Warn(msg)
+		return toReturn, errors.New(msg)
 	}
 
-	toReturn := []structs.Building{}
-	for _, row := range toFill.Rows {
+	for _, row := range bulk.Rows {
 		toReturn = append(toReturn, row.Doc)
 	}
 

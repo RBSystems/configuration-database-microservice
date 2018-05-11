@@ -11,7 +11,6 @@ var L *zap.SugaredLogger
 var CFG zap.Config
 
 func init() {
-
 	CFG = zap.NewDevelopmentConfig()
 	//CFG.OutputPaths = append(CFG.OutputPaths, os.Getenv("LOGGING_FILE_LOCATION"))
 	CFG.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
